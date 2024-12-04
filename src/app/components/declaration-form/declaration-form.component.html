@@ -1,0 +1,220 @@
+<form [formGroup]="generalDeclarationForm" (ngSubmit)="onSubmit()">
+    <h2>תהליך הזנת הצהרה</h2>
+
+    <!-- General Information -->
+    <div class="form-group">
+        <div>
+            <label>ת.ז\ח"פ</label>
+            <input pInputText formControlName="ImporterID">
+        </div>
+        <div>
+            <label for="customsProcess">תהליך מכס</label>
+            <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
+                class="ng-dirty" [required]="true" inputId="autocomplete" [suggestions]="filteredCustomsProcess"
+                (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
+            </p-autoComplete>
+        </div>
+    </div>
+
+    <!-- Consignment Details -->
+    <h3>פרטי משלוח</h3>
+    <div class="form-group" formGroupName="Consignments">
+        <div>
+            <label>ארץ יצוא</label>
+            <p-autoComplete [forceSelection]="true" formControlName="ExportationCountryCode" class="ng-dirty"
+                [required]="true" inputId="autocomplete" [suggestions]="filteredCountryOfExport"
+                (completeMethod)="filterCountryOfExport($event)" field="name" [dropdown]="true"
+                (onSelect)="onExportationCountrySelect($event)"></p-autoComplete>
+        </div>
+
+        <div>
+            <label> אתר טעינה</label>
+            <p-autoComplete [forceSelection]="true" id="chargingCountry" formControlName="LoadingLocation"
+                class="ng-dirty" [required]="true" inputId="autocomplete" [suggestions]="currentFilteredChargingCountry"
+                (completeMethod)="filterChargingCountry($event)" field="name" [dropdown]="true">
+            </p-autoComplete>
+        </div>
+        <div>
+            <label>אתר פריקה</label>
+            <p-autoComplete [forceSelection]="true" id="unpackingSite" formControlName="UnloadingLocationID"
+                class="ng-dirty" [required]="true" inputId="autocomplete" [suggestions]="filteredUnpackingSite"
+                (completeMethod)="filterUnpackingSite($event)" field="name" [dropdown]="true">
+            </p-autoComplete>
+        </div>
+        <div>
+            <label> תאריך הגעת טובין: </label>
+            <p-calendar formControlName="ArrivalDateTime" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+        </div>
+
+        <div>
+            <label> סוג מזהה מטען:</label>
+            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
+                formControlName="TransportContractDocumentTypeCode" [required]="true" inputId="autocomplete"
+                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)" field="name"
+                [dropdown]="true">
+            </p-autoComplete>
+        </div>
+        <div>
+            <label>תיאור טובין</label>
+            <input formControlName="CargoDescription">
+        </div>
+        <div>
+            <label>מזהה מטען 1:</label>
+            <input formControlName="TransportContractDocumentID">
+        </div>
+        <div>
+            <label>מזהה מטען 2:</label>
+            <input formControlName="SecondCargoID">
+        </div>
+        <div>
+            <label>מזהה מטען 3:</label>
+            <input formControlName="ThirdCargoID">
+        </div>
+    </div>
+
+    <!-- Package Details -->
+    <h3>פירוט חבילות</h3>
+    <div class="form-group" formGroupName="ConsignmentPackagesMeasures">
+        <div>
+            <label> כמות</label>
+            <input type="number" formControlName="TotalPackageQuantity">
+        </div>
+        <div>
+            <label> משקל </label>
+            <input type="number" formControlName="GrossMassMeasure">
+        </div>
+    </div>
+
+    <!-- Supplier Invoices -->
+    <h3>חשבוניות וסחורות</h3>
+    <div class="form-group" formGroupName="SupplierInvoices">
+        <div>
+            <label> מספר חשבונית ספק</label>
+            <input formControlName="InvoiceNumber">
+        </div>
+        <div>
+            <label>שם ספק</label>
+            <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID" inputId="autocomplete"
+                [suggestions]="filteredSupplierID" (completeMethod)="filterSupplierID($event)" field="name"
+                [dropdown]="true">
+            </p-autoComplete>
+        </div>
+        <div>
+            <label> מטבע חשבון </label>
+            <p-autoComplete formControlName="CurrencyCode" (completeMethod)="filterCurrencyCode($event)"
+                [suggestions]="filteredCurrencyCode" [forceSelection]="true" field="code" [dropdown]="true">
+            </p-autoComplete>
+        </div>
+        <div>
+            <label>תאריך חשבון מכר</label>
+            <p-calendar formControlName="IssueDateTime" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
+        </div>
+        <div>
+            <label> ארץ יצוא </label>
+            <p-autoComplete [forceSelection]="true" formControlName="LocationID" class="ng-dirty" [required]="true"
+                inputId="autocomplete" [suggestions]="filteredCountryOfExport"
+                (completeMethod)="filterCountryOfExport($event)" field="name" [dropdown]="true"></p-autoComplete>
+            <!-- <input formControlName="LocationID"> -->
+        </div>
+        <div>
+            <label> תנאי מכר </label>
+            <p-autoComplete [forceSelection]="true" id="TradeTermsConditionCode"
+                formControlName="TradeTermsConditionCode" [required]="true" inputId="autocomplete"
+                [suggestions]="filteredTradeTermsConditionCode" (completeMethod)="filterTradeTermsConditionCode($event)"
+                field="name" [dropdown]="true">
+            </p-autoComplete>
+        </div>
+        <div>
+            <label>סה"כ חשבון </label>
+            <input formControlName="InvoiceAmount">
+        </div>
+    <div formArrayName="SupplierInvoiceItems">
+        <p-table [value]="SupplierInvoiceItems.controls" [responsive]="true">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th></th>
+                    <ng-container *ngFor="let col of columns">
+                        <th>{{col}}</th>
+                    </ng-container>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
+                <!-- <ng-container formArrayName="tableRowArray"> -->
+                    <!-- *ngIf="!rowData.controls?.Id|| rowData.controls?.Id?.value > 0 " -->
+                    <!-- [formGroupName]="rowIndex" *ngIf="!(rowData.controls?.Id?.value < 0)" -->
+                    <tr>
+                        <td class="suplier" [style]="{'width':'1rem'}">
+                            <!-- <button pButton pRipple icon="pi pi-minus" class="p-button-raised p-button-text"
+                                (click)="onDeleteRow(rowData,rowIndex)"></button> -->
+                        </td>
+                        <td pEditableColumn>
+                            <p-cellEditor>
+                                <ng-template pTemplate="input">
+                                    <input pInputText type="text" formControlName="ClassificationID" (blur)="onClassificationIDBlur()">                                   
+                                </ng-template>
+                                <ng-template pTemplate="output">
+                                    {{SupplierInvoiceItems.get("ClassificationID")}}
+                                </ng-template>
+                            </p-cellEditor>
+                        </td>
+                      
+                        <td pEditableColumn>
+                            <p-cellEditor>
+                                <ng-template pTemplate="input">
+                                    <input pInputText type="text" formControlName="AmountType">
+                                </ng-template>
+                                <ng-template pTemplate="output">
+                                    {{SupplierInvoiceItems.get("AmountType")}}
+                                </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        <td pEditableColumn>
+                            <p-cellEditor>
+                                <ng-template pTemplate="input">
+                                    <input pInputText type="text" formControlName="CustomsValueAmount">
+                                </ng-template>
+                                <ng-template pTemplate="output">
+                                    {{SupplierInvoiceItems.get("CustomsValueAmount")}}
+                                </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        <td pEditableColumn>
+                            <p-cellEditor>
+                                <ng-template pTemplate="input">
+                                    <div class="ui-ltr" dir="ltr">
+                                        <p-autoComplete formControlName="OriginCountryCode" [forceSelection]="true"
+                                            [suggestions]="filteredCountryOfExport"
+                                            (completeMethod)="filterCountryOfExport($event)" field="name"
+                                            [dropdown]="true">
+                                        </p-autoComplete>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="output">
+                                    {{SupplierInvoiceItems.get("OriginCountryCode")}}
+                                    <!-- {{(goodsItemsForm.value.tableRowArray[rowIndex].OriginCountryCode?.code) ?
+                                    goodsItemsForm.value.tableRowArray[rowIndex].OriginCountryCode?.name: null}} -->
+                                </ng-template>
+                            </p-cellEditor>
+                        </td>
+                        
+                    </tr>
+                <!-- </ng-container> -->
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr>
+                    <td class="suplier" [style]="{'width':'3rem'}">
+                        <button pButton pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
+                            (click)="addNewInvoiceItem()"></button>
+                    </td>
+                    <td colspan="3"></td>
+                    <td>מספר שורות: {{SupplierInvoiceItems.length }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+    </div>
+
+    <div>
+        <p-button type="submit" label="שמור" [disabled]="generalDeclarationForm.invalid"></p-button>
+    </div>
+</form>

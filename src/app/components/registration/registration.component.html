@@ -1,0 +1,54 @@
+<p-card>
+    <div class="p-p-4 p-mx-auto p-my-5">
+        <div class="p-d-flex p-jc-between p-ai-center p-mb-3">
+            <h4>יש לך חשבון? <a href="#" class="p-link">התחבר לחשבון האישי שלך</a></h4>
+            <button icon="pi pi-plus" pButton icon="pi pi-times" class="p-button-rounded p-button-text"></button>
+        </div>
+        <hr />
+        <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
+            <div class="p-fluid">
+                <div class="p-field">
+                    <p-radioButton value="p" formControlName="CustomerType" label="פרטי"></p-radioButton>
+                    <p-radioButton value="b" formControlName="CustomerType" label="מסחרי"
+                        class="p-ml-3"></p-radioButton>
+                </div>
+                <div class="form-row">
+                    <div class="p-field">
+                        <label for="email">כתובת דוא״ל</label>
+                        <input id="email" type="email" pInputText formControlName="Email" />
+                    </div>
+                    <div class="p-field">
+                        <label for="password">סיסמה </label>
+                        <input id="password" type="password" pPassword formControlName="Password" />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="p-field">
+                        <label for="firstName">שם פרטי </label>
+                        <input id="firstName" type="text" pInputText formControlName="FirstName" />
+                    </div>
+                    <div class="p-field">
+                        <label for="lastName">שם משפחה </label>
+                        <input id="lastName" type="text" pInputText formControlName="LastName" />
+                    </div>
+                    <div class="p-field">
+                        <label for="phone">טלפון סלולרי</label>
+                        <input id="phone" type="text" pInputText formControlName="Mobile" />
+                    </div>
+                </div>
+
+                <!-- <div class="p-field-checkbox">
+          <p-checkbox formControlName="offers"></p-checkbox>
+          <label>אני מעוניין לקבל קופונים, הנחות ומבצעים</label>
+        </div>
+        <div class="p-field-checkbox">
+          <p-checkbox formControlName="terms"></p-checkbox>
+          <label>אני מאשר שקראתי והסכמתי <a href="#" class="p-link">לתנאי השימוש</a></label>
+        </div>  -->
+                <div class="btnSubmit">
+                    <button pButton type="submit" label="לסיום ההרשמה לחץ כאן" class="p-button-success p-mt-3"></button>
+                </div>
+            </div>
+        </form>
+    </div>
+</p-card>
