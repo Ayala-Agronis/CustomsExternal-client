@@ -1,5 +1,5 @@
 import { CommonModule, FormatWidth } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -7,21 +7,20 @@ import { CalendarModule } from 'primeng/calendar';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { TableModule } from 'primeng/table';
-import { BehaviorSubject, forkJoin, map, tap } from 'rxjs';
+import { BehaviorSubject, forkJoin, map, of, tap } from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
+import { DeclarationService } from '../../shared/services/declaration.service';
+import { StepService } from '../../shared/services/step.service';
 
 @Component({
   selector: 'app-declaration-form',
   standalone: true,
-  imports: [CommonModule,ReactiveFormsModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule,TableModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss'
 })
 export class DeclarationFormComponent implements OnInit {
-onClassificationIDBlur() {
-throw new Error('Method not implemented.');
-}
-
+  
   generalDeclarationForm!: FormGroup
   filteredCustomsProcess: any[] = [];
   filteredCountryOfExport: any[] = [];
@@ -43,7 +42,7 @@ throw new Error('Method not implemented.');
   declarationSupplierID: any;
 
   ExportationCountrySelect: any;
-  
+
   columns: any;
 
   private loadingChargingCountrySubject = new BehaviorSubject<boolean>(true);
@@ -52,36 +51,37 @@ throw new Error('Method not implemented.');
   isCustomsChargingCountry: boolean = false;
   declarationUnpackingSite: any;
   exportationCountryControlError: any = true;
+  perfectDecalartion: any;
 
-  constructor(private formBuilder: FormBuilder, private customsDataService: CustomsDataService) { }
+  constructor(private formBuilder: FormBuilder, private customsDataService: CustomsDataService, private decService: DeclarationService,private stepService: StepService) { }
 
   ngOnInit(): void {
     forkJoin([
       this.customsDataService.getCustomsTableValues$('1354').pipe(
         map(res => this.declarationCustomsProcess = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))),
-      this.customsDataService.getCustomsTableValues$('1136').pipe(
-        map(res => this.declarationCountryOfExport = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
-      ),
-      this.customsDataService.getCustomsTableValues$('2192').pipe(
-        map(res => this.declarationUnpackingSite = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
-      ),
-      this.customsDataService.getCustomsTableValues$('1344').pipe(
-        map(res => this.declarationChargingCountry = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 }))),
-        tap(_ => this.loadingChargingCountrySubject.next(false))
-      ),
+      // this.customsDataService.getCustomsTableValues$('1136').pipe(
+      //   map(res => this.declarationCountryOfExport = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+      // ),
+      // this.customsDataService.getCustomsTableValues$('2192').pipe(
+      //   map(res => this.declarationUnpackingSite = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+      // ),
+      // this.customsDataService.getCustomsTableValues$('1344').pipe(
+      //   map(res => this.declarationChargingCountry = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 }))),
+      //   tap(_ => this.loadingChargingCountrySubject.next(false))
+      // ),
       this.customsDataService.getCustomsTableValues$('1259').pipe(
-        map(res =>this.declarationCargoIDType = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+        map(res => this.declarationCargoIDType = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       ),
       this.customsDataService.getCustomsTableValues$('1144').pipe(
-        map(res =>this.declarationCurrencyCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+        map(res => this.declarationCurrencyCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       ),
-       this.customsDataService.getCustomsTableValues$('1426').pipe(
-        map(res =>this.declarationTradeTermsConditionCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+      this.customsDataService.getCustomsTableValues$('1426').pipe(
+        map(res => this.declarationTradeTermsConditionCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       ),
       this.customsDataService.getVendor$().pipe(
         map(res => this.declarationSupplierID = res.map((item: { VendorName: any; VendorID: any }) => ({ name: item.VendorName, code: item.VendorID })))
       ),
-       // this.customsDataService.getCustomsTableValues$('1426').pipe(
+      // this.customsDataService.getCustomsTableValues$('1426').pipe(
       //   map(res => res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       // ),
 
@@ -90,6 +90,8 @@ throw new Error('Method not implemented.');
 
     );
     this.initForm();
+
+    this.init();
 
     const exportationCountryControl = this.generalDeclarationForm.get('Consignments.ExportationCountryCode');
 
@@ -103,7 +105,76 @@ throw new Error('Method not implemented.');
       this.setChargingCountryControlStatus();
     });
 
-    this.columns = ["מוצר מיובא ",  "כמות", "ערך טובין", "ארץ מקור"];
+    this.columns = ["מוצר מיובא ", "כמות", "ערך טובין", "ארץ מקור"];
+  }
+
+  init() {
+    // get data from Local Storage or fetch it if not available
+    const getCustomsData = (key: string, tableId: string, mappingFn: (item: any) => any) => {
+      const localStorageData = localStorage.getItem(key);
+      if (localStorageData) {
+        return of(JSON.parse(localStorageData));  // Return stored data as an observable
+      } else {
+        return this.customsDataService.getCustomsTableValues$(tableId).pipe(
+          map(res => {
+            const mappedData = res.map(mappingFn);
+            localStorage.setItem(key, JSON.stringify(mappedData));  // Save data to Local Storage
+            return mappedData;
+          })
+        );
+      }
+    };
+
+    const customsCountryExport$ = getCustomsData(
+      'customsCountryExport',
+      '1136',
+      (item: { Value2: any; Value1: any }) => ({ name: `${item.Value2.substring(0, 7)} (${item.Value1})`, code: item.Value1 })
+    ).pipe(
+      map(res => this.declarationCountryOfExport = res)
+    );
+
+    const customsChargingCountry$ = getCustomsData(
+      'customsChargingCountry',
+      '1344',
+      (item: { Value2: any; Value1: any }) => ({ name: item.Value1, code: item.Value1 })
+    ).pipe(
+      map(res => {
+        this.declarationChargingCountry = res;
+        this.loadingChargingCountrySubject.next(false);
+      }),
+      tap(() => {
+        // if (this.UpdateMode === 'e' || this.UpdateMode === 'p') {
+        //   this.filterChargingCountryByExportCode();
+        // }
+      })
+    );
+
+    const customsUnpackingSite$ = getCustomsData(
+      'customsUnpackingSite',
+      '2192',
+      (item: { Value2: any; Value1: any }) => ({ name: `${item.Value2.substring(0, 7)} (${item.Value1})`, code: item.Value1 })
+    ).pipe(
+      map(res => this.declarationUnpackingSite = res)
+    );
+
+    const customsCargoIDType$ = getCustomsData(
+      'customsCargoIDType',
+      '1259',
+      (item: { Value2: any; Value1: any }) => ({ name: item.Value2, code: item.Value1 })
+    ).pipe(
+      map(res => this.declarationCargoIDType = res)
+    );
+    // Use forkJoin to execute all requests or use cached data from Local Storage
+    forkJoin([
+      customsCountryExport$,
+      customsChargingCountry$,
+      customsUnpackingSite$,
+      customsCargoIDType$,     
+    ]).subscribe(() => {
+      // if (this.UpdateMode === 'e') {
+      //   this.initElements();
+      // }
+    });
   }
 
   getExportationCountryControlError(control: any) {
@@ -173,7 +244,7 @@ throw new Error('Method not implemented.');
     this.addNewInvoiceItem();
   }
 
-  get SupplierInvoiceItems(){
+  get SupplierInvoiceItems(): FormArray {
     return this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray
   }
 
@@ -184,16 +255,58 @@ throw new Error('Method not implemented.');
 
   private createSupplierInvoiceItem(): FormGroup {
     return this.formBuilder.group({
-      ClassificationID: this.formBuilder.control('',),
-      CustomsValueAmount: this.formBuilder.control(null),
-      // DutyRegimeCode: this.formBuilder.control({ name: '', code: '' },),
-      AmountType: this.formBuilder.control('',),
-      OriginCountryCode: this.formBuilder.control({ name: '', code: '' },)
+      ClassificationID: this.formBuilder.control('', Validators.required),
+      CustomsValueAmount: this.formBuilder.control(null, Validators.required),
+      AmountType: this.formBuilder.control('', Validators.required),
+      OriginCountryCode: this.formBuilder.control({ name: '', code: '' }, Validators.required)
     });
   }
+  ff(){
+    this.stepService.emitStepCompleted();
+  }
+  
+  saveDeclaration() {    
+    this.stepService.emitStepCompleted();
+    const dec = this.generalDeclarationForm.value;
+    console.log(dec); 
 
-  onSubmit() {
-    throw new Error('Method not implemented.');
+    dec.GovernmentProcedure = dec.GovernmentProcedure.code ? dec.GovernmentProcedure.code : dec.GovernmentProcedure
+
+    const consignments = dec.Consignments;
+
+    consignments.ExportationCountryCode = consignments.ExportationCountryCode.code ? consignments.ExportationCountryCode.code : consignments.ExportationCountryCode
+    consignments.LoadingLocation = consignments.LoadingLocation.code ? consignments.LoadingLocation.code : consignments.LoadingLocation
+    consignments.UnloadingLocationID = consignments.UnloadingLocationID.code ? consignments.UnloadingLocationID.code : consignments.UnloadingLocationID
+    consignments.TransportContractDocumentTypeCode = consignments.TransportContractDocumentTypeCode.code ? consignments.TransportContractDocumentTypeCode.code : consignments.TransportContractDocumentTypeCode
+
+    const supplierInvoices = dec.SupplierInvoices;
+
+    supplierInvoices.SupplierID = supplierInvoices.SupplierID.code
+      ? String(supplierInvoices.SupplierID.code)
+      : String(supplierInvoices.SupplierID);
+    supplierInvoices.CurrencyCode = supplierInvoices.CurrencyCode.code ? supplierInvoices.CurrencyCode.code : supplierInvoices.CurrencyCode;
+    supplierInvoices.LocationID = supplierInvoices.LocationID.code ? supplierInvoices.LocationID.code : supplierInvoices.LocationID;
+    supplierInvoices.TradeTermsConditionCode = supplierInvoices.TradeTermsConditionCode.code ? supplierInvoices.TradeTermsConditionCode.code : supplierInvoices.TradeTermsConditionCode;
+    supplierInvoices.InvoiceTypeCode = supplierInvoices.InvoiceTypeCode.code ? supplierInvoices.InvoiceTypeCode.code : supplierInvoices.InvoiceTypeCode;
+
+    const SupplierInvoiceItems = supplierInvoices.SupplierInvoiceItems
+    if (SupplierInvoiceItems) {
+      SupplierInvoiceItems?.forEach((element: any) => {
+        element.OriginCountryCode = element.OriginCountryCode?.code;
+      });
+    }
+
+    dec.RoleCode = '1'
+    dec.TaxationDateTime = new Date()
+    dec.CreateDateTime = new Date()
+    // this.perfectDecalartion = dec
+    this.perfectDecalartion = JSON.parse(JSON.stringify(dec));
+
+    this.perfectDecalartion.Consignments = [dec.Consignments]
+    this.perfectDecalartion.ConsignmentPackagesMeasures = [dec.ConsignmentPackagesMeasures]
+    this.perfectDecalartion.SupplierInvoices = [dec.SupplierInvoices];
+
+    this.decService.addDeclaration(this.perfectDecalartion).subscribe(res => console.log(res))
   }
 
   onExportationCountrySelect(event: any) {
@@ -231,8 +344,8 @@ throw new Error('Method not implemented.');
     let filtered: any[] = [];
     let query = event.query;
     for (let i = 0; i < this.declarationCountryOfExport.length; i++) {
-      let a = this.declarationCountryOfExport[i];
-      if (a.name.indexOf(query) != -1) {
+      let a = this.declarationCountryOfExport[i];   
+      if (a.name.indexOf(query) != -1 && a.code) {
         filtered.push(a);
       }
     }

@@ -1,4 +1,4 @@
-<form [formGroup]="generalDeclarationForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="generalDeclarationForm" >
     <h2>תהליך הזנת הצהרה</h2>
 
     <!-- General Information -->
@@ -142,7 +142,7 @@
                 <!-- <ng-container formArrayName="tableRowArray"> -->
                     <!-- *ngIf="!rowData.controls?.Id|| rowData.controls?.Id?.value > 0 " -->
                     <!-- [formGroupName]="rowIndex" *ngIf="!(rowData.controls?.Id?.value < 0)" -->
-                    <tr>
+                    <tr [formGroupName]="rowIndex">
                         <td class="suplier" [style]="{'width':'1rem'}">
                             <!-- <button pButton pRipple icon="pi pi-minus" class="p-button-raised p-button-text"
                                 (click)="onDeleteRow(rowData,rowIndex)"></button> -->
@@ -150,10 +150,10 @@
                         <td pEditableColumn>
                             <p-cellEditor>
                                 <ng-template pTemplate="input">
-                                    <input pInputText type="text" formControlName="ClassificationID" (blur)="onClassificationIDBlur()">                                   
+                                    <input pInputText type="text" formControlName="ClassificationID" >                                   
                                 </ng-template>
                                 <ng-template pTemplate="output">
-                                    {{SupplierInvoiceItems.get("ClassificationID")}}
+                                    {{SupplierInvoiceItems.controls[rowIndex].get("ClassificationID")?.value}}
                                 </ng-template>
                             </p-cellEditor>
                         </td>
@@ -164,7 +164,7 @@
                                     <input pInputText type="text" formControlName="AmountType">
                                 </ng-template>
                                 <ng-template pTemplate="output">
-                                    {{SupplierInvoiceItems.get("AmountType")}}
+                                    {{SupplierInvoiceItems.controls[rowIndex].get("AmountType")?.value}}
                                 </ng-template>
                             </p-cellEditor>
                         </td>
@@ -174,7 +174,7 @@
                                     <input pInputText type="text" formControlName="CustomsValueAmount">
                                 </ng-template>
                                 <ng-template pTemplate="output">
-                                    {{SupplierInvoiceItems.get("CustomsValueAmount")}}
+                                    {{SupplierInvoiceItems.controls[rowIndex].get("CustomsValueAmount")?.value}}
                                 </ng-template>
                             </p-cellEditor>
                         </td>
@@ -190,7 +190,7 @@
                                     </div>
                                 </ng-template>
                                 <ng-template pTemplate="output">
-                                    {{SupplierInvoiceItems.get("OriginCountryCode")}}
+                                    {{SupplierInvoiceItems.controls[rowIndex].get("OriginCountryCode")?.value.name}}
                                     <!-- {{(goodsItemsForm.value.tableRowArray[rowIndex].OriginCountryCode?.code) ?
                                     goodsItemsForm.value.tableRowArray[rowIndex].OriginCountryCode?.name: null}} -->
                                 </ng-template>
@@ -215,6 +215,7 @@
     </div>
 
     <div>
-        <p-button type="submit" label="שמור" [disabled]="generalDeclarationForm.invalid"></p-button>
+        <button pButton (click)="ff()"  label="yyy" ></button>
+        <button pButton (click)="saveDeclaration()" type="submit" label="שמור" [disabled]="generalDeclarationForm.invalid"></button>
     </div>
 </form>

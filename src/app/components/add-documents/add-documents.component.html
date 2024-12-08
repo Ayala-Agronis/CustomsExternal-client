@@ -1,0 +1,68 @@
+<div class="progress-spinner" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+</div>
+<p-card dir="rtl" header="הוספת מסמך חדש" class="document-form">
+    <div class="form-group document-details">
+        <label>סוג מסמך:</label>
+        <p-dropdown [options]="documentCodes" (onChange)="onDocumentTypeChange()" [(ngModel)]="selectedDocumentCode"
+            optionLabel="name"></p-dropdown>
+    </div>
+
+    <div class="form-group">
+        <label>בחר מסמך (PDF/TIFF):</label>
+        <p-fileUpload accept=".pdf,.tiff" name="myfile[]" [customUpload]="true" (onSelect)="onFileSelect($event)"
+            [showUploadButton]="false" [showCancelButton]="true"></p-fileUpload>
+    </div>
+
+    <div *ngIf="selectedFileName" class="form-group">
+        <label>שם הקובץ הנבחר: {{selectedFileName}}</label>
+    </div>
+
+    <div *ngIf="fileUrl" class="form-group">
+        <a [href]="fileUrl" target="_blank">הצג את המסמך</a>
+    </div>
+
+
+    <div class="document-details">
+        <div class="document-details details">
+            <label>מספר מסמך פנימי:</label>
+            <input disabled pInputText [(ngModel)]="internalDocumentNumber">
+        </div>
+        <div class="document-details details">
+            <label>מספר מסמך מכס:</label>
+            <input disabled pInputText [(ngModel)]="customsDocumentNumber">
+        </div>
+    </div>
+ 
+    <!-- <div class="document-details">
+        <div class="details" *ngFor="let attribute of documentAttributes">
+            <div class="attribute-column">
+                <label>{{attribute.fieldName}}: <span *ngIf="attribute.isMandatory" class="required">*</span></label>
+                <ng-container [ngSwitch]="attribute.type">
+                    <input *ngSwitchCase="'String'" pInputText [(ngModel)]="attribute.value">                  
+                    <p-checkbox  *ngSwitchCase="'Boolean'" [binary]="true" [(ngModel)]="attribute.value"></p-checkbox>
+                    <p-autoComplete *ngSwitchCase="'Int'" [(ngModel)]="attribute.value" [forceSelection]="true"
+                        [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)" field="name"
+                        [dropdown]="true">
+                    </p-autoComplete>
+                    <div> <p-calendar *ngSwitchCase="'Date'" [(ngModel)]="attribute.value" dateFormat="dd/mm/yy"
+                            [showIcon]="true"></p-calendar></div>
+                </ng-container>
+            </div>
+        </div>
+    </div> -->
+
+
+    <!-- <button *ngIf="!isShowMore" pButton (click)="showMoreAttributes()">עוד... </button>
+    <button *ngIf="isShowMore" pButton (click)="showLessAttributes()">פחות</button> -->
+
+
+    <div class="form-group document-details">
+        <button pButton label="שמירה" (click)="saveDocument()"></button>
+        <button pButton label=" שמירה ושליחה למכס" (click)="saveAndSendDocument()"></button>
+    </div>
+    <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
+    <p-confirmDialog></p-confirmDialog>
+
+
+</p-card>
