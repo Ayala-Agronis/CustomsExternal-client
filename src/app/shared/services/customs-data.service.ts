@@ -17,7 +17,12 @@ export class CustomsDataService {
 
   getVendor$(): Observable<any> {
     const url = `${environment.customsdbApiUrl}/vendors`;
-    return this.http.get<any>(url);   
+    return this.http.get<any>(url);
   }
-  
+
+  GetSeq$(type: any): Observable<any> {
+    return this.http.get<any>(`${environment.customsdbApiUrl}GetSeq/${type}`);
+  }
+
+
 }

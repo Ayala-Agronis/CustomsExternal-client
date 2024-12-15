@@ -23,7 +23,7 @@
     </div>
 
 
-    <div class="document-details">
+    <!-- <div class="document-details">
         <div class="document-details details">
             <label>מספר מסמך פנימי:</label>
             <input disabled pInputText [(ngModel)]="internalDocumentNumber">
@@ -32,8 +32,8 @@
             <label>מספר מסמך מכס:</label>
             <input disabled pInputText [(ngModel)]="customsDocumentNumber">
         </div>
-    </div>
- 
+    </div> -->
+
     <!-- <div class="document-details">
         <div class="details" *ngFor="let attribute of documentAttributes">
             <div class="attribute-column">
@@ -59,10 +59,71 @@
 
     <div class="form-group document-details">
         <button pButton label="שמירה" (click)="saveDocument()"></button>
-        <button pButton label=" שמירה ושליחה למכס" (click)="saveAndSendDocument()"></button>
+        <!-- <button pButton label=" שמירה ושליחה למכס" (click)="saveAndSendDocument()"></button> -->
     </div>
     <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
     <p-confirmDialog></p-confirmDialog>
+    <p-table #dt [columns]="cols" [value]="documents" [(selection)]="selectedDocument" selectionMode="single"
+        [paginator]="true" [rows]="8">
 
+        <ng-template pTemplate="header" let-columns>
+            <tr>
+                <th *ngFor="let col of columns">
+                    {{col.header}}
+                </th>
+                <!-- <th>
+              שלח למכס
+            </th>
+            <th>
+              עדכן קובץ
+            </th>
+            -->
+                <th>
+                    מחק קובץ
+                </th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-rowData let-columns="columns">
+            <tr [pSelectableRow]="rowData">
+                <td *ngFor="let col of columns" [pSelectableRow]="rowData">
+                    <!-- {{rowData[col.field]}} -->
+                    <ng-container *ngIf="col.field === 'FileName'; else codeContainer">
+                        <a (click)="navigateToAddDocument(rowData)">{{ rowData[col.field] }}</a>
+                    </ng-container>
+                    <ng-template #codeContainer>
+                        <ng-container *ngIf="col.field === 'Code'; else regularCol">
+                            {{ getDocumentTypeName(rowData[col.field]) }}
+                        </ng-container>
+                    </ng-template>
+                    <ng-template #regularCol>
+                        {{ rowData[col.field] }}
+                    </ng-template>
+                </td>
+                <!-- <td>
+              <button [disabled]="rowData.CustomsId !== 0" pButton pRipple type="button" label=' שלח למכס' class="p-button-raised p-button-text"
+                (click)="sendToCustoms(rowData)"></button>
+    
+            </td>
+            <td>
+              <button [disabled]="rowData.Code == 'IL_279'||rowData.CustomsId" pButton pRipple type="button" label='עדכן קובץ' class="p-button-raised p-button-text" (click)="navigateToAddDocument(rowData)"></button>
+            </td>
+           -->
+                <td>
+                    <button [disabled]="rowData.Code == 'IL_279'" pButton pRipple type="button" label='מחק קובץ'
+                        class="p-button-raised p-button-text" (click)="deleteDocument(rowData.Id)"></button>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="summary">
+            <div class="p-d-flex p-ai-center p-jc-between">
+                מספר שורות: {{documents ? documents.length : 0 }}
+
+            </div>
+        </ng-template>
+
+    </p-table>
+    <button pButton (click)="nextStep()">סיום העלאת מסמכים</button>
 
 </p-card>

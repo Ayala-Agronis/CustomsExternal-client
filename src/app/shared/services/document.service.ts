@@ -10,47 +10,49 @@ export class DocumentService {
 
   constructor(private http: HttpClient) { }
 
-  getDocumentAttributes$(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.customsExternalApiUrl}/DocumentAttribute/Get/${id}`);
-  }
+  // getDocumentAttributes$(id: string): Observable<any> {
+  //   return this.http.get<any>(`${environment.customsExternalApiUrl}DocumentAttribute/Get/${id}`);
+  // }
 
   getDocumentsByEntityId$(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.customsExternalApiUrl}/Documents/entity/${id}`);
+    console.log(`${environment.customsExternalApiUrl}Document/entity/${id}`);
+    
+    return this.http.get<any>(`${environment.customsExternalApiUrl}Document/entity/${id}`);
   }
 
   getDocumentsById$(id: string): Observable<any> {
-    return this.http.get<any>(`${environment.customsExternalApiUrl}/Documents/${id}`);
+    return this.http.get<any>(`${environment.customsExternalApiUrl}Document/${id}`);
   }
 
   postDocuments$(document: any): Observable<any> {
-    return this.http.post<any>(`${environment.customsExternalApiUrl}/Documents`, document);
+    return this.http.post<any>(`${environment.customsExternalApiUrl}Document`, document);
   }
 
-  addDocumentAttribute$(document: any): Observable<any> {
-    return this.http.post<any>(`${environment.customsExternalApiUrl}/DocumentAttribute`, document);
-  }
+  // addDocumentAttribute$(document: any): Observable<any> {
+  //   return this.http.post<any>(`${environment.customsExternalApiUrl}DocumentAttribute`, document);
+  // }
 
-  updateDocumentAttribute$(id: string, documentAttributes: any): Observable<any> {
-    return this.http.put(`${environment.customsExternalApiUrl}DocumentAttribute/${id}`, documentAttributes);
-  }  
+  // updateDocumentAttribute$(id: string, documentAttributes: any): Observable<any> {
+  //   return this.http.put(`${environment.customsExternalApiUrl}DocumentAttribute/${id}`, documentAttributes);
+  // }  
   
   uploadDocument(formData: FormData) {
     return this.http.post(`${environment.azureBlobsUrl}BlobUtils`, formData);
   }
 
   sendToCustoms$(formData: FormData): Observable<any> {
-    return this.http.post(`${environment.customsExternalApiUrl}AddDocuments_2715`, formData);
+    return this.http.post(`${environment.customsApiUrl}AddDocuments_2715`, formData);
   }
 
   updateDocument$(id: string, doc: any):Observable<any> {
-    return this.http.put(`${environment.customsExternalApiUrl}Documents/${id}`, doc);
+    return this.http.put(`${environment.customsExternalApiUrl}Document/${id}`, doc);
   }
 
-  deleteDocumetAttributes$(docId: string): Observable<any> {
-    return this.http.delete(`${environment.customsExternalApiUrl}DocumentAttribute/${docId}`)
-  }
+  // deleteDocumetAttributes$(docId: string): Observable<any> {
+  //   return this.http.delete(`${environment.customsExternalApiUrl}DocumentAttribute/${docId}`)
+  // }
 
   deleteDocument$(documentId: string): Observable<any> {
-    return this.http.delete<any>(`${environment.customsExternalApiUrl}Documents/${documentId}`);
+    return this.http.delete<any>(`${environment.customsExternalApiUrl}Document/${documentId}`);
   }
 }

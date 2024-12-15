@@ -88,85 +88,85 @@ export class DocumentsComponent {
             formData.append('Name', file.name);
             formData.append('DocumentType', res1.DocumentType);
 
-            this.documentsService.getDocumentAttributes$(rowData.Id).subscribe(
-              (res2: any) => {
-                res2.forEach((attribute: { Attribute: any; Attribute_Vlaue: any }) => {
-                  formData.append(`attributes[${attribute.Attribute}]`, JSON.stringify({
-                    id: attribute.Attribute,
-                    value: attribute.Attribute_Vlaue
-                  }));
-                });
-                this.documentsService.sendToCustoms$(formData).subscribe(
-                  response => {
-                    console.log(response);
+            // this.documentsService.getDocumentAttributes$(rowData.Id).subscribe(
+            //   (res2: any) => {
+            //     res2.forEach((attribute: { Attribute: any; Attribute_Vlaue: any }) => {
+            //       formData.append(`attributes[${attribute.Attribute}]`, JSON.stringify({
+            //         id: attribute.Attribute,
+            //         value: attribute.Attribute_Vlaue
+            //       }));
+            //     });
+            //     this.documentsService.sendToCustoms$(formData).subscribe(
+            //       response => {
+            //         console.log(response);
 
-                    this.loading = false;
-                    if (response.responseContentHeaderField.exceptionField) {
-                      this.documentObject = {
-                        Id: res1.Id,
-                        Code: res1.Code,
-                        Url: res1.URL,
-                        FileName: res1.FileName,
-                        DocumentType: res1.DocumentType,
-                        CustomsId: 0,
-                        CustomsStatus: 0,
-                        ErrorDesc: response.responseContentHeaderField.exceptionField[0].exeptionDescriptionField,
-                        RelatedEntity: res1.RelatedEntity,
-                        RelatedID: res1.RelatedID
-                      };
-                      this.msgs1 = [
-                        { severity: 'error', summary: 'שליחת מסמך למכס', detail: response.responseContentHeaderField.exceptionField[0].exeptionDescriptionField },
-                      ];
-                      return
-                    }
-                    else if (response.responseContentHeaderField.applicationIDField) {
-                      this.documentObject = {
-                        Id: res1.Id,
-                        Code: res1.Code,
-                        Url: res1.URL,
-                        FileName: res1.FileName,
-                        DocumentType: res1.DocumentType,
-                        CustomsId: response.responseContentHeaderField.applicationIDField,
-                        CustomsStatus: 1,
-                        ErrorDesc: '',
-                        RelatedEntity: res1.RelatedEntity,
-                        RelatedID: res1.RelatedID
-                      };
-                      this.msgs1 = [
-                        { severity: 'success', summary: 'Success', detail: 'המסמך נשלח למכס בהצלחה!' },
-                      ];
-                    }
+            //         this.loading = false;
+            //         if (response.responseContentHeaderField.exceptionField) {
+            //           this.documentObject = {
+            //             Id: res1.Id,
+            //             Code: res1.Code,
+            //             Url: res1.URL,
+            //             FileName: res1.FileName,
+            //             DocumentType: res1.DocumentType,
+            //             CustomsId: 0,
+            //             CustomsStatus: 0,
+            //             ErrorDesc: response.responseContentHeaderField.exceptionField[0].exeptionDescriptionField,
+            //             RelatedEntity: res1.RelatedEntity,
+            //             RelatedID: res1.RelatedID
+            //           };
+            //           this.msgs1 = [
+            //             { severity: 'error', summary: 'שליחת מסמך למכס', detail: response.responseContentHeaderField.exceptionField[0].exeptionDescriptionField },
+            //           ];
+            //           return
+            //         }
+            //         else if (response.responseContentHeaderField.applicationIDField) {
+            //           this.documentObject = {
+            //             Id: res1.Id,
+            //             Code: res1.Code,
+            //             Url: res1.URL,
+            //             FileName: res1.FileName,
+            //             DocumentType: res1.DocumentType,
+            //             CustomsId: response.responseContentHeaderField.applicationIDField,
+            //             CustomsStatus: 1,
+            //             ErrorDesc: '',
+            //             RelatedEntity: res1.RelatedEntity,
+            //             RelatedID: res1.RelatedID
+            //           };
+            //           this.msgs1 = [
+            //             { severity: 'success', summary: 'Success', detail: 'המסמך נשלח למכס בהצלחה!' },
+            //           ];
+            //         }
 
-                    else {
-                      this.msgs1 = [
-                        { severity: 'error', summary: 'שליחת מסמך למכס', detail: 'התרחשה שגיאה בעת השליחה למכס' },
-                      ];
-                      return
-                    }
-                    this.documentsService.updateDocument$(res1.Id, this.documentObject).subscribe(
-                      res => {
-                        this.loading = false
-                        this.getdoc();
-                        console.log(res)
-                      },
-                      err => {
-                        this.loading = false
-                        console.log(err)
-                      }
-                    )
+            //         else {
+            //           this.msgs1 = [
+            //             { severity: 'error', summary: 'שליחת מסמך למכס', detail: 'התרחשה שגיאה בעת השליחה למכס' },
+            //           ];
+            //           return
+            //         }
+            //         this.documentsService.updateDocument$(res1.Id, this.documentObject).subscribe(
+            //           res => {
+            //             this.loading = false
+            //             this.getdoc();
+            //             console.log(res)
+            //           },
+            //           err => {
+            //             this.loading = false
+            //             console.log(err)
+            //           }
+            //         )
 
-                  },
-                  (error: any) => {
-                    console.log(error);
+            //       },
+            //       (error: any) => {
+            //         console.log(error);
 
-                    this.loading = false;
+            //         this.loading = false;
 
-                    this.msgs1 = [
-                      { severity: 'error', summary: 'Error', detail: 'שליחת המסמך למכס נכשלה!' }
-                    ];
-                  }
-                );
-              })
+            //         this.msgs1 = [
+            //           { severity: 'error', summary: 'Error', detail: 'שליחת המסמך למכס נכשלה!' }
+            //         ];
+            //       }
+            //     );
+            //   })
 
           })
           .catch((error) => {
@@ -216,35 +216,23 @@ export class DocumentsComponent {
   }
 
   deleteDocument(docId: string) {
-    this.documentsService.deleteDocumetAttributes$(docId).subscribe(
-      res => {
-        if (res) {
-          console.log(res);
-          this.documentsService.deleteDocument$(docId).subscribe(
-            response => {
-              console.log(response);
-              if (response) {
-                this.msgs1 = [
-                  { severity: 'success', summary: 'מחיקת מסמך ', detail: `המסמך נמחק בהצלחה` },
-                ];
-              }
 
-              this.getdoc();
-            },
-            error => {
-              this.msgs1 = [
-                { severity: 'error', summary: 'מחיקת מסמך ', detail: `קרתה שגיאה בעת מחיקת המסמך  ` },
-              ];
-            }
-          )
+    this.documentsService.deleteDocument$(docId).subscribe(
+      response => {
+        console.log(response);
+        if (response) {
+          this.msgs1 = [
+            { severity: 'success', summary: 'מחיקת מסמך ', detail: `המסמך נמחק בהצלחה` },
+          ];
         }
+
+        this.getdoc();
       },
       error => {
         this.msgs1 = [
           { severity: 'error', summary: 'מחיקת מסמך ', detail: `קרתה שגיאה בעת מחיקת המסמך  ` },
         ];
       }
-
     )
   }
 

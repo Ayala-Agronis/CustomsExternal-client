@@ -1,3 +1,5 @@
-<p-steps [model]="steps" [(activeIndex)]="activeIndex"></p-steps>
-
+<!-- <p-steps [model]="steps" [(activeIndex)]="activeIndex" [readonly]="getReadOnlyState()" (onSelect)="selectStep($event)"></p-steps> -->
+<p-steps [model]="steps" [(activeIndex)]="activeIndex"  ></p-steps>
+<button (click)="nextStep()">+</button>
+<button (click)="previousStep()">-</button>
 <router-outlet ></router-outlet>
