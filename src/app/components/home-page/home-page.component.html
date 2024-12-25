@@ -1,0 +1,39 @@
+<header>
+    <nav class="navbar">
+        <div class="logo">מכס נגיש</div>
+        <ul class="nav-links">
+            <li><a href="#">בית</a></li>
+            <li><a href="#">מי אנחנו</a></li>
+            <li><a href="#">שירות לעסקים</a></li>
+            <li><a href="#">שירות ומחירים </a></li>
+            <li><a href="#">דברו איתנו</a></li>
+        </ul>
+        <div class="content">
+            <button class="gray-button" (click)="navigate('register')">הרשמה </button>
+            <button class="gray-button" (click)="navigate('login')">התחברות </button>
+            <button class="black-button" (click)="navigate('declaration-main')"> לשחרור מהיר ></button>
+        </div>
+    </nav>
+</header>
+<div class="text-section">
+    <p>
+        רשות המסים השיקה בשנת 2018 מערכת מידע חדשנית - שער עולמי, המאפשרת לשחרר טובין מהמכס הישראלי ללא תהליכים ידניים.
+        שינוי זה יוצר הזדמנות נהדרת ליבואן הישראלי לבצע שחרור טובין באופן עצמאי, ובכך להוזיל את עלויות עמלות שחרור
+        הטובין באופן משמעותי.
+    </p>
+    <p>
+        מטרת המיזם שלנו היא להנגיש את תהליך שחרור הטובין לכלל הציבור הישראלי (גופים עסקיים ופרטיים), וכמובן להוזיל את
+        עלויות שחרור הטובין. התהליך מורכב מ-5 שלבים ברורים, ובסופו תוכלו לקבל התרת מכס ותדפיס הצהרה ישירות לתיבת המייל שלכם.
+    </p>
+        <button class="black-button">קרא עוד</button>
+</div>
+
+
+<div class="video-section">
+    <video class="video" controls>
+        <source src="url.mp4" type="video/mp4">
+        הדפדפן שלך אינו תומך בנגן וידאו.
+    </video>
+
+    <button (click)="navigate('declaration-main')" class="black-button">רוצים להתחיל?</button>
+</div>

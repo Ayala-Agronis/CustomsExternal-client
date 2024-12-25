@@ -12,6 +12,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextModule } from 'primeng/inputtext';
 import { CardModule } from 'primeng/card';
 import { TableModule } from 'primeng/table';
+import { DialogModule } from 'primeng/dialog';
 import { CommonModule } from '@angular/common';
 import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { DocumentService } from '../../shared/services/document.service';
@@ -20,17 +21,19 @@ import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { map } from 'rxjs';
 import { StepService } from '../../shared/services/step.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-add-documents',
   standalone: true,
-  imports: [CommonModule, TableModule, CardModule, FormsModule, ReactiveFormsModule, DropdownModule, FileUploadModule, ButtonModule, CalendarModule, CheckboxModule, AutoCompleteModule, MessagesModule, ConfirmDialogModule, ProgressSpinnerModule, InputTextModule],
+  imports: [CommonModule, TableModule, CardModule, DialogModule, FormsModule, ReactiveFormsModule, DropdownModule, FileUploadModule, ButtonModule, CalendarModule, CheckboxModule, AutoCompleteModule, MessagesModule, ConfirmDialogModule, ProgressSpinnerModule, InputTextModule],
   templateUrl: './add-documents.component.html',
   styleUrl: './add-documents.component.scss',
   providers: [ConfirmationService, MessageService]
 })
 
 export class AddDocumentsComponent {
+  [x: string]: any;
 
   declarationid = localStorage.getItem('declarationId')
   currentDecId = localStorage.getItem('currentDecId')
@@ -61,7 +64,8 @@ export class AddDocumentsComponent {
       "EntityType": ''
     }
 
-  selectedDocumentCode = { name: 'חשבונית ספק (INV)', code: '380' };
+  //selectedDocumentCode = { name: 'חשבונית ספק (INV)', code: '380' };
+  selectedDocumentCode: any
   selectedFileName: string = '';
   internalDocumentNumber: string = '';
   customsDocumentNumber: string = '';
@@ -81,8 +85,15 @@ export class AddDocumentsComponent {
   cols: any[] | undefined;
   documents: any[] = [];
   selectedDocument: any;
+  fileToView: any;
+  viewFileIndex: number = -1;
+  displayDialog = false;
 
-  constructor(private documentsService: DocumentService, private stepService: StepService, private decService: DeclarationService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router, private customsDataService: CustomsDataService) { }
+  uploadedFilesByType: { [key: string]: any[] } = {};
+  Object = Object;
+  // selectedDocumentCode: any;
+  // uploadedFiles: any[] = [];
+  constructor(private documentsService: DocumentService, private sanitizer: DomSanitizer, private stepService: StepService, private decService: DeclarationService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router, private customsDataService: CustomsDataService) { }
 
   ngOnInit(): void {
 
@@ -98,45 +109,7 @@ export class AddDocumentsComponent {
       { field: 'CustomsId', header: 'מזהה מכס' },
     ];
 
-    this.getdoc();
-    // this.customsDataService.getCustomsTableValues$('1892').pipe(
-    //   map(res => {
-
-    //     this.allAttributes = res.map((item: {
-    //       Value2: any; Value1: any; Value5: any; Value6: any; Value3: any; Value4: any;
-    //     }) => ({
-    //       id: item.Value5,
-    //       name: item.Value2,
-    //       code: item.Value1,
-    //       isMandatory: item.Value6 === 'true',
-    //       type: item.Value3,
-    //       fieldName: item.Value4
-    //     }));
-
-    //     this.currrentAttributes = this.allAttributes.filter((attr: { code: string; }) => attr.code === this.selectedDocumentCode.code);
-
-    //     this.mandatoryAttributes = this.currrentAttributes.filter((attr: { isMandatory: any; }) => attr.isMandatory);
-
-    //     this.documentAttributes = this.mandatoryAttributes
-
-
-    //   })
-    // ).subscribe(
-    //   _ => {
-    //     this.route.queryParams.subscribe(params => {
-    //       const relatedId = params['documentId'];
-    //       if (relatedId) {
-    //         this.relatedID = relatedId
-    //         this.loadDocuments(relatedId);
-    //         this.isUpdateMode = true
-    //       }
-    //     });
-    //   }
-    // );
-
-    // this.customsDataService.getCustomsTableValues$('1259').pipe(
-    //   map(res => this.declarationCargoIDType = res.map((item: { Value2: any; Code: any; }) => ({ name: item.Value2, code: item.Code }))),
-    // ).subscribe()
+    //this.getdoc();
 
   }
 
@@ -167,7 +140,6 @@ export class AddDocumentsComponent {
         this.customsDocumentNumber = response.CustomsId
         this.fileUrl = response.URL;
         this.selectedFileName = response.FileName;
-        //this.simulateFileUpload(response.FileName, response.URL);
         this.uploadedFile = await this.fetchFileFromUrl(response.URL, response.FileName);
         const documentTypeCode = response.DocumentType;
         this.updateDocumentType(documentTypeCode);
@@ -183,7 +155,6 @@ export class AddDocumentsComponent {
   }
 
   deleteDocument(docId: string) {
-
     this.documentsService.deleteDocument$(docId).subscribe(
       response => {
         console.log(response);
@@ -219,61 +190,6 @@ export class AddDocumentsComponent {
     return docType ? docType.name : code;
   }
 
-  // loadDocumentAttribute(id: string): void {
-  //   this.documentsService.getDocumentAttributes$(id).subscribe(
-  //     (data: any) => {
-  //       const existingAttributes = this.documentAttributes;
-
-  //       existingAttributes.forEach(attribute => {
-  //         const matchingAttribute = data.find((item: any) => item.Attribute === attribute.id);
-
-  //         if (matchingAttribute) {
-  //           attribute.ID = matchingAttribute.ID;
-
-  //           if (attribute.type === 'Int') {
-  //             const code = matchingAttribute.Attribute_Vlaue;
-
-  //             const foundItem = this.declarationCargoIDType.find((item: any) => item.code === code);
-  //             if (foundItem) {
-  //               attribute.value = foundItem;
-
-  //             } else {
-  //               attribute.value = { name: '', code: code };
-  //             }
-  //           }
-  //           else if (attribute.type === 'Boolean') {
-  //             attribute.value = (matchingAttribute.Attribute_Vlaue === 'true');
-  //           }
-  //           else if (attribute.type === 'Date') {
-  //             attribute.value = new Date(matchingAttribute.Attribute_Vlaue);
-  //           }
-  //           else {
-  //             attribute.value = matchingAttribute.Attribute_Vlaue;
-  //           }
-  //         }
-  //       });
-  //       console.log(this.documentAttributes);
-
-  //     },
-  //     (error) => {
-  //       console.error('Error loading document attribute', error);
-  //     }
-  //   );
-  // }
-
-  // showMoreAttributes(): void {
-  //   this.isShowMore = true
-  //   this.documentAttributes = this.currrentAttributes;
-  //   this.loadDocumentAttribute(this.relatedID);
-  //   if (this.relatedID) {
-  //     this.loadDocumentAttribute(this.relatedID);
-  //   }
-  // }
-
-  // showLessAttributes(): void {
-  //   this.isShowMore = false
-  //   this.documentAttributes = this.mandatoryAttributes;
-  // }
 
   updateDocumentType(code: string) {
     const foundCode = this.documentCodes.find(doc => doc.code === code);
@@ -298,17 +214,6 @@ export class AddDocumentsComponent {
   onDocumentTypeChange() {
     this.resetDocumentDetails();
 
-    // this.currrentAttributes = this.allAttributes.filter((attr: { code: string; }) => attr.code === this.selectedDocumentCode.code);
-
-    // this.mandatoryAttributes = this.currrentAttributes.filter((attr: { isMandatory: any; }) => attr.isMandatory);
-
-    // this.isShowMore = false
-
-    // this.documentAttributes = this.mandatoryAttributes;
-    // if (this.documentAttributes[0]?.code == 714) {
-    //   this.documentAttributes[0].value = JSON.parse(sessionStorage.getItem("CargoIDType") || "")
-    //   this.documentAttributes[1].value = sessionStorage.getItem("FirstCargoID");
-    // }
   }
 
   resetDocumentDetails() {
@@ -316,31 +221,70 @@ export class AddDocumentsComponent {
   }
 
   onFileSelect(event: any) {
-    console.log(event.files[0]);
-    const file = event.files[0];
-    if (this.relatedID && this.fileUrl) {
-      this.confirmationService.confirm({
-        message: 'קיים כבר קובץ קודם, האם ברצונך להחליף את הקובץ?',
-        header: 'אישור החלפה',
-        icon: 'pi pi-exclamation-triangle',
-        accept: () => {
-          this.uploadedFile = file;
-          console.log(this.uploadedFile);
-          this.selectedFileName = this.uploadedFile.name;
-          this.fileUrl = null
-        },
-        reject: () => {
-        }
+    const input = event.target as HTMLInputElement;
+    if (input?.files?.length) {
+
+      const file = input.files[0];
+
+
+      const documentTypeCode = this.selectedDocumentCode.code;
+
+      if (!this.uploadedFilesByType[documentTypeCode]) {
+        this.uploadedFilesByType[documentTypeCode] = [];
+      }
+
+      this.uploadedFilesByType[documentTypeCode].push(file);
+      this.uploadedFiles.push(file);
+
+      Array.from(input.files).forEach(file => {
+        this.uploadedFiles.push(file);
       });
+    } else {
+      alert('בחר סוג מסמך לפני העלאת קובץ.');
     }
-    else {
-      this.uploadedFile = event.files[0];
-      this.selectedFileName = this.uploadedFile.name;
-    }
+
+    event.target.value = ''
+
+
 
   }
 
-  saveDocument() {
+  viewFile(file: any): void {
+    this.displayDialog = true
+    // this.viewFileIndex = index;
+    // const file = this.uploadedFiles[index];
+    
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      const fileUrl = reader.result as string;
+      const fileType = file.type.includes('image') ? 'image' : 'pdf';
+      this.fileToView = this.sanitizer.bypassSecurityTrustResourceUrl(fileUrl);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
+  hideFile() {
+    this.displayDialog = false
+    this.viewFileIndex = -1;
+    this.fileToView = null;
+  }
+
+  removeFile(documentType: string, index: number): void {
+    this.hideFile();
+    //this.uploadedFiles.splice(index, 1);
+    this.uploadedFilesByType[documentType].splice(index, 1);
+
+    if (this.uploadedFilesByType[documentType].length === 0) {
+      delete this.uploadedFilesByType[documentType];
+    }
+  }
+
+  saveDocuments() {
+    this.uploadedFile = this.uploadedFiles[0]
+    console.log(this.uploadedFiles[0]);
+    debugger
     this.msgs1 = []
     return new Promise<void>((resolve, reject) => {
       if (!this.uploadedFile) {
@@ -351,17 +295,17 @@ export class AddDocumentsComponent {
         reject('נא בחר קובץ לשליחה!');
         return
       }
-      // if (this.validateMetadata()) {
+
       this.confirmationService.confirm({
         message: 'האם אתה בטוח שברצונך להעלות את הקובץ?',
         accept: () => {
-          const englishName = this.translateHebrewToEnglish(this.selectedFileName);
+          const englishName = this.translateHebrewToEnglish('dec');
           const timestamp = new Date().getTime();
           const uniqueFileName = `${englishName}_${timestamp}`;
           const formData = new FormData();
           formData.append('dtvalues', this.uploadedFile);
           formData.append('EntityID', this.currentDecId || '');
-          formData.append('DocumentType', this.selectedDocumentCode.code);
+          formData.append('DocumentType', '714');
           formData.append('BlobName', uniqueFileName);
 
           this.loading = true;
@@ -402,50 +346,7 @@ export class AddDocumentsComponent {
                       this.msgs1 = [
                         { severity: 'success', summary: 'Success', detail: 'המסמך נשמר בהצלחה !' },
                       ];
-                      await this.sendToCustoms();
-
-
-                      // const documentAttributes = this.documentAttributes
-                      //   .map(attribute => {
-                      //     if (attribute.value === undefined) {
-                      //       if (attribute.type === 'Boolean') {
-                      //         return {
-                      //           DocID: response.Id,
-                      //           PointerID: this.currentDecId || null,
-                      //           Attribute: attribute.id,
-                      //           Attribute_Vlaue: false
-                      //         };
-                      //       } else {
-                      //         return null;
-                      //       }
-                      //     }
-                      //     else {
-                      //       return {
-                      //         DocID: response.Id,
-                      //         PointerID: this.currentDecId || null,
-                      //         Attribute: attribute.id,
-                      //         Attribute_Vlaue: attribute.value.code ? attribute.value.code : attribute.value
-                      //       };
-                      //     }
-                      //   })
-                      //   .filter(attribute => attribute !== null);
-
-                      // this.documentsService.addDocumentAttribute$(documentAttributes).subscribe(
-                      //   () => {
-                      //     this.loading = false;
-                      //     this.msgs1 = [
-                      //       { severity: 'success', summary: 'Success', detail: 'המסמך נשמר בהצלחה !' },
-                      //     ];
-                      //     if (!this.isSaveAndSend)
-                      //       this.router.navigate(['/app-declaration/documents'], { queryParams: { 'Mode': 'e' } });
-                      //     resolve();
-                      //   },
-                      //   (error: any) => {
-                      //     console.log('Error saving document attributes', error);
-                      //     this.loading = false;
-                      //     reject(error);
-                      //   }
-                      // );
+                      // await this.sendToCustoms();                
                     },
                     error => {
                       console.log(error)
@@ -460,49 +361,6 @@ export class AddDocumentsComponent {
                     response => {
                       console.log(response);
                       this.documentId = response.Id
-
-                      // const documentAttributes = this.documentAttributes
-                      //   .map(attribute => {
-                      //     if (attribute.value === undefined) {
-                      //       if (attribute.type === 'Boolean') {
-                      //         return {
-                      //           Id: attribute.ID,
-                      //           DocID: response.Id,
-                      //           PointerID: this.declarationid || null,
-                      //           Attribute: attribute.id,
-                      //           Attribute_Vlaue: false
-                      //         };
-                      //       } else {
-                      //         return null;
-                      //       }
-                      //     }
-                      //     else {
-                      //       return {
-                      //         Id: attribute.ID,
-                      //         DocID: response.Id,
-                      //         PointerID: this.declarationid || null,
-                      //         Attribute: attribute.id,
-                      //         Attribute_Vlaue: attribute.value.code ? attribute.value.code : attribute.value
-                      //       };
-                      //     }
-                      //   })
-                      //   .filter(attribute => attribute !== null);
-                      // this.documentsService.updateDocumentAttribute$(this.relatedID, documentAttributes).subscribe(
-                      //   () => {
-                      //     this.loading = false;
-                      //     this.msgs1 = [
-                      //       { severity: 'success', summary: 'Success', detail: 'המסמך נשמר בהצלחה !' },
-                      //     ];
-                      //     if (!this.isSaveAndSend)
-                      //       this.router.navigate(['/app-declaration/documents'], { queryParams: { 'Mode': 'e' } });
-                      //     resolve();
-                      //   },
-                      //   (error: any) => {
-                      //     console.log('Error saving document attributes', error);
-                      //     this.loading = false;
-                      //     reject(error);
-                      //   }
-                      // );
                     },
                     error => {
                       console.log(error);
@@ -525,35 +383,110 @@ export class AddDocumentsComponent {
           this.loading = false
         }
       });
-      // }
-
-      // else {
-      //   this.loading = false
-      // }
     })
   }
 
-  async sendToCustoms() {
-    const file = this.uploadedFile;
+
+
+  // async saveDocuments() {
+  //   console.log(this.uploadedFilesByType);
+
+  //   this.msgs1 = [];
+  //   if (Object.keys(this.uploadedFilesByType).length === 0) {
+  //     this.msgs1 = [
+  //       { severity: 'error', summary: 'Error', detail: 'נא בחר קבצים לשליחה!' }
+  //     ];
+  //     this.loading = false;
+  //     return;
+  //   }
+
+  //   this.confirmationService.confirm({
+  //     message: 'האם אתה בטוח שברצונך להעלות את כל הקבצים?',
+  //     accept: async () => {
+  //       this.loading = true;
+
+  //       try {
+  //         for (const documentTypeCode of Object.keys(this.uploadedFilesByType)) {
+  //           for (const file of this.uploadedFilesByType[documentTypeCode]) {
+  //             const englishName = this.translateHebrewToEnglish(file.name);
+  //             const timestamp = new Date().getTime();
+  //             const uniqueFileName = `${englishName}_${timestamp}`;
+  //             const formData = new FormData();
+  //             formData.append('dtvalues', file);
+  //             formData.append('EntityID', this.currentDecId || '');
+  //             formData.append('DocumentType', documentTypeCode);
+  //             formData.append('BlobName', uniqueFileName);
+
+  //             console.log('Uploading file:', file.name);
+  //             console.log('FormData entries:');
+  //             formData.forEach((value, key) => {
+  //               console.log(`${key}:`, value);
+  //             });
+
+  //             // Upload to Azure
+  //             const response:any = await this.documentsService.uploadDocument(formData).toPromise();
+  //             if (response?.url) {
+  //               const documentObject = {
+  //                 Id: 0,
+  //                 Code: documentTypeCode,
+  //                 Url: response.url,
+  //                 FileName: file.name,
+  //                 DocumentType: documentTypeCode,
+  //                 CustomsId: 0,
+  //                 InternalID: 0,
+  //                 CustomsStatus: 0,
+  //                 ErrorDesc: '',
+  //                 RelatedEntity: 1055,
+  //                 RelatedID: this.currentDecId || ''
+  //               };
+
+  //               await this.documentsService.postDocuments$(documentObject).toPromise();
+  //               // this.sendToCustoms(file, documentTypeCode);
+  //             }
+  //           }
+  //         }
+
+  //         this.msgs1 = [
+  //           { severity: 'success', summary: 'Success', detail: 'כל הקבצים נשמרו בהצלחה!' }
+  //         ];
+  //       } catch (error) {
+  //         console.log('Error uploading files:', error);
+  //         this.msgs1 = [
+  //           { severity: 'error', summary: 'Error', detail: 'שגיאה בהעלאת הקבצים!' }
+  //         ];
+  //       } finally {
+  //         this.loading = false;
+  //       }
+  //     },
+  //     reject: (error: any) => {
+  //       this.loading = false;
+  //       return Promise.reject(error);
+  //     }
+  //   });
+  // }
+
+
+  async sendToCustoms(file: any, typeCode: any) {
+    // const file = this.uploadedFile;
     const formData = new FormData();
 
     formData.append('Content', file);
     formData.append('Name', file.name);
-    formData.append('DocumentType', this.selectedDocumentCode.code); 
-    if (this.selectedDocumentCode.code == '380') {
+    formData.append('DocumentType', typeCode);
+    if (typeCode == '380') {
       formData.append(`attributes[87]`, JSON.stringify({
         id: 87,
         value: 'true'
       }));
     }
-    else if (this.selectedDocumentCode.code == '714') {
+    else if (typeCode == '714') {
       const decId = localStorage.getItem('currentDecId');
       const res = await this.decService.getDeclaration(decId).toPromise();
       formData.append(`attributes[57]`, JSON.stringify({ id: 57, value: new Date() }));
       formData.append(`attributes[99]`, JSON.stringify({ id: 99, value: res.Consignments[0].TransportContractDocumentTypeCode }));
       formData.append(`attributes[100]`, JSON.stringify({ id: 100, value: res.Consignments[0].TransportContractDocumentID }));
     }
-    
+
     this.loading = true;
 
     this.documentsService.sendToCustoms$(formData).subscribe(
@@ -619,8 +552,36 @@ export class AddDocumentsComponent {
   }
 
   nextStep() {
-    this.stepService.emitStepCompleted();
+    this.stepService.emitStepCompleted('+');
   }
+
+  previousStep() {
+    this.stepService.emitStepCompleted('-');
+  }
+
+  getFileIcon(fileName: string): string {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+
+    switch (extension) {
+      case 'pdf':
+        return 'pi pi-file-pdf';
+      case 'docx':
+      case 'doc':
+        return 'pi pi-file-word';
+      case 'xlsx':
+      case 'xls':
+        return 'pi pi-file-excel';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return 'pi pi-image';
+      case 'txt':
+        return 'pi pi-file-text';
+      default:
+        return 'pi pi-file';
+    }
+  }
+
 
   translateHebrewToEnglish(fileName: string): string {
     const hebrewToEnglishMap: { [key: string]: string } = {

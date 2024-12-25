@@ -1,0 +1,29 @@
+<div class="login-container">
+
+    <div class="login-form">
+        <h2>התחברות</h2>
+
+        <form [formGroup]="loginForm" >
+                <div class="form-group">
+
+                    <div class="form-item">
+                        <label for="email">אימייל </label>
+                        <input id="email" type="email" pInputText formControlName="Email" />
+                    </div>
+                    <div class="form-item">
+                        <label for="password">סיסמה </label>
+                        <input id="password" type="password" pPassword formControlName="Password" />
+                    </div>
+                </div>
+
+
+                <div class="btnSubmit ">
+                    <button (click)="onSubmit()" class="button-primary">התחברות</button>
+                </div>
+
+            <button class="btnGoogle" (click)="loginWithGoogle()"><i class="pi pi-google google-icon"></i>התחברות באמצעות גוגל   </button>
+        </form>
+    </div>
+    <div class="left-side">
+    </div>
+</div>

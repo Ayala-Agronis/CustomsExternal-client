@@ -1,8 +1,121 @@
 p-autocomplete,
-p-calendar{
+p-calendar {
     direction: ltr;
 }
 
-.form-group{
+::ng-deep .p-card .p-card-content {
+    padding-right: 3%;
+}
+
+.form-group {
     display: flex;
+    gap: 3%;
+    margin-bottom: 2%;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    width: 16%;
+    gap: 4px;
+}
+
+.btns {
+    display: flex;
+    gap: 1%;
+    direction: ltr;
+    margin-left: 7.5%;
+    margin-top: 3%;
+}
+
+td {
+    line-height: 1;
+    font-size: 1rem;
+}
+
+th,
+td {
+    text-align: center !important;  
+    width: 100px;
+    max-width: 100px;
+}
+
+.sCol {
+    width: 3%;
+}
+
+::ng-deep.p-autocomplete-input,
+input {
+    height: 2rem !important;
+}
+
+::ng-deep .p-card {
+    width: 85%;
+    margin: auto;
+    // border-radius: 20px;
+    // padding: 60px 0px 0px 0px;
+    gap: 30px;
+}
+
+::ng-deep .p-button {
+    color: black;
+    background-color: white;
+    border: none;
+}
+
+::ng-deep.p-autocomplete {
+    position: relative;
+}
+
+::ng-deep.p-autocomplete-dropdown {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    color: #000;
+    cursor: pointer;
+    z-index: 2;
+}
+
+::ng-deep.p-autocomplete-input {
+    padding-right: 30px;
+    box-sizing: border-box;
+}
+
+::ng-deep.p-calendar {
+    position: relative;
+}
+
+::ng-deep .p-calendar .p-datepicker-trigger {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    cursor: pointer;
+    z-index: 2;
+    color: #000;
+    padding: 0 10px;
+}
+
+::ng-deep .p-calendar .p-inputtext {
+    padding-right: 30px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody>tr>td,
+::ng-deep .p-datatable .p-datatable-tfoot>tr>td {
+    padding: 0.3rem 1.2rem;
+}
+
+::ng-deep.p-button.p-button-icon-only {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+::ng-deep .pi {
+    font-size: 0.7rem;
 }

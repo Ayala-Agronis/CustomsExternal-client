@@ -15,15 +15,16 @@ import { StepService } from '../../shared/services/step.service';
 import { ActivatedRoute } from '@angular/router';
 import { ConfirmationService, Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
+import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-declaration-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ProgressSpinnerModule, MessagesModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule, ConfirmDialogModule],
+  imports: [CommonModule, ReactiveFormsModule, CardModule, ProgressSpinnerModule, MessagesModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule, ConfirmDialogModule],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss',
-  providers: [ConfirmationService, MessageService]
+  providers: [ConfirmationService, MessageService],
 })
 export class DeclarationFormComponent implements OnInit {
 
@@ -83,13 +84,16 @@ export class DeclarationFormComponent implements OnInit {
       }
     })
 
+    this.initForm();
+
+    //data from cargo query
     this.decService.packageData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
       if (data) {
-        (this.generalDeclarationForm.controls["ConsignmentPackagesMeasures"]as FormGroup).patchValue({
+        (this.generalDeclarationForm.controls["ConsignmentPackagesMeasures"] as FormGroup).patchValue({
           TotalPackageQuantity: data.totalNumberOfPackeges,
-          GrossMassMeasure: data.totalWeight,         
+          GrossMassMeasure: data.totalWeight,
         });
-        (this.generalDeclarationForm.controls["Consignments"]as FormGroup).patchValue({
+        (this.generalDeclarationForm.controls["Consignments"] as FormGroup).patchValue({
           UnloadingLocationID: data.unloadingLocation
         });
       }
@@ -103,10 +107,7 @@ export class DeclarationFormComponent implements OnInit {
       // this.customsDataService.getCustomsTableValues$('2192').pipe(
       //   map(res => this.declarationUnpackingSite = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       // ),
-      // this.customsDataService.getCustomsTableValues$('1344').pipe(
-      //   map(res => this.declarationChargingCountry = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 }))),
-      //   tap(_ => this.loadingChargingCountrySubject.next(false))
-      // ),
+
       this.customsDataService.getCustomsTableValues$('1259').pipe(
         map(res => this.declarationCargoIDType = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       ),
@@ -125,16 +126,13 @@ export class DeclarationFormComponent implements OnInit {
 
 
     ]).subscribe(_ => {
+      //init data of consignment
+      this.consignmentInit();
       if (this.mode == 'e') {
         this.initElements();
       }
     }
     );
-
-    //init data of consignment
-    this.consignmentInit();
-
-    this.initForm();
 
     const exportationCountryControl = this.generalDeclarationForm.get('Consignments.ExportationCountryCode');
 
@@ -163,6 +161,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   consignmentInit() {
+    this.loading = true
     // get data from Local Storage or fetch it if not available
     const getCustomsData = (key: string, tableId: string, mappingFn: (item: any) => any) => {
       const localStorageData = localStorage.getItem(key);
@@ -225,9 +224,17 @@ export class DeclarationFormComponent implements OnInit {
       customsUnpackingSite$,
       customsCargoIDType$,
     ]).subscribe(() => {
-      // if (this.UpdateMode === 'e') {
-      //   this.initElements();
-      // }
+      this.loading = false
+      const exportationCountryControl = this.generalDeclarationForm.controls["Consignments"].get('ExportationCountryCode');
+
+      exportationCountryControl?.valueChanges.subscribe(value => {
+        this.exportationCountryControlError = this.getExportationCountryControlError(exportationCountryControl);
+        this.setChargingCountryControlStatus();
+      });
+      if (this.mode == 'e') {
+        // this.filterChargingCountryByExportCode();
+        // this.initElements();
+      }
     });
   }
 
@@ -261,7 +268,7 @@ export class DeclarationFormComponent implements OnInit {
       TypeCode: this.formBuilder.control('1'),
       //AutonomyRegionType: this.formBuilder.control({ name: '', code: '' }),
       //EntitlementTypeCode: this.formBuilder.control({ name: '', code: '' }),
-      ImporterID: this.formBuilder.control('', Validators.required),
+      ImporterID: this.formBuilder.control('025025040', Validators.required),
       //AcceptanceDateTime: this.formBuilder.control(''),
       Consignments: this.formBuilder.group({
         ExportationCountryCode: this.formBuilder.control('', Validators.required),
@@ -270,7 +277,7 @@ export class DeclarationFormComponent implements OnInit {
         UnloadingLocationID: this.formBuilder.control('', Validators.required),
         TransportContractDocumentTypeCode: this.formBuilder.control({ name: 'שטר מטען אווירי  ', code: '1' }, Validators.required),
         ArrivalDateTime: this.formBuilder.control(new Date(), Validators.required),
-        TransportContractDocumentID: this.formBuilder.control('', Validators.required),
+        TransportContractDocumentID: this.formBuilder.control(new Date().getFullYear().toString(), Validators.required),
         SecondCargoID: this.formBuilder.control('',),
         ThirdCargoID: this.formBuilder.control('',),
         CargoDescription: this.formBuilder.control(''),
@@ -388,14 +395,14 @@ export class DeclarationFormComponent implements OnInit {
       console.log(res);
 
     })
-    // this.decService.addDeclaration(perfectDec).subscribe((res: any) => {
-    //   this.loading = false
-    //   console.log(res);
-    //   localStorage.setItem('currentDecId', res.body.Id)
-    //   localStorage.setItem('currentDec', res.body)
-    //   this.stepService.emitStepCompleted();
-    // }
-    //)
+    this.decService.addDeclaration(perfectDec).subscribe((res: any) => {
+      this.loading = false
+      console.log(res);
+      localStorage.setItem('currentDecId', res.body.Id)
+      localStorage.setItem('currentDec', res.body)
+      this.stepService.emitStepCompleted('+');
+    }
+    )
   }
 
   sendDeclaration() {
@@ -403,9 +410,7 @@ export class DeclarationFormComponent implements OnInit {
     const id = localStorage.getItem('currentDecId')
     const dec = this.generalDeclarationForm.value;
     const perfectDec = this.convertToDecObj(dec);
-    // this.decService.updateDeclaration$(id,perfectDec).subscribe(res=>{
-    //   console.log(res);   
-    // })
+
     this.decService.updateAndSendDeclaration$(id, perfectDec, false).subscribe((res: any) => {
       this.loading = false
       res = JSON.parse(res)
@@ -489,6 +494,8 @@ export class DeclarationFormComponent implements OnInit {
         if (matchingExportationCountry) {
           consignmentForm.patchValue({ 'ExportationCountryCode': matchingExportationCountry });
         }
+
+        this.filterChargingCountryByExportCode();
 
         const matchingChargingCountry = this.declarationChargingCountry.find((element: { code: any }) => element.code == currentDec?.Consignments[0]?.LoadingLocation);
         if (matchingChargingCountry) {
@@ -614,11 +621,11 @@ export class DeclarationFormComponent implements OnInit {
         this.filterChargingCountryByExportCode();
       }
     });
-    this.generalDeclarationForm.get("LoadingLocation")?.setValue('');
+    this.generalDeclarationForm.get("Consignments.LoadingLocation")?.setValue('');
   }
 
   filterChargingCountryByExportCode() {
-    const exportCountryCode = this.generalDeclarationForm.get("Consignments.ExportationCountryCode")?.value.code;
+    const exportCountryCode = this.generalDeclarationForm.get("Consignments")?.get("ExportationCountryCode")?.value.code;
     this.filteredChargingCountry = this.declarationChargingCountry.filter((site: any) =>
       site.code.startsWith(exportCountryCode)
     );

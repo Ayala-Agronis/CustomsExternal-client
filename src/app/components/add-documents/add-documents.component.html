@@ -1,69 +1,79 @@
 <div class="progress-spinner" *ngIf="loading">
     <p-progressSpinner></p-progressSpinner>
 </div>
-<p-card dir="rtl" header="הוספת מסמך חדש" class="document-form">
-    <div class="form-group document-details">
-        <label>סוג מסמך:</label>
-        <p-dropdown [options]="documentCodes" (onChange)="onDocumentTypeChange()" [(ngModel)]="selectedDocumentCode"
-            optionLabel="name"></p-dropdown>
-    </div>
+<!-- <p-card dir="rtl" header="הוספת מסמכים " class="document-form"> -->
+<div class="form">
+    <!-- <div > -->
+    <h2 class="form-title title">הוספת מסמכים </h2>
+    <!-- </div> -->
+    <p-card>
+        <div class="document-details">
+            <div class="form-group">
+                <label> בחר סוג מסמך </label>
+                <p-dropdown [options]="documentCodes" (onChange)="onDocumentTypeChange()"
+                    [(ngModel)]="selectedDocumentCode" optionLabel="name" placeholder="בחר סוג מסמך"></p-dropdown>
+            </div>
 
-    <div class="form-group">
-        <label>בחר מסמך (PDF/TIFF):</label>
-        <p-fileUpload accept=".pdf,.tiff" name="myfile[]" [customUpload]="true" (onSelect)="onFileSelect($event)"
-            [showUploadButton]="false" [showCancelButton]="true"></p-fileUpload>
-    </div>
+            <!-- <div class="form-group">
+            <label>בחר מסמך </label>
+            <p-fileUpload accept=".pdf,.tiff" name="myfile[]" [customUpload]="true" (onSelect)="onFileSelect($event)"
+                [showUploadButton]="false" [showCancelButton]="false"></p-fileUpload>
+        </div> -->
+            <div class="form-group">
+                <label>בחר קובץ </label>
+                <label for="fileUpload" class="file-upload-label">
+                    <input type="file" id="fileUpload" accept=".pdf,.tiff,.xls,.xlsx" (change)="onFileSelect($event)" />
+                    <i class="pi pi-upload upload-icon"></i>
+                    <span class="upload-text">בחר קובץ</span>
+                </label>
+            </div>
 
-    <div *ngIf="selectedFileName" class="form-group">
-        <label>שם הקובץ הנבחר: {{selectedFileName}}</label>
-    </div>
-
-    <div *ngIf="fileUrl" class="form-group">
-        <a [href]="fileUrl" target="_blank">הצג את המסמך</a>
-    </div>
-
-
-    <!-- <div class="document-details">
-        <div class="document-details details">
-            <label>מספר מסמך פנימי:</label>
-            <input disabled pInputText [(ngModel)]="internalDocumentNumber">
-        </div>
-        <div class="document-details details">
-            <label>מספר מסמך מכס:</label>
-            <input disabled pInputText [(ngModel)]="customsDocumentNumber">
-        </div>
-    </div> -->
-
-    <!-- <div class="document-details">
-        <div class="details" *ngFor="let attribute of documentAttributes">
-            <div class="attribute-column">
-                <label>{{attribute.fieldName}}: <span *ngIf="attribute.isMandatory" class="required">*</span></label>
-                <ng-container [ngSwitch]="attribute.type">
-                    <input *ngSwitchCase="'String'" pInputText [(ngModel)]="attribute.value">                  
-                    <p-checkbox  *ngSwitchCase="'Boolean'" [binary]="true" [(ngModel)]="attribute.value"></p-checkbox>
-                    <p-autoComplete *ngSwitchCase="'Int'" [(ngModel)]="attribute.value" [forceSelection]="true"
-                        [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)" field="name"
-                        [dropdown]="true">
-                    </p-autoComplete>
-                    <div> <p-calendar *ngSwitchCase="'Date'" [(ngModel)]="attribute.value" dateFormat="dd/mm/yy"
-                            [showIcon]="true"></p-calendar></div>
-                </ng-container>
+            <div>
+                <button class="button-primary" pButton label="שמירה" (click)="saveDocuments()"></button>
             </div>
         </div>
-    </div> -->
 
+        <!-- <div *ngIf="uploadedFiles.length > 0" class="file-list">
+            <h4>מסמכים שהועלו</h4>
 
-    <!-- <button *ngIf="!isShowMore" pButton (click)="showMoreAttributes()">עוד... </button>
-    <button *ngIf="isShowMore" pButton (click)="showLessAttributes()">פחות</button> -->
+            <ul>
+                <li *ngFor="let file of uploadedFiles; let i = index" class="file-item">
+                    <span> <i [ngClass]="getFileIcon(file.name)"></i>{{ file.name }} </span>
+                    <div class="icons">
+                        <i (click)="removeFile(i)" class="pi pi-times"></i>
+                        <i (click)="viewFile(i)" class="pi pi-eye"></i>                      
+                    </div>
+                </li>
+            </ul>
+        </div> -->
+        <div *ngIf="Object.keys(uploadedFilesByType).length > 0" class="file-list">
+            <h4>מסמכים שהועלו</h4>
+    
+            <div *ngFor="let type of Object.keys(uploadedFilesByType)">
+                <h5>{{ getDocumentTypeName(type) }}</h5>
+                <ul>
+                    <li *ngFor="let file of uploadedFilesByType[type]; let i = index" class="file-item">
+                        <span>
+                            <i [ngClass]="getFileIcon(file.name)"></i>{{ file.name }}
+                        </span>
+                        <div class="icons">
+                            <i (click)="removeFile(type, i)" class="pi pi-times"></i>
+                            <i (click)="viewFile(file)" class="pi pi-eye"></i>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <p-dialog header="צפייה במסמך" [(visible)]="displayDialog" [modal]="true"
+            [style]="{width: '60vw', height: '70vh'}" [closable]="true">
+            <iframe *ngIf="fileToView" [src]="fileToView" width="100%" height="100%"></iframe>
+        </p-dialog>
+        <!-- </div> -->
 
-
-    <div class="form-group document-details">
-        <button pButton label="שמירה" (click)="saveDocument()"></button>
-        <!-- <button pButton label=" שמירה ושליחה למכס" (click)="saveAndSendDocument()"></button> -->
-    </div>
-    <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
-    <p-confirmDialog></p-confirmDialog>
-    <p-table #dt [columns]="cols" [value]="documents" [(selection)]="selectedDocument" selectionMode="single"
+        <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
+        <p-confirmDialog></p-confirmDialog>
+        <!-- <p-table #dt [columns]="cols" [value]="documents" [(selection)]="selectedDocument" selectionMode="single"
         [paginator]="true" [rows]="8">
 
         <ng-template pTemplate="header" let-columns>
@@ -71,13 +81,7 @@
                 <th *ngFor="let col of columns">
                     {{col.header}}
                 </th>
-                <!-- <th>
-              שלח למכס
-            </th>
-            <th>
-              עדכן קובץ
-            </th>
-            -->
+                
                 <th>
                     מחק קובץ
                 </th>
@@ -87,7 +91,6 @@
         <ng-template pTemplate="body" let-rowData let-columns="columns">
             <tr [pSelectableRow]="rowData">
                 <td *ngFor="let col of columns" [pSelectableRow]="rowData">
-                    <!-- {{rowData[col.field]}} -->
                     <ng-container *ngIf="col.field === 'FileName'; else codeContainer">
                         <a (click)="navigateToAddDocument(rowData)">{{ rowData[col.field] }}</a>
                     </ng-container>
@@ -99,16 +102,7 @@
                     <ng-template #regularCol>
                         {{ rowData[col.field] }}
                     </ng-template>
-                </td>
-                <!-- <td>
-              <button [disabled]="rowData.CustomsId !== 0" pButton pRipple type="button" label=' שלח למכס' class="p-button-raised p-button-text"
-                (click)="sendToCustoms(rowData)"></button>
-    
-            </td>
-            <td>
-              <button [disabled]="rowData.Code == 'IL_279'||rowData.CustomsId" pButton pRipple type="button" label='עדכן קובץ' class="p-button-raised p-button-text" (click)="navigateToAddDocument(rowData)"></button>
-            </td>
-           -->
+                </td>               
                 <td>
                     <button [disabled]="rowData.Code == 'IL_279'" pButton pRipple type="button" label='מחק קובץ'
                         class="p-button-raised p-button-text" (click)="deleteDocument(rowData.Id)"></button>
@@ -123,7 +117,11 @@
             </div>
         </ng-template>
 
-    </p-table>
-    <button pButton (click)="nextStep()">סיום העלאת מסמכים</button>
-
-</p-card>
+    </p-table> -->
+    </p-card>
+    <div class="btns">
+        <button class="button-primary" (click)="nextStep()"> המשך</button>
+        <button class="button-secondary" (click)="previousStep()"> חזור</button>
+    </div>
+</div>
+<!-- </p-card> -->

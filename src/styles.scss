@@ -1,28 +1,78 @@
-// .p-card {
-//     background-color: #1e3a56; 
-//     color: white; 
-//   }
-  
-//   .p-button-success {
-//     background-color: #ff6600; 
-//     border-color: #ff6600;
-//   }
-  
-//   .p-link {
-//     color: #ff6600; 
-//   }
-  
-//   .p-button-text {
-//     color: white; 
-//   }
-  
-//   input[type="text"], input[type="email"], input[type="password"], input[type="number"] {
-//     background-color: #ffffff; 
-//     color: #333333; 
-//     border: 1px solid #cccccc;
-//   }
-  
-//   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus {
-//     border-color: #ff6600; 
-//   }
-  
+$color-1: #373737; 
+$color-2: #D0D0D0; 
+$color-3: #EDEDED;  
+$color-4: #FFFFFF;  
+$color-5: #FF0000;  
+$color-6: #F1F1F1;  
+$color-7: #EC8305;  
+$color-8: #092857; 
+$color-9: #ECA305;
+
+.button-primary {
+    background-color: $color-7;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 20px;
+    // font-weight: 700;
+    cursor: pointer;
+    // line-height: 29.4px;
+    // width: Fixed (120px)px;
+    // height: Hug (49px)px;
+    // padding: 10px 0px 0px 0px;
+    // gap: 10px;
+    // border-radius: 4px 0px 0px 0px;
+    // opacity: 0px;
+    // background: rgba(255, 129, 51, 1);
+    // font-family: Ploni ML v2 AAA;
+    // font-size: 20px;
+    // font-weight: 700;
+    // line-height: 29.4px;
+    // text-align: right;
+    // text-underline-position: from-font;
+    // text-decoration-skip-ink: none;
+    // color: rgba(255, 255, 255, 1);
+}
+
+.disabled {
+    background-color: rgb(155, 153, 153);
+    cursor: not-allowed;
+}
+
+.button-secondary {
+    background-color: #FFFFFF;
+    color: #FF7A00;
+    border: 2px solid #FF7A00;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    // line-height: 29.4px;
+    transition: all 0.3s ease;
+}
+
+.form {
+    background: rgba(249, 250, 251, 1);
+    width: 80vw;
+    min-height: 60vh;
+    margin: auto;
+}
+
+.title{
+    color: rgba(0, 41, 102, 1);
+}
+
+.form-title {  
+    padding: 2%;
+    padding-top: 4%;
+    margin-right: 10%;
+}
+
+::ng-deep .p-button {
+    color: black;
+    background-color: white;
+}
+
+

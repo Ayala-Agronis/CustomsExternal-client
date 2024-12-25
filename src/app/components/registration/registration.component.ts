@@ -5,11 +5,13 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { UserService } from '../../shared/services/user.service';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, CardModule, RadioButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonModule, CardModule, RadioButtonModule,InputTextModule,PasswordModule],
   templateUrl: './registration.component.html',
   styleUrl: './registration.component.scss'
 })

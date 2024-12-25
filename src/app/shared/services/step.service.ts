@@ -6,11 +6,11 @@ import { Subject } from 'rxjs';
 })
 export class StepService {
 
-  private stepCompletedSubject = new Subject<void>()
+  private stepCompletedSubject = new Subject<{ direction: any }>()
 
   stepCompleted$ = this.stepCompletedSubject.asObservable()
-  
-  emitStepCompleted() {
-    this.stepCompletedSubject.next();
+
+  emitStepCompleted(direction: any) {
+    this.stepCompletedSubject.next({direction});
   }
 }

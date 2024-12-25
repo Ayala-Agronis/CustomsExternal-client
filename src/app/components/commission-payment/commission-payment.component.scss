@@ -1,0 +1,39 @@
+// .payment-form{
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     margin-top: 5%;
+// }
+
+
+
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    margin-right: 20%;
+}
+
+.payment-body {
+    display: flex;
+    position: relative;
+    width: 70%;
+}
+.iframe{
+    height: 55vh;
+}
+
+iframe {
+    flex-grow: 1; 
+    height: 80vh;
+    border: none;
+}
+
+.btns {
+    display: flex;
+    gap: 1%;
+    direction: ltr;
+    position: absolute; 
+    bottom: 10px; 
+    left: 0; 
+    margin-left: 0;
+}

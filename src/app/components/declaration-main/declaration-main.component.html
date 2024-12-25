@@ -1,5 +1,54 @@
-<!-- <p-steps [model]="steps" [(activeIndex)]="activeIndex" [readonly]="getReadOnlyState()" (onSelect)="selectStep($event)"></p-steps> -->
-<p-steps [model]="steps" [(activeIndex)]="activeIndex"  ></p-steps>
-<button (click)="nextStep()">+</button>
-<button (click)="previousStep()">-</button>
-<router-outlet ></router-outlet>
+<div class="sidebar">
+    <!-- <div class="sidebar-logo">
+        <img src="assets/logo.png" alt="Logo" />
+    </div> -->
+    <ul class="sidebar-menu">
+        <li>
+            <a routerLink="/dashboard" class="menu-item">
+                <i class="pi pi-home"></i>
+                <span>ראשי</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/profile" class="menu-item">
+                <i class="pi pi-user"></i>
+                <span>פרופיל</span>
+            </a>
+        </li>
+        <!-- <li>
+            <a routerLink="/reports" class="menu-item">
+                <i class="pi pi-chart-bar"></i>
+                <span>דוחות</span>
+            </a>
+        </li> -->
+        <li>
+            <a routerLink="/settings" class="menu-item">
+                <i class="pi pi-cog"></i>
+                <span>הגדרות</span>
+            </a>
+        </li>
+    </ul>
+    <div class="logout">
+        <a routerLink="/logout" class="menu-item">
+            <i class="pi pi-sign-out"></i>
+            <span>התנתקות</span>
+        </a>
+    </div>
+</div>
+
+<div class="steps">
+    <p-steps [model]="steps" [(activeIndex)]="activeIndex"></p-steps>
+</div>
+<!-- <div class="card flex justify-center">
+    <p-stepper [value]="1" class="basis-[50rem]">
+        <p-step-list>
+            <p-step [value]="1">Design</p-step>
+            <p-step [value]="2">Development</p-step>
+            <p-step [value]="3">QA</p-step>
+        </p-step-list>
+    </p-stepper>
+</div> -->
+<div style="margin-right: 15%;">
+<button  (click)="nextStep()">+</button>
+<button (click)="previousStep()">-</button></div>
+<router-outlet></router-outlet>
