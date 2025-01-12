@@ -8,16 +8,15 @@
 
                     <div class="form-item">
                         <label for="email">אימייל </label>
-                        <input id="email" type="email" pInputText formControlName="Email" />
+                        <input id="email" type="email" pInputText autocomplete="username" formControlName="Email" />
                     </div>
                     <div class="form-item">
                         <label for="password">סיסמה </label>
-                        <input id="password" type="password" pPassword formControlName="Password" />
+                        <input id="password" type="password" pPassword autocomplete="current-password" formControlName="Password" />
                     </div>
                 </div>
 
-
-                <div class="btnSubmit ">
+                <div class="btnSubmit">
                     <button (click)="onSubmit()" class="button-primary">התחברות</button>
                 </div>
 
@@ -25,5 +24,6 @@
         </form>
     </div>
     <div class="left-side">
+        <img src="assets/logo.png" alt="Logo" class="logo">
     </div>
 </div>

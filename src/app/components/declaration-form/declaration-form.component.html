@@ -243,7 +243,7 @@
     </div>
 
     <div class="btns">
-        <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" class="button-primary"
+        <button [disabled]="generalDeclarationForm.invalid || checkVersion()" [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" class="button-primary"
             (click)="saveDeclaration()">המשך</button>
         <button [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms" class="button-primary"
             (click)="sendDeclaration()">שלח למכס</button>

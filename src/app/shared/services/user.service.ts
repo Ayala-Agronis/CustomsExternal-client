@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Registration } from '../models/registration';
@@ -42,6 +42,14 @@ export class UserService {
     return this.http.post<any>(`${environment.customsExternalApiUrl}GoogleLogin/auth`, formData.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
 
   }
-
+  getAllUsers(): Observable<any> {
+    const token = localStorage.getItem('authToken');
+    
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    // const headers = new HttpHeaders().set('Authorization', `Bearer ${"666"}`);
+      
+    return this.http.get(this.userURL, { headers });
+  }
+  
 
 }

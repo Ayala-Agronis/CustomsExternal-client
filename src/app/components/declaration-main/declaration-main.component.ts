@@ -13,6 +13,17 @@ import { StepperModule } from 'primeng/stepper';
   styleUrl: './declaration-main.component.scss',
 })
 export class DeclarationMainComponent implements OnInit {
+  //   if (this.activeIndex < this.steps.length - 1) {
+  //     this.activeIndex++;
+  //     localStorage.setItem('activeIndex', this.activeIndex.toString())
+  //     if (this.activeIndex == 1) {
+  //       this.router.navigate(['declaration-main/add-doc']);
+  //     } else if (this.activeIndex == 2) {
+  //       this.router.navigate(['declaration-main/commission-payment']);
+  //     }
+  //   }
+  // }
+
   steps = [
     { label: 'הזנת נתוני הצהרה' },
     { label: 'הוספת מסמכים' },
@@ -98,5 +109,9 @@ export class DeclarationMainComponent implements OnInit {
     else if (this.activeIndex === 0) {
       this.router.navigate(['declaration-main/dec-form']);
     }
+  }
+
+  logout() {
+    localStorage.setItem("isRegister", "false")
   }
 }

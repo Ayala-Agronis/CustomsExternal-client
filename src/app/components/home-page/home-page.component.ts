@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../shared/services/user.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss'
 })
 export class HomePageComponent implements OnInit {
+  isRegister: any = false;
 
   constructor(private router: Router, private route: ActivatedRoute, private userService: UserService) { }
 
@@ -28,6 +30,9 @@ export class HomePageComponent implements OnInit {
           })
         })
     });
+
+    const isRegisterValue = localStorage.getItem("isRegister");
+    this.isRegister = isRegisterValue === "true";
   }
 
   navigate(destination: string) {

@@ -77,7 +77,6 @@ export class DeclarationFormComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.mode = params['Mode'];
-      console.log(params['customsSend']);
 
       if (params['customsSend'] === "true") {
         this.showBtnCustoms = true;
@@ -150,7 +149,7 @@ export class DeclarationFormComponent implements OnInit {
 
     if (this.mode != 'e') {
       this.customsDataService.GetSeq$('Customs').pipe(
-        tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe(res => console.log(res))
+        tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
     }
 
   }
@@ -205,11 +204,25 @@ export class DeclarationFormComponent implements OnInit {
     const customsUnpackingSite$ = getCustomsData(
       'customsUnpackingSite',
       '2192',
-      (item: { Value2: any; Value1: any }) => ({ name: `${item.Value2.substring(0, 7)} (${item.Value1})`, code: item.Value1 })
+      (item: { Value2: any; Value1: any; Value7: any }) => ({ name: `${item.Value2.substring(0, 7)} (${item.Value1})`, code: item.Value1, siteType: item.Value7 })
     ).pipe(
       map(res => this.declarationUnpackingSite = res)
     );
-
+    // const customsUnpackingSite$ = getCustomsData(
+    //   'customsUnpackingSite',
+    //   '2192',
+    //   (item: { Value2: any; Value1: any; Value7: any }) => item 
+    // ).pipe(
+    //   map(res => {
+    //     console.log( res); 
+    //     this.declarationUnpackingSite = res.map((item: { Value2: string; Value1: any; Value7: any; }) => ({
+    //       name: `${item.Value2.substring(0, 7)} (${item.Value1})`,
+    //       code: item.Value1,
+    //       siteType: item.Value7
+    //     }));
+    //   })
+    // );
+    
     const customsCargoIDType$ = getCustomsData(
       'customsCargoIDType',
       '1259',
@@ -670,15 +683,27 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   filterUnpackingSite(event: any) {
-    let filtered: any[] = [];
+    const preferredValues1 = ['ILSWS', 'ILMMN'];
+    let preferred: any[] = [];
+    let others: any[] = [];
+    //let filtered: any[] = [];
     let query = event.query;
     for (let i = 0; i < this.declarationUnpackingSite.length; i++) {
       let a = this.declarationUnpackingSite[i];
-      if (a.name.indexOf(query) != -1) {
-        filtered.push(a);
+      // if (a.name.indexOf(query) != -1) {
+      //   filtered.push(a);
+      // }
+      
+      if (preferredValues1.includes(a.code) && a.name.indexOf(query) != -1) {
+        preferred.push(a)
+      }
+      else if (a.name.indexOf(query) != -1) {
+        others.push(a);
+
       }
     }
-    this.filteredUnpackingSite = filtered;
+    // this.filteredUnpackingSite = filtered;
+    this.filteredUnpackingSite = [...preferred, ...others];
   }
 
   filterCargoIDType(event: any) {

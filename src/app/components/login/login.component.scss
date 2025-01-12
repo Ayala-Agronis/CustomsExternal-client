@@ -59,19 +59,19 @@
             #FBBC05 50% 75%,
             #34A853 75% 100%);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;  
+    -webkit-text-fill-color: transparent;
 }
 
 .left-side {
-    //margin-left: 0;
-    width: 35%;
+    width: 40%;
     background-color: #06F;
-    // background-color: blue;
-    // border-bottom-right-radius: 20px;
-    // position: relative;
-    // width: 60rem;
-    // height: 67.5rem;
     flex-shrink: 0;
     border-radius: 0rem 0rem 12.5rem 0rem;
-
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+// .left-side .logo {
+   
+// }

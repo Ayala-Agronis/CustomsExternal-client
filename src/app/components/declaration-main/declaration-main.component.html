@@ -4,7 +4,7 @@
     </div> -->
     <ul class="sidebar-menu">
         <li>
-            <a routerLink="/dashboard" class="menu-item">
+            <a routerLink="/home-page" class="menu-item">
                 <i class="pi pi-home"></i>
                 <span>ראשי</span>
             </a>
@@ -29,7 +29,11 @@
         </li>
     </ul>
     <div class="logout">
-        <a routerLink="/logout" class="menu-item">
+        <!-- <a routerLink="/logout" class="menu-item">
+            <i class="pi pi-sign-out"></i>
+            <span>התנתקות</span>
+        </a> -->
+        <a (click)="logout()" class="menu-item">
             <i class="pi pi-sign-out"></i>
             <span>התנתקות</span>
         </a>

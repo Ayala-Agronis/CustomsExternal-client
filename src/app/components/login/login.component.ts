@@ -5,7 +5,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { UserService } from '../../shared/services/user.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 interface Window {
   gapi: any;
@@ -24,7 +24,7 @@ export class LoginComponent {
 
   loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private userService: UserService, private route: ActivatedRoute) {
+  constructor(private fb: FormBuilder, private userService: UserService, private route: ActivatedRoute, private router: Router) {
     this.loginForm = this.fb.group({
       Email: ['', [Validators.required, Validators.email]],
       Password: ['', [Validators.required, Validators.minLength(6)]],
@@ -32,6 +32,16 @@ export class LoginComponent {
   }
 
   ngOnInit(): void {
+    // this.userService.getAllUsers().subscribe(response => {
+    //   console.log('Users:', response);
+    // }, error => {
+    //   console.error('Error:', error);
+    // });
+    const user = history.state.user
+    if (user) {
+      this.loginForm.controls["Email"].patchValue(user.Email);
+      this.loginForm.controls["Password"].patchValue(user.Password);
+    }
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
       console.log(code);
@@ -63,18 +73,27 @@ export class LoginComponent {
     this.userService.IsConncet = true;
   }
 
-
-
   onSubmit() {
     if (this.loginForm.valid) {
       console.log(this.loginForm.value);
       this.userService.login(this.loginForm.value).subscribe(
         res => {
           console.log(res);
+          if (res.body.token) {
+            localStorage.setItem('authToken', res.body.token)
+            localStorage.setItem('isRegister', "true")
+          }
+          this.router.navigate(['declaration-main/dec-form']);
         },
         error => {
-          console.error('Error:', error);
-          alert('שגיאה.');
+          console.log('Error:', error);
+
+          if (error.status === 401) {
+            const errorMessage = error.error?.message || 'שגיאה באימות פרטי ההתחברות';
+            alert(errorMessage);
+          } else {
+            alert('שגיאה בלתי צפויה. נסה שוב מאוחר יותר.');
+          }
         }
       )
     } else {

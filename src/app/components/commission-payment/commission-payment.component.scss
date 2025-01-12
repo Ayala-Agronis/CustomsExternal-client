@@ -18,13 +18,15 @@
     position: relative;
     width: 70%;
 }
-.iframe{
-    height: 55vh;
-}
+// .iframe{
+//     height: 55vh;
+//     width: 70vw;
+// }
 
 iframe {
     flex-grow: 1; 
-    height: 80vh;
+    height: 60vh;
+    width: 45vw;
     border: none;
 }
 
