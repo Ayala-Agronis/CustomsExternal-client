@@ -55,4 +55,8 @@ export class DocumentService {
   deleteDocument$(documentId: string): Observable<any> {
     return this.http.delete<any>(`${environment.customsExternalApiUrl}Document/${documentId}`);
   }
+
+  sendDocToInternalDB(document: any): Observable<any> {
+    return this.http.post<any>(`${environment.customsdbApiUrl}Documents`, document);
+  }
 }

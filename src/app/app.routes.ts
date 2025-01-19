@@ -6,7 +6,7 @@ export const routes: Routes = [
   { path: 'home-page', loadComponent: () => import('./components/home-page/home-page.component').then(c => c.HomePageComponent), data: { title: 'דף הבית' } },
   { path: 'register', loadComponent: () => import('./components/registration/registration.component').then(c => c.RegistrationComponent), data: { title: 'הרשמה' } },
   { path: 'login', loadComponent: () => import('./components/login/login.component').then(c => c.LoginComponent), data: { title: 'התחברות' } },
-  { path: 'callback', loadComponent: () => import('./components/home-page/home-page.component').then(c => c.HomePageComponent), data: { title: 'התחברות' } },
+  { path: 'callback', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), data: { title: 'התחברות' } },
   { path: 'independent-payment', loadComponent: () => import('./components/independent-payment/independent-payment.component').then(c => c.IndependentPaymentComponent), data: { title: ' תשלום מיסים באופן עצמאי' } },
 
   // { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },

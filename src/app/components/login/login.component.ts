@@ -6,16 +6,16 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { UserService } from '../../shared/services/user.service';
 import { ActivatedRoute, Router } from '@angular/router';
-
-interface Window {
-  gapi: any;
-}
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { Message, MessageService } from 'primeng/api';
+import { MessagesModule } from 'primeng/messages';
 
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardModule, InputTextModule, PasswordModule],
+  imports: [CommonModule, ReactiveFormsModule, CardModule, InputTextModule, PasswordModule, ProgressSpinnerModule,MessagesModule],
+  providers: [MessageService],
   templateUrl: './login.component.html',
   // styleUrls: ['./login.component.scss', '../registration/registration.component.scss']
   styleUrl: './login.component.scss'
@@ -23,6 +23,8 @@ interface Window {
 export class LoginComponent {
 
   loginForm!: FormGroup;
+  loading = false
+  msg: Message[] = [];
 
   constructor(private fb: FormBuilder, private userService: UserService, private route: ActivatedRoute, private router: Router) {
     this.loginForm = this.fb.group({
@@ -52,7 +54,9 @@ export class LoginComponent {
           if (res.Email)
             this.userService.loginByGoogle(res).subscribe((res: any) => {
               console.log(res)
-              alert('hi' + res.FirsName)
+              this.msg = [
+                { severity: 'success', summary: 'התחברות', detail: 'hi' + res.FirsName },
+              ];
             }
             )
         })
@@ -75,9 +79,11 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
+      this.loading = true
       console.log(this.loginForm.value);
       this.userService.login(this.loginForm.value).subscribe(
         res => {
+          this.loading = false
           console.log(res);
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token)
@@ -86,18 +92,26 @@ export class LoginComponent {
           this.router.navigate(['declaration-main/dec-form']);
         },
         error => {
-          console.log('Error:', error);
+          this.loading = false
 
           if (error.status === 401) {
+            console.log(this.loading);
+
             const errorMessage = error.error?.message || 'שגיאה באימות פרטי ההתחברות';
-            alert(errorMessage);
+            this.msg = [
+              { severity: 'error', summary: '', detail: errorMessage },
+            ];
           } else {
-            alert('שגיאה בלתי צפויה. נסה שוב מאוחר יותר.');
+            this.msg = [
+              { severity: 'error', summary: '', detail: 'שגיאה בלתי צפויה. נסה שוב מאוחר יותר.' },
+            ];
           }
         }
       )
     } else {
-      alert('אנא מלא את כל השדות הנדרשים');
+      this.msg = [
+        { severity: 'error', summary: '', detail: 'אנא מלא את כל השדות הנדרשים' },
+      ];
     }
   }
 }

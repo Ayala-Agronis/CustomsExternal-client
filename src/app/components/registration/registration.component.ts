@@ -9,17 +9,21 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Router } from '@angular/router';
+import { Message, MessageService } from 'primeng/api';
+import { MessagesModule } from 'primeng/messages';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, CardModule, RadioButtonModule, InputTextModule, PasswordModule,ProgressSpinnerModule],
+  imports: [CommonModule, ReactiveFormsModule, ButtonModule, CardModule, RadioButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessagesModule],
+  providers: [MessageService],
   templateUrl: './registration.component.html',
   styleUrl: './registration.component.scss'
 })
 export class RegistrationComponent implements OnInit {
   registrationForm!: FormGroup;
   isLoading: boolean = false;
+  msg: Message[] = [];
 
   constructor(private fb: FormBuilder, private userService: UserService, private router: Router) {
     this.registrationForm = this.fb.group({
@@ -29,10 +33,11 @@ export class RegistrationComponent implements OnInit {
       Email: ['', [Validators.required, Validators.email]],
       Password: ['', [Validators.required, Validators.minLength(6)]],
       CustomerType: ['', [Validators.required]],
+      Id: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(9)]],
     });
   }
   ngOnInit(): void {
-  
+
   }
 
   onSubmit() {
@@ -43,11 +48,13 @@ export class RegistrationComponent implements OnInit {
         res => {
           this.isLoading = false
           console.log(res);
-          this.router.navigate(['login'], { state: { user:res.body }})
+          this.router.navigate(['login'], { state: { user: res.body } })
         }
       )
     } else {
-      alert('אנא מלא את כל השדות הנדרשים');
+      this.msg = [
+        { severity: 'error', summary: 'שליחת מסמך למכס', detail: 'אנא מלא את כל השדות הנדרשים' },
+      ];
     }
   }
 
@@ -69,7 +76,10 @@ export class RegistrationComponent implements OnInit {
       return 'כתובת המייל אינה תקינה';
     }
     if (control?.hasError('minlength')) {
-      return 'הסיסמה חייבת להכיל לפחות 6 תווים';
+      return 'הקש לפחות 6 תווים';
+    }
+    if (control?.hasError('maxlength')) {
+      return 'הקש עד 9 ספרות';
     }
     return '';
   }

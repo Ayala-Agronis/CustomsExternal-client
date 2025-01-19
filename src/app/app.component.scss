@@ -1,3 +1,17 @@
 .general{
     direction: rtl;
 }
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    // background-color: #0e0d0f;  
+  }
+  
+  .logo {
+    // max-width: 100px;  
+    height: auto;
+    cursor: pointer;
+  }

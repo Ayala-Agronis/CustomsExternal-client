@@ -9,6 +9,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class DeclarationService {
 
   private DecURL = `${environment.customsExternalApiUrl}Declaration/`;
+  private InternalDecURL = `${environment.customsdbApiUrl}Declaration/`;
 
   constructor(private http: HttpClient) { }
 
@@ -20,6 +21,10 @@ export class DeclarationService {
 
   addDeclaration(dec: any): Observable<HttpResponse<any>> {
     return this.http.post<any>(this.DecURL, dec, { observe: 'response' });
+  }
+
+  SendDecToInternalDB(dec: any): Observable<HttpResponse<any>> {
+    return this.http.post<any>(this.InternalDecURL, dec, { observe: 'response' });
   }
 
   sendDeclarationToInternal(dec: any): Observable<HttpResponse<any>> {
@@ -36,6 +41,11 @@ export class DeclarationService {
 
   updateDeclaration$(id: any, declaration: any): Observable<any> {
     const url = `${this.DecURL}/${id}`;  
+    return this.http.put<any>(url, declaration);  
+  }  
+
+  sendUpdateDecToInternalDB$(id: any, declaration: any): Observable<any> {
+    const url = `${this.InternalDecURL}/${id}`;  
     return this.http.put<any>(url, declaration);  
   }  
 

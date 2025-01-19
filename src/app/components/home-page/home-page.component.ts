@@ -2,16 +2,20 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../shared/services/user.service';
 import { CommonModule } from '@angular/common';
+import { MessageService, Message } from 'primeng/api';
+import { MessagesModule } from 'primeng/messages';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule,MessagesModule],
+  providers: [MessageService],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss'
 })
 export class HomePageComponent implements OnInit {
   isRegister: any = false;
+  msg: Message[] = [];
 
   constructor(private router: Router, private route: ActivatedRoute, private userService: UserService) { }
 
@@ -26,7 +30,9 @@ export class HomePageComponent implements OnInit {
           this.userService.loginByGoogle(res).subscribe((res: any) => {
             console.log(res)
             console.log(res.body)
-            alert('hi' + res.body.FirstName)
+            this.msg = [
+              { severity: 'success', summary: '', detail: 'hi' + res.body.FirstName },
+            ];
           })
         })
     });

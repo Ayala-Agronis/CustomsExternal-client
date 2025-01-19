@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StepsModule } from 'primeng/steps';
 import { StepService } from '../../shared/services/step.service';
 import { StepperModule } from 'primeng/stepper';
+import { UserService } from '../../shared/services/user.service';
 
 @Component({
   selector: 'app-declaration-main',
@@ -34,7 +35,7 @@ export class DeclarationMainComponent implements OnInit {
 
   activeIndex: number = 0;
 
-  constructor(private router: Router, private stepService: StepService) { }
+  constructor(private router: Router,private route:ActivatedRoute, private stepService: StepService,private userService:UserService) { }
 
   ngOnInit(): void {
     var savedIndex = localStorage.getItem('activeIndex');
@@ -59,7 +60,24 @@ export class DeclarationMainComponent implements OnInit {
       }
       else {
         this.previousStep();
-      }
+      }936
+    });
+
+    this.route.queryParams.subscribe(params => {
+      const code = params['code'];
+      console.log(code);
+
+      if (code)
+        this.userService.getDetails(code).subscribe(res => {
+          console.log(res);
+          this.userService.loginByGoogle(res).subscribe((res: any) => {
+            console.log(res)
+            console.log(res.body)
+            // this.msg = [
+            //   { severity: 'success', summary: '', detail: 'hi' + res.body.FirstName },
+            // ];
+          })
+        })
     });
   }
 
