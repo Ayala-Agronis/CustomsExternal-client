@@ -559,7 +559,6 @@ export class AddDocumentsComponent {
         }
         this.documentsService.updateDocument$(this.documentId, this.documentObject).subscribe(
           res => {
-            this.documentsService.sendDocToInternalDB(this.documentObject).subscribe(res => console.log(res))
             // this.router.navigate(['/app-declaration/documents'], { queryParams: { 'Mode': 'e' } });
             this.loading = false
             console.log(res)

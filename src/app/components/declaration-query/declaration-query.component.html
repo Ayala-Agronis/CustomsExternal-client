@@ -1,0 +1,178 @@
+<div class="progress-spinner" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+</div>
+
+
+<p-toast></p-toast>
+<p-card class="queryDec">
+    <div class="card">
+        <div class="ui-rtl" dir="rtl">
+            <h2>שאילתת הצהרות</h2>
+            <div class="p-grid p-fluid p-nogutter center-content">
+                <div class="p-md-4 p-lg-3">
+                    <div class="p-field">
+                        <label class="date-label" for="Start">מתאריך <span class="text-danger">*</span></label>
+                        <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="Start" [required]="true"
+                            [(ngModel)]="startDate" (onSelect)="updateEndDateMinDate()"></p-calendar>
+                    </div>
+                </div>
+                <div class="p-md-4 p-lg-3">
+                    <div class="p-field">
+                        <label class="date-label" for="End">עד תאריך <span class="text-danger">*</span></label>
+                        <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="End" [required]="true"
+                            [(ngModel)]="endDate" [minDate]="minEndDate"></p-calendar>
+                    </div>
+                </div>
+
+                <div class="currency-label p-lg-3">
+                    <button *ngIf="!isFiltered" pButton type="submit" label="סנן" (click)="filterByDates()"></button>
+                    <button *ngIf="isFiltered" pButton type="submit" label="בטל סינון"
+                        (click)="cancelFilter()"></button>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="p-mb-8"></div>
+
+            <p-table [paginator]="true" [rows]="10" [responsive]="true" class="p-table" [value]="filteredDeclarations"
+                dataKey="id" [rowHover]="true" (onFilter)="onFilter($event)" sortMode="multiple">
+
+                <ng-template pTemplate="header">
+                    <tr>
+                        <!-- <th [pSortableColumn]="'AgentFileReferenceID'">
+                <div class="flex align-items-center">
+                  <p-sortIcon field="AgentFileReferenceID"></p-sortIcon>
+                  תיק
+                  <p-columnFilter type="text" field="AgentFileReferenceID" display="menu"></p-columnFilter>
+                </div>
+              </th> -->
+                        <th></th>
+                        <th [pSortableColumn]="'Id'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="Id"></p-sortIcon>
+                                מספר הצהרה
+                                <p-columnFilter type="text" field="Id" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'DeclarationNumber'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="DeclarationNumber"></p-sortIcon>
+                                הצהרה
+                                <p-columnFilter type="text" field="DeclarationNumber" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'ImporterID'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="ImporterID"></p-sortIcon>
+                                יבואן
+                                <p-columnFilter type="text" field="ImporterID" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'DeclarationOfficeID'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="DeclarationOfficeID"></p-sortIcon>
+                                בית מכס
+                                <p-columnFilter type="text" field="DeclarationOfficeID" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'GovernmentProcedure'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="GovernmentProcedure"></p-sortIcon>
+                                תהליך מכס
+                                <p-columnFilter type="text" field="GovernmentProcedure" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'ArrivalDateTime'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="ArrivalDateTime"></p-sortIcon>
+                                תאריך הגעת טובין
+                                <p-columnFilter type="date" field="ArrivalDateTime" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'ExportationCountryCode'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="ExportationCountryCode"></p-sortIcon>
+                                ארץ יצוא
+                                <p-columnFilter type="text" field="ExportationCountryCode"
+                                    display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'TransportContractDocumentID'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="TransportContractDocumentTypeCode"></p-sortIcon>
+                                סוג מזהה מטען
+                                <p-columnFilter type="text" field="TransportContractDocumentTypeCode"
+                                    display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'CargoDescription'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="CargoDescription"></p-sortIcon>
+                                תיאור טובין
+                                <p-columnFilter type="text" field="CargoDescription" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'TotalPackageQuantity'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="TotalPackageQuantity"></p-sortIcon>
+                                כמות חבילות
+                                <p-columnFilter type="text" field="TotalPackageQuantity"
+                                    display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'FacilityID'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="FacilityID"></p-sortIcon>
+                                אתר מסירה
+                                <p-columnFilter type="text" field="FacilityID" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                        <th [pSortableColumn]="'CustomsStatus'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="CustomsStatus"></p-sortIcon>
+                                סטטוס מכס
+                                <p-columnFilter type="text" field="CustomsStatus" display="menu"></p-columnFilter>
+                            </div>
+                        </th>
+                    </tr>
+                </ng-template>
+
+                <ng-template style="text-align: right;" pTemplate="body" let-declartion>
+                    <tr>
+                        <!-- <td>
+                <p-button label="{{declartion.AgentFileReferenceID}}" styleClass="p-button-link"
+                  (click)="editDeclaration(declartion)"></p-button>
+              </td> -->
+                        <td> <p-button styleClass="p-button-link" icon="pi pi-pencil"
+                                (click)="editDeclaration(declartion)"></p-button>
+                        </td>
+                        <td>{{declartion.Id}}</td>
+                        <td>{{declartion.DeclarationNumber}}</td>
+                        <td>{{declartion.ImporterID}} {{importerName}}</td>
+                        <td>{{declartion.DeclarationOfficeID}}</td>
+                        <td>{{declartion.GovernmentProcedure}}</td>
+                        <td>{{declartion.Consignments[0]?.ArrivalDateTime | date:'dd/MM/yy'}}</td>
+                        <td>{{declartion.ExportationCountryCode}}</td>
+                        <!-- <td>{{declartion.Consignments[0]?.TransportContractDocumentID}}</td> -->
+                        <td>{{declartion.TransportContractDocumentTypeCode}}</td>
+                        <td>{{declartion.Consignments[0]?.CargoDescription}}</td>
+                        <td>{{declartion.TotalPackageQuantity}}</td>
+                        <td>{{declartion.FacilityID}}</td>
+                        <td>{{customStatusName(declartion.CustomsStatus)}}</td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="summary">
+                    <div class="p-d-flex p-ai-center p-jc-between">
+                        מספר שורות: {{filteredDeclarationsCount }}
+                    </div>
+                </ng-template>
+            </p-table>
+            <!-- <p-paginator [rows]="10" [totalRecords]="filteredDeclarations.length" (onPage)="paginate($event)"></p-paginator> -->
+
+        </div>
+
+    </div>
+    <p-messages [(value)]="msgs1" [enableService]="false"></p-messages>
+</p-card>

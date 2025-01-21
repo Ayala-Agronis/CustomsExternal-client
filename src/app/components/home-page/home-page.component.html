@@ -9,9 +9,13 @@
             <li><a href="#">דברו איתנו</a></li>
         </ul>
         <div class="content">
-            <button class="gray-button" (click)="navigate('register')">הרשמה </button>
-            <button class="gray-button" (click)="navigate('login')">התחברות </button>
-            <button class="black-button" *ngIf="isRegister" (click)="navigate('declaration-main')"> לשחרור מהיר ></button>
+            <button class="gray-button" *ngIf="!isRegister" (click)="navigate('register')">הרשמה </button>
+            <button class="gray-button" *ngIf="!isRegister" (click)="navigate('login')">התחברות </button>
+            <!-- <button class="black-button" *ngIf="isRegister" (click)="navigate('declaration-main')"> הצהרה חדשה  ></button> -->
+            <div *ngIf="isRegister" class="user-info">
+                <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>
+                <button class="black-button" (click)="navigate('declaration-main')">הצהרה חדשה ></button>
+            </div>
         </div>
     </nav>
 </header>
@@ -37,5 +41,5 @@
         הדפדפן שלך אינו תומך בנגן וידאו.
     </video>
 
-    <button (click)="navigate('declaration-main')" class="black-button">רוצים להתחיל?</button>
+    <button *ngIf="isRegister" (click)="navigate('declaration-main')" class="black-button">רוצים להתחיל?</button>
 </div>

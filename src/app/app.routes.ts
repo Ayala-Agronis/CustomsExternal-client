@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './shared/guards/auth.guard';
 
 export const routes: Routes = [
 
@@ -8,11 +9,12 @@ export const routes: Routes = [
   { path: 'login', loadComponent: () => import('./components/login/login.component').then(c => c.LoginComponent), data: { title: 'התחברות' } },
   { path: 'callback', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), data: { title: 'התחברות' } },
   { path: 'independent-payment', loadComponent: () => import('./components/independent-payment/independent-payment.component').then(c => c.IndependentPaymentComponent), data: { title: ' תשלום מיסים באופן עצמאי' } },
+  { path: 'dec-query', loadComponent: () => import('./components/declaration-query/declaration-query.component').then(c => c.DeclarationQueryComponent), data: { title: ' הצהרות ' } },
 
   // { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },
-  { path: 'docs', loadComponent: () => import('./components/documents/documents.component').then(c => c.DocumentsComponent), data: { title: 'מסמכים' } },
+  { path: 'docs', loadComponent: () => import('./components/documents/documents.component').then(c => c.DocumentsComponent), data: { title: 'מסמכים' }},
   {
-    path: 'declaration-main', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), children: [
+    path: 'declaration-main', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), canActivate: [AuthGuard] , children: [
       { path: '', redirectTo: 'home-page', pathMatch: 'full' },
       { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },
       { path: 'add-doc', loadComponent: () => import('./components/add-documents/add-documents.component').then(c => c.AddDocumentsComponent), data: { title: 'הוספת מסמכים' } },

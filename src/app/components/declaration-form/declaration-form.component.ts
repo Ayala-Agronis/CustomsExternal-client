@@ -1,6 +1,6 @@
 import { CommonModule, FormatWidth, JsonPipe } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
@@ -27,7 +27,6 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   providers: [ConfirmationService, MessageService],
 })
 export class DeclarationFormComponent implements OnInit {
-
   generalDeclarationForm!: FormGroup
   filteredCustomsProcess: any[] = [];
   filteredCountryOfExport: any[] = [];
@@ -77,6 +76,11 @@ export class DeclarationFormComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.mode = params['Mode'];
+      if(this.mode !=='e'){
+        this.initForm()
+        this.customsDataService.GetSeq$('Customs').pipe(
+          tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
+      }
 
       if (params['customsSend'] === "true") {
         this.showBtnCustoms = true;
@@ -127,7 +131,8 @@ export class DeclarationFormComponent implements OnInit {
     ]).subscribe(_ => {
       //init data of consignment
       this.consignmentInit();
-      if (this.mode == 'e') {
+      if (this.mode == 'e') {        
+        this.showBtnCustoms = true
         this.initElements();
       }
     }
@@ -180,7 +185,7 @@ export class DeclarationFormComponent implements OnInit {
     const customsCountryExport$ = getCustomsData(
       'customsCountryExport',
       '1136',
-      (item: { Value2: any; Value1: any }) => ({ name: `${item.Value2.substring(0, 7)} (${item.Value1})`, code: item.Value1 })
+      (item: { Value2: any; Value1: any }) => ({ name: `${item.Value2.substring(0, 11)} (${item.Value1})`, code: item.Value1 })
     ).pipe(
       map(res => this.declarationCountryOfExport = res)
     );
@@ -222,7 +227,7 @@ export class DeclarationFormComponent implements OnInit {
     //     }));
     //   })
     // );
-    
+
     const customsCargoIDType$ = getCustomsData(
       'customsCargoIDType',
       '1259',
@@ -281,7 +286,7 @@ export class DeclarationFormComponent implements OnInit {
       TypeCode: this.formBuilder.control('1'),
       //AutonomyRegionType: this.formBuilder.control({ name: '', code: '' }),
       //EntitlementTypeCode: this.formBuilder.control({ name: '', code: '' }),
-      ImporterID: this.formBuilder.control('025025040', Validators.required),
+      ImporterID: this.formBuilder.control(localStorage.getItem('userId') || '2', Validators.required),
       //AcceptanceDateTime: this.formBuilder.control(''),
       Consignments: this.formBuilder.group({
         ExportationCountryCode: this.formBuilder.control('', Validators.required),
@@ -315,7 +320,21 @@ export class DeclarationFormComponent implements OnInit {
         CurrencyCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
         LocationID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
         TradeTermsConditionCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-        // CustomsValuation: this.formBuilder.array([]),
+        Id: this.formBuilder.control(null),
+        CustomsValuation: this.formBuilder.array([
+          this.formBuilder.group({
+            ID: this.formBuilder.control(null), 
+            ChargesTypeCode: this.formBuilder.control({ name: 'ביטוח', code: '67' }),
+            CurrencyCode: this.formBuilder.control({ name: '', code: '' }),
+            OtherChargeDeductionAmount: this.formBuilder.control(null)
+          }),
+          this.formBuilder.group({
+            ID: this.formBuilder.control(null), 
+            ChargesTypeCode: this.formBuilder.control({ name: 'הובלה', code: '144' }),
+            CurrencyCode: this.formBuilder.control({ name: '', code: '' }),
+            OtherChargeDeductionAmount: this.formBuilder.control(null)
+          })
+        ]),
         SupplierInvoiceItems: this.formBuilder.array([])
       })
     });
@@ -359,6 +378,10 @@ export class DeclarationFormComponent implements OnInit {
     }
   }
 
+  getValuationValue(): FormArray {
+    return this.generalDeclarationForm.get('SupplierInvoices.CustomsValuation') as FormArray;
+  }
+
   convertToDecObj(dec: any) {
     dec.GovernmentProcedure = dec.GovernmentProcedure.code ? dec.GovernmentProcedure.code : dec.GovernmentProcedure
     dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID')
@@ -378,6 +401,14 @@ export class DeclarationFormComponent implements OnInit {
     supplierInvoices.LocationID = supplierInvoices.LocationID.code ? supplierInvoices.LocationID.code : supplierInvoices.LocationID;
     supplierInvoices.TradeTermsConditionCode = supplierInvoices.TradeTermsConditionCode.code ? supplierInvoices.TradeTermsConditionCode.code : supplierInvoices.TradeTermsConditionCode;
     supplierInvoices.InvoiceTypeCode = supplierInvoices.InvoiceTypeCode.code ? supplierInvoices.InvoiceTypeCode.code : supplierInvoices.InvoiceTypeCode;
+
+    const CustomsValuation = supplierInvoices.CustomsValuation
+    if (CustomsValuation) {
+      CustomsValuation?.forEach((element: any) => {
+        element.ChargesTypeCode = element.ChargesTypeCode?.code ? element.ChargesTypeCode?.code : element.ChargesTypeCode;
+        element.CurrencyCode = element.CurrencyCode?.code ? element.CurrencyCode?.code : element.CurrencyCode;
+      });
+    }
 
     const SupplierInvoiceItems = supplierInvoices.SupplierInvoiceItems
     if (SupplierInvoiceItems) {
@@ -406,16 +437,10 @@ export class DeclarationFormComponent implements OnInit {
 
     this.decService.sendDeclarationToInternal(perfectDec).subscribe((res: any) => {
       console.log(res);
-
-    })
-    this.decService.addDeclaration(perfectDec).subscribe((res: any) => {
-      this.loading = false
-      console.log(res);
-      localStorage.setItem('currentDecId', res.body.Id)
+      localStorage.setItem('currentDecId', res.body?.Id)
       localStorage.setItem('currentDec', res.body)
       this.stepService.emitStepCompleted('+');
-    }
-    )
+    })
   }
 
   sendDeclaration() {
@@ -427,7 +452,7 @@ export class DeclarationFormComponent implements OnInit {
     this.decService.updateAndSendDeclaration$(id, perfectDec, false).subscribe((res: any) => {
       this.loading = false
       res = JSON.parse(res)
-      console.log(res); debugger
+      console.log(res);
       if (res.responseField) {
         if (res.responseField.statusField.nameCodeField.valueField == 13) {
           //תשלום קופה
@@ -472,7 +497,7 @@ export class DeclarationFormComponent implements OnInit {
     let currentDec: any;
     this.decService.getDeclaration(decId).subscribe(res => {
       console.log(res);
-      currentDec = res;
+      currentDec = res[0];
       if (currentDec) {
         // --general--
         this.generalDeclarationForm.patchValue({ 'AgentFileReferenceID': currentDec?.AgentFileReferenceID })
@@ -502,7 +527,9 @@ export class DeclarationFormComponent implements OnInit {
         // --consignment--
         const consignmentForm = this.generalDeclarationForm.controls['Consignments']
 
-        const matchingExportationCountry = this.declarationCountryOfExport.find((element: any) => element.code == currentDec?.Consignments[0]?.ExportationCountryCode);
+        const currentConsignment = currentDec?.ConsignmentPackagesMeasures[0].Consignments;
+        // const matchingExportationCountry = this.declarationCountryOfExport.find((element: any) => element.code == currentConsignment?.ExportationCountryCode);
+        const matchingExportationCountry = this.declarationCountryOfExport.find((element: any) => element.code == currentConsignment?.ExportationCountryCode);
         this.ExportationCountrySelect = matchingExportationCountry.name
         if (matchingExportationCountry) {
           consignmentForm.patchValue({ 'ExportationCountryCode': matchingExportationCountry });
@@ -510,27 +537,27 @@ export class DeclarationFormComponent implements OnInit {
 
         this.filterChargingCountryByExportCode();
 
-        const matchingChargingCountry = this.declarationChargingCountry.find((element: { code: any }) => element.code == currentDec?.Consignments[0]?.LoadingLocation);
+        const matchingChargingCountry = this.declarationChargingCountry.find((element: { code: any }) => element.code == currentConsignment?.LoadingLocation);
         if (matchingChargingCountry) {
           consignmentForm.patchValue({ 'LoadingLocation': matchingChargingCountry });
         }
 
-        const matchingUnpackingSite = this.declarationUnpackingSite.find((element: { code: any }) => element.code == currentDec?.Consignments[0]?.UnloadingLocationID);
+        const matchingUnpackingSite = this.declarationUnpackingSite.find((element: { code: any }) => element.code == currentConsignment?.UnloadingLocationID);
         if (matchingUnpackingSite) {
           consignmentForm.patchValue({ 'UnloadingLocationID': matchingUnpackingSite });
         }
 
-        const matchingCargoIDType = this.declarationCargoIDType.find((element: { code: any }) => element.code == currentDec?.Consignments[0]?.TransportContractDocumentTypeCode);
+        const matchingCargoIDType = this.declarationCargoIDType.find((element: { code: any }) => element.code == currentConsignment?.TransportContractDocumentTypeCode);
         if (matchingCargoIDType) {
           consignmentForm.patchValue({ 'TransportContractDocumentTypeCode': matchingCargoIDType });
         }
 
         consignmentForm.patchValue({
-          'CargoDescription': currentDec?.Consignments[0]?.CargoDescription,
-          'TransportContractDocumentID': currentDec?.Consignments[0]?.TransportContractDocumentID,
-          'SecondCargoID': currentDec?.Consignments[0]?.SecondCargoID,
-          'ThirdCargoID': currentDec?.Consignments[0]?.ThirdCargoID,
-          'ArrivalDateTime': new Date(currentDec?.Consignments[0]?.ArrivalDateTime)
+          'CargoDescription': currentConsignment?.CargoDescription,
+          'TransportContractDocumentID': currentConsignment?.TransportContractDocumentID,
+          'SecondCargoID': currentConsignment?.SecondCargoID,
+          'ThirdCargoID': currentConsignment?.ThirdCargoID,
+          'ArrivalDateTime': new Date(currentConsignment?.ArrivalDateTime)
         });
 
         // --ConsignmentPackagesMeasures--
@@ -568,7 +595,21 @@ export class DeclarationFormComponent implements OnInit {
           'InvoiceNumber': currentDec?.SupplierInvoices[0]?.InvoiceNumber,
           'IssueDateTime': new Date(currentDec?.SupplierInvoices[0]?.IssueDateTime),
           'InvoiceAmount': currentDec?.SupplierInvoices[0]?.InvoiceAmount,
+          'Id': currentDec?.SupplierInvoices[0]?.Id,
         });
+        //--CustomsValuation--
+        
+        if (currentDec?.SupplierInvoices[0]?.CustomsValuation) {
+          const supplierInvoiceItemsFormArray = supplierInvoicesForm.get('CustomsValuation') as FormArray;
+          currentDec.SupplierInvoices[0].CustomsValuation.forEach((item: any, index: any) => {
+            const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == item.CurrencyCode);
+
+            supplierInvoiceItemsFormArray.controls[index].get("CurrencyCode")?.patchValue(matchingCurrencyCode)
+            supplierInvoiceItemsFormArray.controls[index].get("OtherChargeDeductionAmount")?.patchValue(item.OtherChargeDeductionAmount);
+            supplierInvoiceItemsFormArray.controls[index].get("ID")?.patchValue(item.ID);
+
+          });
+        }
 
         // --SupplierInvoiceItems--
         if (currentDec?.SupplierInvoices[0]?.SupplierInvoiceItems) {
@@ -693,7 +734,7 @@ export class DeclarationFormComponent implements OnInit {
       // if (a.name.indexOf(query) != -1) {
       //   filtered.push(a);
       // }
-      
+
       if (preferredValues1.includes(a.code) && a.name.indexOf(query) != -1) {
         preferred.push(a)
       }

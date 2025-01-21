@@ -10,9 +10,9 @@
             </a>
         </li>
         <li>
-            <a routerLink="/profile" class="menu-item">
+            <a routerLink="/dec-query" class="menu-item">
                 <i class="pi pi-user"></i>
-                <span>פרופיל</span>
+                <span>הצהרות </span>
             </a>
         </li>
         <!-- <li>
@@ -22,9 +22,9 @@
             </a>
         </li> -->
         <li>
-            <a routerLink="/settings" class="menu-item">
+            <a (click)="restart()" routerLink="/declaration-main/dec-form" class="menu-item">
                 <i class="pi pi-cog"></i>
-                <span>הגדרות</span>
+                <span>הצהרה חדשה</span>
             </a>
         </li>
     </ul>

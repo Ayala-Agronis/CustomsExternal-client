@@ -16,6 +16,7 @@ import { MessagesModule } from 'primeng/messages';
 export class HomePageComponent implements OnInit {
   isRegister: any = false;
   msg: Message[] = [];
+  user: any;
 
   constructor(private router: Router, private route: ActivatedRoute, private userService: UserService) { }
 
@@ -37,11 +38,19 @@ export class HomePageComponent implements OnInit {
         })
     });
 
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      this.user = JSON.parse(userData);  
+    }
+
     const isRegisterValue = localStorage.getItem("isRegister");
     this.isRegister = isRegisterValue === "true";
   }
 
-  navigate(destination: string) {
+  navigate(destination: string) {debugger
+    if(destination == 'declaration-main'){
+      localStorage.setItem("currentDecId",'')
+    }
     this.router.navigateByUrl(destination)
   }
 

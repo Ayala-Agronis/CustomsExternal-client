@@ -20,6 +20,10 @@ p-calendar {
     gap: 4px;
 }
 
+.right-side .form-item {
+    width: 20%;
+}
+
 .btns {
     display: flex;
     gap: 1%;
@@ -35,18 +39,109 @@ td {
 
 th,
 td {
-    text-align: center !important;  
-    width: 100px;
-    max-width: 100px;
+    text-align: center !important;
+    width: 7.21vw;
+    max-width: 7.21vw;
+    // width: 100px;
+    // max-width: 100px;
 }
 
 .sCol {
     width: 3%;
 }
 
+.supplierInvoices-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.right-side {
+    width: 70%;
+}
+
+// .valuations input,
+// .valuations input {
+//     width: 3vw;
+//     max-width: 3vw;
+// }
+
+/* עיצוב כללי של כל האלמנטים */
+.valuations {
+    width: 40%;
+    padding: 15px;
+}
+
+.valuation-items {
+    display: flex;
+    // flex-direction: column;
+    gap: 20px;
+}
+
+.valuation-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+}
+
+.valuation-item-header {
+    display: flex;
+    gap:1%;
+    // justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.valuation-item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.currency,
+.amount {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.currency label,
+.amount label {
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.currency p-autoComplete,
+.amount input {
+    width: 50%;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.amount input {
+    width: 50%;
+}
+
+
+.customs-error {
+    padding: 3%;
+}
+
+.customs-error ul {
+    list-style-type: none;
+}
+
 ::ng-deep.p-autocomplete-input,
 input {
     height: 2rem !important;
+}
+
+::ng-deep .dec-form .p-card .p-card-content {
+    padding: 0 0;
 }
 
 ::ng-deep .p-card {
@@ -111,6 +206,12 @@ input {
     padding: 0.3rem 1.2rem;
 }
 
+::ng-deep .valuations .p-datatable .p-datatable-tbody>tr>td,
+::ng-deep .valuations .p-datatable .p-datatable-tfoot>tr>td {
+    padding: 0.7rem 1.7rem;
+}
+
+
 ::ng-deep.p-button.p-button-icon-only {
     width: 1.5rem;
     height: 1.5rem;
@@ -119,3 +220,12 @@ input {
 ::ng-deep .pi {
     font-size: 0.7rem;
 }
+
+// .p-table .p-cell-editor input {
+//     width: 100% !important; 
+//     box-sizing: border-box; 
+// }
+
+// .p-table .p-cell-editor {
+//     display: inline-block; 
+// }

@@ -14,7 +14,7 @@ import { MessagesModule } from 'primeng/messages';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardModule, InputTextModule, PasswordModule, ProgressSpinnerModule,MessagesModule],
+  imports: [CommonModule, ReactiveFormsModule, CardModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessagesModule],
   providers: [MessageService],
   templateUrl: './login.component.html',
   // styleUrls: ['./login.component.scss', '../registration/registration.component.scss']
@@ -88,6 +88,12 @@ export class LoginComponent {
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token)
             localStorage.setItem('isRegister', "true")
+            localStorage.setItem('userId', res.body.user.Id)
+            console.log(res.body.user);
+            
+            const userJson = JSON.stringify(res.body.user);
+            localStorage.setItem('user', userJson);
+
           }
           this.router.navigate(['declaration-main/dec-form']);
         },

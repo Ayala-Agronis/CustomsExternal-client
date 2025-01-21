@@ -31,7 +31,8 @@ export class CommissionPaymentComponent implements OnInit {
   }
 
   openTransaction() {
-    this.iframeUrl = `https://direct.tranzila.com/customsil/iframenew.php?tranmode=V%5C%5C&currency=1`;
+    // this.iframeUrl = `https://direct.tranzila.com/customsil/iframenew.php?tranmode=V%5C%5C&currency=1`; //תפיסת מסגרת
+    this.iframeUrl = `https://direct.tranzila.com/customsil/iframenew.php?currency=1`;
     //this.iframeUrl = `https://direct.tranzila.com/customsil/iframenew.php?tranmode=V\\&currency=1`;
   }
 }

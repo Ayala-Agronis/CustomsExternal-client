@@ -14,6 +14,7 @@ import { UserService } from '../../shared/services/user.service';
   styleUrl: './declaration-main.component.scss',
 })
 export class DeclarationMainComponent implements OnInit {
+
   //   if (this.activeIndex < this.steps.length - 1) {
   //     this.activeIndex++;
   //     localStorage.setItem('activeIndex', this.activeIndex.toString())
@@ -34,10 +35,15 @@ export class DeclarationMainComponent implements OnInit {
   ];
 
   activeIndex: number = 0;
+  mode: any;
 
-  constructor(private router: Router,private route:ActivatedRoute, private stepService: StepService,private userService:UserService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private stepService: StepService, private userService: UserService) { }
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.mode = params['Mode'];
+    })
+
     var savedIndex = localStorage.getItem('activeIndex');
 
     if (!savedIndex) {
@@ -60,7 +66,7 @@ export class DeclarationMainComponent implements OnInit {
       }
       else {
         this.previousStep();
-      }936
+      } 936
     });
 
     this.route.queryParams.subscribe(params => {
@@ -83,6 +89,11 @@ export class DeclarationMainComponent implements OnInit {
 
   getReadOnlyState(): boolean {
     return this.activeIndex >= this.steps.length;
+  }
+
+  restart() {
+    localStorage.setItem('currentDecId','')
+    localStorage.setItem("activeIndex", "0")
   }
 
   // nextStep(): void {
@@ -125,7 +136,11 @@ export class DeclarationMainComponent implements OnInit {
       this.router.navigate(['declaration-main/dec-print'])
     }
     else if (this.activeIndex === 0) {
-      this.router.navigate(['declaration-main/dec-form']);
+      if (this.mode == 'e') {
+        this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e' } })
+      }
+      else
+        this.router.navigate(['declaration-main/dec-form']);
     }
   }
 

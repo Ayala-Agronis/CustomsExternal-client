@@ -13,6 +13,13 @@ export class DeclarationService {
 
   constructor(private http: HttpClient) { }
 
+  private packageData = new BehaviorSubject<any>(null);
+  packageData$ = this.packageData.asObservable();
+
+  updatePackageData(data: any) {
+    this.packageData.next(data);
+  }
+
   fillFormAndRedirect(k_asmachta: string, k_importer_num: string): Observable<any> {
     const formData = { Asmachta: k_asmachta, ImporterNum: k_importer_num };
 
@@ -28,16 +35,18 @@ export class DeclarationService {
   }
 
   sendDeclarationToInternal(dec: any): Observable<HttpResponse<any>> {
-    return this.http.post<any>(`${environment.customsWebServiceUrl}Declaration`, dec, { observe: 'response' });
+    // return this.http.post<any>(`${environment.customsWebServiceUrl}Declaration`, dec, { observe: 'response' });
+    return this.http.post<any>(`${environment.customsdbApiUrl}Dec`, dec, { observe: 'response' });
   }
 
   getDeclaration(decId: any): Observable<any> {
-    return this.http.get<any>(`${this.DecURL}?decId=${decId}`);
+    // return this.http.get<any>(`${this.DecURL}?decId=${decId}`);
+    return this.http.get<any>(`${environment.customsdbApiUrl}Dec/${decId}`);
   }
 
-  sendDeclaration$(decId: any, declaration: any, isSign: any): Observable<any> {
-    return this.http.post<any>(`${environment.customsApiUrl}Declaration/${decId}?isSign=${isSign}`, declaration)
-  }
+  // sendDeclaration$(decId: any, declaration: any, isSign: any): Observable<any> {
+  //   return this.http.post<any>(`${environment.customsApiUrl}Declaration/${decId}?isSign=${isSign}`, declaration)
+  // }
 
   updateDeclaration$(id: any, declaration: any): Observable<any> {
     const url = `${this.DecURL}/${id}`;  
@@ -50,7 +59,9 @@ export class DeclarationService {
   }  
 
   updateAndSendDeclaration$(id: any, declaration: any, isSign: any): Observable<any> {
-    return this.http.post<any>(`${environment.customsExternalApiUrl}dec/GetAndSend/${id}?isSign=${isSign}`, declaration)
+    return this.http.post<any>(`${environment.customsdbApiUrl}dec/PutAndSend/${id}?isSign=${isSign}`, declaration)
+
+    // return this.http.post<any>(`${environment.customsExternalApiUrl}dec/GetAndSend/${id}?isSign=${isSign}`, declaration)
   }
 
   getCagroQueryMessage$(params: any) {
@@ -68,10 +79,16 @@ export class DeclarationService {
     );
   }
 
-  private packageData = new BehaviorSubject<any>(null);
-  packageData$ = this.packageData.asObservable();
+  //declaration query
+  getDeclarations$(Date1: string, Date2: string, importerId: string, eventCode: any): Observable<any> {
+    const params = new HttpParams()
+      .set('Date1', Date1)
+      .set('Date2', Date2)
+      .set('importerId', importerId)
+      .set('eventCode', eventCode);
 
-  updatePackageData(data: any) {
-    this.packageData.next(data);
+    return this.http.get<any>(`${environment.customsdbApiUrl}/DecQuery`, { params });
   }
+
+ 
 }

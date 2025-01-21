@@ -1,4 +1,4 @@
-<form [formGroup]="generalDeclarationForm" class="form">
+<form [formGroup]="generalDeclarationForm" class="form dec-form">
     <div class="progress-spinner" *ngIf="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>
@@ -11,7 +11,7 @@
         <div class="form-group">
             <div class="form-item">
                 <label>מזהה יבואן </label>
-                <input pInputText formControlName="ImporterID">
+                <input pInputText formControlName="ImporterID" readonly>
             </div>
             <!-- <div class="form-item">
                 <label>מספר טלפון</label>
@@ -33,7 +33,7 @@
         <div formGroupName="Consignments">
             <div class="form-group">
                 <div class="form-item">
-                    <label>  שנה</label>
+                    <label> שנה</label>
                     <input pInputText formControlName="TransportContractDocumentID" (blur)="onCargoIDBlur()">
                 </div>
                 <div class="form-item">
@@ -112,57 +112,158 @@
 
     <div formGroupName="SupplierInvoices">
         <p-card>
-            <h3>חשבוניות וסחורות</h3>
-            <div class="form-group">
-                <div class="form-item">
-                    <label> מספר חשבונית ספק</label>
-                    <input pInputText formControlName="InvoiceNumber">
+            <div class="supplierInvoices-container">
+                <div class="right-side">
+                    <h3>חשבוניות וסחורות</h3>
+                    <div class="form-group">
+                        <div class="form-item">
+                            <label> מספר חשבונית ספק</label>
+                            <input pInputText formControlName="InvoiceNumber">
+                        </div>
+                        <div class="form-item">
+                            <label>שם ספק</label>
+                            <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID"
+                                inputId="autocomplete" [suggestions]="filteredSupplierID"
+                                (completeMethod)="filterSupplierID($event)" field="name" [dropdown]="true">
+                            </p-autoComplete>
+                        </div>
+                        <div class="form-item">
+                            <label> מטבע חשבון </label>
+                            <p-autoComplete formControlName="CurrencyCode" (completeMethod)="filterCurrencyCode($event)"
+                                [suggestions]="filteredCurrencyCode" [forceSelection]="true" field="code"
+                                [dropdown]="true">
+                            </p-autoComplete>
+                        </div>
+                        <div class="form-item">
+                            <label>תאריך חשבון מכר</label>
+                            <p-calendar formControlName="IssueDateTime" [showIcon]="true"
+                                dateFormat="dd/mm/yy"></p-calendar>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="form-item">
+                            <label> ארץ יצוא </label>
+                            <p-autoComplete [forceSelection]="true" formControlName="LocationID" class="ng-dirty"
+                                inputId="autocomplete" [suggestions]="filteredCountryOfExport"
+                                (completeMethod)="filterCountryOfExport($event)" field="name"
+                                [dropdown]="true"></p-autoComplete>
+                            <!-- <input formControlName="LocationID"> -->
+                        </div>
+                        <div class="form-item">
+                            <label> תנאי מכר </label>
+                            <p-autoComplete [forceSelection]="true" id="TradeTermsConditionCode"
+                                formControlName="TradeTermsConditionCode" inputId="autocomplete"
+                                [suggestions]="filteredTradeTermsConditionCode"
+                                (completeMethod)="filterTradeTermsConditionCode($event)" field="name" [dropdown]="true">
+                            </p-autoComplete>
+                        </div>
+                        <div class="form-item">
+                            <label>סה"כ חשבון </label>
+                            <input pInputText formControlName="InvoiceAmount">
+                        </div>
+                    </div>
                 </div>
-                <div class="form-item">
-                    <label>שם ספק</label>
-                    <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID"
-                        inputId="autocomplete" [suggestions]="filteredSupplierID"
-                        (completeMethod)="filterSupplierID($event)" field="name" [dropdown]="true">
-                    </p-autoComplete>
+                <div class="valuations">
+                    <h4>התאמות / הפחתות</h4>
+                    <div class="valuation-items">
+                        <div class="valuation-item" *ngFor="let item of getValuationValue().controls; let i = index">
+                            <div class="valuation-item-header">
+                                <span>סוג:</span>
+                                <span>{{ item.get("ChargesTypeCode")?.value?.name || '' }}</span>
+                            </div>
+                
+                            <div class="valuation-item-body">
+                                <div class="currency">
+                                    <label>מטבע:</label>
+                                    <p-autoComplete formControlName="CurrencyCode"
+                                        (completeMethod)="filterCurrencyCode($event)"
+                                        [suggestions]="filteredCurrencyCode"
+                                        [forceSelection]="true"
+                                        field="code"
+                                        [dropdown]="true">
+                                    </p-autoComplete>
+                                </div>
+                
+                                <div class="amount">
+                                    <label>סה"כ:</label>
+                                    <input formControlName="OtherChargeDeductionAmount" type="number" 
+                                        pInputText />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-item">
-                    <label> מטבע חשבון </label>
-                    <p-autoComplete formControlName="CurrencyCode" (completeMethod)="filterCurrencyCode($event)"
-                        [suggestions]="filteredCurrencyCode" [forceSelection]="true" field="code" [dropdown]="true">
-                    </p-autoComplete>
-                </div>
-                <div class="form-item">
-                    <label>תאריך חשבון מכר</label>
-                    <p-calendar formControlName="IssueDateTime" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
-                </div>
-            </div>
-            <div class="form-group">
-                <div class="form-item">
-                    <label> ארץ יצוא </label>
-                    <p-autoComplete [forceSelection]="true" formControlName="LocationID" class="ng-dirty"
-                        inputId="autocomplete" [suggestions]="filteredCountryOfExport"
-                        (completeMethod)="filterCountryOfExport($event)" field="name"
-                        [dropdown]="true"></p-autoComplete>
-                    <!-- <input formControlName="LocationID"> -->
-                </div>
-                <div class="form-item">
-                    <label> תנאי מכר </label>
-                    <p-autoComplete [forceSelection]="true" id="TradeTermsConditionCode"
-                        formControlName="TradeTermsConditionCode" inputId="autocomplete"
-                        [suggestions]="filteredTradeTermsConditionCode"
-                        (completeMethod)="filterTradeTermsConditionCode($event)" field="name" [dropdown]="true">
-                    </p-autoComplete>
-                </div>
-                <div class="form-item">
-                    <label>סה"כ חשבון </label>
-                    <input pInputText formControlName="InvoiceAmount">
-                </div>
+                
+                <!-- [formControl]="item.get('OtherChargeDeductionAmount') "  -->
+
+                <!-- <div class="valuations">
+                    <h4>התאמות / הפחתות</h4>
+                    <div>
+                        <div>
+                            <p-table [value]="getValuationValue().controls">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th  class="sCol">סוג</th>
+                                        <th>מטבע</th>
+                                        <th>סה"כ</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                                    <ng-container formArrayName="CustomsValuation">
+                                        <tr [formGroupName]="rowIndex">
+                                            <td class="sCol">
+                                                <p-cellEditor>
+                                                    <ng-template pTemplate="input">
+                                                       
+                                                    </ng-template>
+                                                    <ng-template pTemplate="output">
+                                                        {{ item.get("ChargesTypeCode")?.value?.name ||'' }}
+                                                    </ng-template>
+                                                </p-cellEditor>
+                                            </td>
+
+                                            <td pEditableColumn>
+                                                <p-cellEditor>
+                                                    <ng-template pTemplate="input">
+                                                        <p-autoComplete formControlName="CurrencyCode"
+                                                            (completeMethod)="filterCurrencyCode($event)"
+                                                            [suggestions]="filteredCurrencyCode" [forceSelection]="true"
+                                                            field="code" [dropdown]="true">
+                                                        </p-autoComplete>
+                                                    </ng-template>
+                                                    <ng-template pTemplate="output">
+                                                        {{ item.get("CurrencyCode")?.value?.code || ''}}
+                                                    </ng-template>
+                                                </p-cellEditor>
+                                            </td>
+
+                                            <td pEditableColumn>
+                                                <p-cellEditor>
+                                                    <ng-template pTemplate="input">
+                                                        <input type="number"
+                                                            [formControl]="item.get('OtherChargeDeductionAmount')"
+                                                            pInputText />
+                                                    </ng-template>
+                                                    <ng-template pTemplate="output">
+                                                        {{ item.get('OtherChargeDeductionAmount').value || '' }}
+                                                    </ng-template>
+                                                </p-cellEditor>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </ng-template>
+
+                            </p-table>
+                        </div>
+                    </div>
+
+                </div> -->
             </div>
         </p-card>
         <br />
         <div formArrayName="SupplierInvoiceItems">
             <p-card>
-                <p-table [value]="SupplierInvoiceItems.controls" >
+                <p-table [value]="SupplierInvoiceItems.controls">
                     <ng-template pTemplate="header">
                         <tr>
                             <th class="sCol"></th>
@@ -171,7 +272,7 @@
                             </ng-container>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">                      
+                    <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
                         <tr [formGroupName]="rowIndex">
                             <td class="sCol">
                                 <button pButton pRipple icon="pi pi-minus" class="p-button-raised p-button-text"
@@ -243,41 +344,43 @@
     </div>
 
     <div class="btns">
-        <button [disabled]="generalDeclarationForm.invalid || checkVersion()" [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" class="button-primary"
+        <button [disabled]="generalDeclarationForm.invalid || checkVersion()"
+            [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" class="button-primary"
             (click)="saveDeclaration()">המשך</button>
         <button [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms" class="button-primary"
             (click)="sendDeclaration()">שלח למכס</button>
         <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
     </div>
-
-    <div *ngIf="customsError">
-        <h3>פירוט תשובת מכס</h3>
-        <p>
-            סטטוס טיוטא:
-            <span [ngClass]="{'highlight-error': customsError, 'highlight-success': !customsError}">
-                {{customStatusName()}}
-            </span>
-        </p>
-        <ul>
-            <li *ngFor="let error of customsError">
-                <strong>{{ error.exeptionTypeField }}</strong> : "{{ error.exeptionDescriptionField }}"
-            </li>
-        </ul>
-    </div>
-    <div *ngIf="customsErrorsContent">
-        <h3>פירוט תשובת מכס</h3>
-        <p>
-            סטטוס טיוטא:
-            <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
-                {{customStatusName()}}
-            </span>
-        </p>
-        <ul>
-            <li *ngFor="let error of customsErrorsContent">
-                <strong>{{ error.validationCodeField.valueField }}</strong> : "{{ error.validationCodeField.nameField
-                }}"
-            </li>
-        </ul>
-    </div>
-    
+    <p-card class="customs-error">
+        <div *ngIf="customsError">
+            <h3>פירוט תשובת מכס</h3>
+            <p>
+                סטטוס טיוטא:
+                <span [ngClass]="{'highlight-error': customsError, 'highlight-success': !customsError}">
+                    {{customStatusName()}}
+                </span>
+            </p>
+            <ul>
+                <li *ngFor="let error of customsError">
+                    <strong> > </strong> <strong>{{ error.exeptionTypeField }}</strong> : "{{ error.exeptionDescriptionField }}"
+                </li>
+            </ul>
+        </div>
+        <div *ngIf="customsErrorsContent">
+            <h3>פירוט תשובת מכס</h3>
+            <p>
+                סטטוס טיוטא:
+                <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
+                    {{customStatusName()}}
+                </span>
+            </p>
+            <ul>
+                <li *ngFor="let error of customsErrorsContent">
+                    <strong> > </strong>  <strong>{{ error.validationCodeField.valueField }}</strong> : "{{
+                    error.validationCodeField.nameField
+                    }}"
+                </li>
+            </ul>
+        </div>
+    </p-card>
 </form>
