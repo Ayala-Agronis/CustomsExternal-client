@@ -1,6 +1,6 @@
 import { CommonModule, FormatWidth, JsonPipe } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
@@ -27,6 +27,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
   providers: [ConfirmationService, MessageService],
 })
 export class DeclarationFormComponent implements OnInit {
+
   generalDeclarationForm!: FormGroup
   filteredCustomsProcess: any[] = [];
   filteredCountryOfExport: any[] = [];
@@ -70,13 +71,15 @@ export class DeclarationFormComponent implements OnInit {
   customsError: any;
 
   private destroy$ = new Subject<void>();
+  secondCargoIDError: any;
+  showCustomsValuation: boolean = false;
 
   constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.mode = params['Mode'];
-      if(this.mode !=='e'){
+      if (this.mode !== 'e') {
         this.initForm()
         this.customsDataService.GetSeq$('Customs').pipe(
           tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
@@ -131,7 +134,7 @@ export class DeclarationFormComponent implements OnInit {
     ]).subscribe(_ => {
       //init data of consignment
       this.consignmentInit();
-      if (this.mode == 'e') {        
+      if (this.mode == 'e') {
         this.showBtnCustoms = true
         this.initElements();
       }
@@ -185,7 +188,7 @@ export class DeclarationFormComponent implements OnInit {
     const customsCountryExport$ = getCustomsData(
       'customsCountryExport',
       '1136',
-      (item: { Value2: any; Value1: any }) => ({ name: `${item.Value2.substring(0, 11)} (${item.Value1})`, code: item.Value1 })
+      (item: { Value2: any; Value1: any }) => ({ fullName: item.Value2, name: `${item.Value2.substring(0, 11)} (${item.Value1})`, code: item.Value1 })
     ).pipe(
       map(res => this.declarationCountryOfExport = res)
     );
@@ -256,6 +259,11 @@ export class DeclarationFormComponent implements OnInit {
     });
   }
 
+  getOtherChargeDeductionAmountControl(index: number): FormControl {
+    const control = this.getValuationValue().at(index).get('OtherChargeDeductionAmount');
+    return control as FormControl;
+  }
+
   getExportationCountryControlError(control: any) {
     const value = control?.value;
     const hasError = control?.hasError('required');
@@ -296,9 +304,9 @@ export class DeclarationFormComponent implements OnInit {
         TransportContractDocumentTypeCode: this.formBuilder.control({ name: 'שטר מטען אווירי  ', code: '1' }, Validators.required),
         ArrivalDateTime: this.formBuilder.control(new Date(), Validators.required),
         TransportContractDocumentID: this.formBuilder.control(new Date().getFullYear().toString(), Validators.required),
-        SecondCargoID: this.formBuilder.control('',),
+        SecondCargoID: this.formBuilder.control('', Validators.required),
         ThirdCargoID: this.formBuilder.control('',),
-        CargoDescription: this.formBuilder.control(''),
+        CargoDescription: this.formBuilder.control('', Validators.required),
         //FacilityID: this.formBuilder.control({ name: '', code: '' }),
         //FacilityType: this.formBuilder.control({ name: '', code: '' }, Validators.required)
       }),
@@ -323,16 +331,16 @@ export class DeclarationFormComponent implements OnInit {
         Id: this.formBuilder.control(null),
         CustomsValuation: this.formBuilder.array([
           this.formBuilder.group({
-            ID: this.formBuilder.control(null), 
+            ID: this.formBuilder.control(null),
             ChargesTypeCode: this.formBuilder.control({ name: 'ביטוח', code: '67' }),
-            CurrencyCode: this.formBuilder.control({ name: '', code: '' }),
-            OtherChargeDeductionAmount: this.formBuilder.control(null)
+            CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
+            OtherChargeDeductionAmount: this.formBuilder.control(0)
           }),
           this.formBuilder.group({
-            ID: this.formBuilder.control(null), 
+            ID: this.formBuilder.control(null),
             ChargesTypeCode: this.formBuilder.control({ name: 'הובלה', code: '144' }),
-            CurrencyCode: this.formBuilder.control({ name: '', code: '' }),
-            OtherChargeDeductionAmount: this.formBuilder.control(null)
+            CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
+            OtherChargeDeductionAmount: this.formBuilder.control(0)
           })
         ]),
         SupplierInvoiceItems: this.formBuilder.array([])
@@ -354,6 +362,7 @@ export class DeclarationFormComponent implements OnInit {
   private createSupplierInvoiceItem(): FormGroup {
     return this.formBuilder.group({
       ClassificationID: this.formBuilder.control('', Validators.required),
+      MeasureQualifier: this.formBuilder.control(null),
       CustomsValueAmount: this.formBuilder.control(null, Validators.required),
       AmountType: this.formBuilder.control('', Validators.required),
       OriginCountryCode: this.formBuilder.control({ name: '', code: '' }, Validators.required)
@@ -377,6 +386,37 @@ export class DeclarationFormComponent implements OnInit {
 
     }
   }
+
+  onClassificationIDBlur(index: any) {
+    // this.errorMessage = '';
+    // this.importerName = ''
+
+    const tableRowArray = this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray;
+    const classificationID = tableRowArray.controls[index].get('ClassificationID');
+    const MeasureQualifier = tableRowArray.controls[index].get('MeasureQualifier');
+
+    if (classificationID && classificationID.value) {
+
+      this.decService.GetClassificationID$(classificationID.value).subscribe({
+        next: (responseData: any) => {
+          if (responseData.customsItemField) {
+            console.log(responseData);
+            MeasureQualifier?.patchValue(responseData.customsItemField[0].statisticMeasurementUnitExternalIDField)
+            MeasureQualifier?.setErrors(null);
+          }
+          else {
+            // this.errorMessage = responseData.responseContentHeaderField.exceptionField[0].exeptionDescriptionField
+            // MeasureQualifier?.patchValue(this.errorMessage)
+            // MeasureQualifier?.setErrors({ invalidError: true });
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching client data:', err);
+        }
+      });
+    }
+  }
+
 
   getValuationValue(): FormArray {
     return this.generalDeclarationForm.get('SupplierInvoices.CustomsValuation') as FormArray;
@@ -431,16 +471,21 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   saveDeclaration() {
-    this.loading = true
-    const dec = this.generalDeclarationForm.value;
-    const perfectDec = this.convertToDecObj(dec);
+    if (this.mode != 'e') {
+      this.loading = true
+      const dec = this.generalDeclarationForm.value;
+      const perfectDec = this.convertToDecObj(dec);
 
-    this.decService.sendDeclarationToInternal(perfectDec).subscribe((res: any) => {
-      console.log(res);
-      localStorage.setItem('currentDecId', res.body?.Id)
-      localStorage.setItem('currentDec', res.body)
+      this.decService.sendDeclarationToInternal(perfectDec).subscribe((res: any) => {
+        console.log(res);
+        localStorage.setItem('currentDecId', res.body?.Id)
+        localStorage.setItem('currentDec', res.body)
+        this.stepService.emitStepCompleted('+');
+      })
+    }
+    else {
       this.stepService.emitStepCompleted('+');
-    })
+    }
   }
 
   sendDeclaration() {
@@ -474,15 +519,7 @@ export class DeclarationFormComponent implements OnInit {
           // res.responseField.errorField[1].validationCodeField.valueField
         }
 
-        // this.decService.updateDeclaration$(id, dec).pipe(
 
-        //   tap(_ => this.loading = false),
-        //   tap(_ => this.msgs1 = [{ severity: 'success', summary: 'Success', detail: 'העידכונים נשמרו בהצלחה!' }])
-        // ).subscribe((res: any) => {
-        //   this.isLocked = false;
-        //   console.log(res);
-
-        // })
       }
       else if (res.responseContentHeaderField) {
         this.customsError = res.responseContentHeaderField.exceptionField;
@@ -492,7 +529,6 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   initElements() {
-    //const currentDec = JSON.parse(localStorage.getItem('currentDec') || '');
     const decId = localStorage.getItem('currentDecId');
     let currentDec: any;
     this.decService.getDeclaration(decId).subscribe(res => {
@@ -598,7 +634,7 @@ export class DeclarationFormComponent implements OnInit {
           'Id': currentDec?.SupplierInvoices[0]?.Id,
         });
         //--CustomsValuation--
-        
+
         if (currentDec?.SupplierInvoices[0]?.CustomsValuation) {
           const supplierInvoiceItemsFormArray = supplierInvoicesForm.get('CustomsValuation') as FormArray;
           currentDec.SupplierInvoices[0].CustomsValuation.forEach((item: any, index: any) => {
@@ -635,7 +671,26 @@ export class DeclarationFormComponent implements OnInit {
     return version > 0.5
   }
 
-  onCargoIDBlur() {
+  onCargoIDBlur(cargoIdNum: any) {
+    if (cargoIdNum == 2) {
+      const consignment = this.generalDeclarationForm.controls["Consignments"] as FormGroup
+      let secondCargoID = consignment.controls['SecondCargoID'].value;
+      secondCargoID = secondCargoID.trim();
+      if (/^\d{11}$/.test(secondCargoID)) {
+        secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
+        consignment.controls['SecondCargoID'].setValue(secondCargoID);
+        this.secondCargoIDError = '';
+      }
+      else if (/^\d{11,12}$/.test(secondCargoID.replace('-', ''))) {
+        secondCargoID = secondCargoID.replace('-', '');
+        secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
+        consignment.controls['SecondCargoID'].setValue(secondCargoID);
+        this.secondCargoIDError = '';
+      }
+      else {
+        this.secondCargoIDError = 'מבנה לא תקין';
+      }
+    }
     const consignment = this.generalDeclarationForm.controls["Consignments"] as FormGroup
     const cargoType = consignment.controls['TransportContractDocumentTypeCode'].value?.code
     const firstCargoID = consignment.controls['TransportContractDocumentID'].value
@@ -678,6 +733,19 @@ export class DeclarationFormComponent implements OnInit {
     this.generalDeclarationForm.get("Consignments.LoadingLocation")?.setValue('');
   }
 
+  onTradeTermsSelect(event: any) {
+    const code = event?.value.code;
+    if (code) {
+      const codes = ['FCA', 'FOB', 'EXW', 'FAS'];
+
+      if (codes.includes(code)) {
+        this.showCustomsValuation = true;
+      } else {
+        this.showCustomsValuation = false
+      }
+    }
+  }
+
   filterChargingCountryByExportCode() {
     const exportCountryCode = this.generalDeclarationForm.get("Consignments")?.get("ExportationCountryCode")?.value.code;
     this.filteredChargingCountry = this.declarationChargingCountry.filter((site: any) =>
@@ -701,10 +769,10 @@ export class DeclarationFormComponent implements OnInit {
 
   filterCountryOfExport(event: any) {
     let filtered: any[] = [];
-    let query = event.query;
+    let query = event.query.toLowerCase();
     for (let i = 0; i < this.declarationCountryOfExport.length; i++) {
       let a = this.declarationCountryOfExport[i];
-      if (a.name.indexOf(query) != -1 && a.code) {
+      if (a.fullName.indexOf(query) != -1 && a.code) {
         filtered.push(a);
       }
     }

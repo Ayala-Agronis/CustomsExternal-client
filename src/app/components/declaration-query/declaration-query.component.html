@@ -7,7 +7,7 @@
 <p-card class="queryDec">
     <div class="card">
         <div class="ui-rtl" dir="rtl">
-            <h2>שאילתת הצהרות</h2>
+            <h2> הצהרות שלי</h2>
             <div class="p-grid p-fluid p-nogutter center-content">
                 <div class="p-md-4 p-lg-3">
                     <div class="p-field">
@@ -20,7 +20,7 @@
                     <div class="p-field">
                         <label class="date-label" for="End">עד תאריך <span class="text-danger">*</span></label>
                         <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="End" [required]="true"
-                            [(ngModel)]="endDate" [minDate]="minEndDate"></p-calendar>
+                            [(ngModel)]="endDate" [minDate]="minEndDate" (onselect)="handleDateSelect()"></p-calendar>
                     </div>
                 </div>
 

@@ -12,27 +12,32 @@
         <li>
             <a routerLink="/dec-query" class="menu-item">
                 <i class="pi pi-user"></i>
-                <span>הצהרות </span>
+                <span>הצהרות שלי</span>
             </a>
         </li>
-        <!-- <li>
-            <a routerLink="/reports" class="menu-item">
-                <i class="pi pi-chart-bar"></i>
-                <span>דוחות</span>
-            </a>
-        </li> -->
+        
         <li>
             <a (click)="restart()" routerLink="/declaration-main/dec-form" class="menu-item">
                 <i class="pi pi-cog"></i>
                 <span>הצהרה חדשה</span>
             </a>
         </li>
+
+        <li>
+            <a routerLink="/personal-details" [queryParams]="{ personalDetails: true }" class="menu-item">
+                <i class="pi pi-user"></i>
+                <span>פרטים אישיים </span>
+            </a>
+        </li>
+
+        <li>
+            <a href="https://www.gov.il/he/service/power-of-attorney" target="_blank" rel="noopener noreferrer" class="menu-item">
+                <i class="pi pi-file-edit"></i>
+                <span>יפוי כח</span>
+            </a>
+        </li>
     </ul>
-    <div class="logout">
-        <!-- <a routerLink="/logout" class="menu-item">
-            <i class="pi pi-sign-out"></i>
-            <span>התנתקות</span>
-        </a> -->
+    <div class="logout">      
         <a (click)="logout()" class="menu-item">
             <i class="pi pi-sign-out"></i>
             <span>התנתקות</span>

@@ -90,5 +90,18 @@ export class DeclarationService {
     return this.http.get<any>(`${environment.customsdbApiUrl}/DecQuery`, { params });
   }
 
+  GetClassificationID$(classification: any) {
+    let body = new HttpParams()
+      .set('classification',classification)
+
+    return this.http.post(`${environment.customsApiUrl}CustomItemDetails`,
+      body.toString(),
+      {
+        headers: new HttpHeaders()
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+      }
+    );
+  }
+
  
 }

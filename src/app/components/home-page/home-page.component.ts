@@ -47,11 +47,15 @@ export class HomePageComponent implements OnInit {
     this.isRegister = isRegisterValue === "true";
   }
 
-  navigate(destination: string) {debugger
+  navigate(destination: string) {
     if(destination == 'declaration-main'){
       localStorage.setItem("currentDecId",'')
     }
     this.router.navigateByUrl(destination)
+  }
+
+  logout() {
+    localStorage.setItem("isRegister", "false")
   }
 
 }

@@ -1,8 +1,7 @@
 <header>
     <nav class="navbar">
-        <div class="logo">מכס נגיש</div>
+        <!-- <div class="logo">מכס נגיש</div> -->
         <ul class="nav-links">
-            <li><a href="#">בית</a></li>
             <li><a href="#">מי אנחנו</a></li>
             <li><a href="#">שירות לעסקים</a></li>
             <li><a href="#">שירות ומחירים </a></li>
@@ -14,7 +13,14 @@
             <!-- <button class="black-button" *ngIf="isRegister" (click)="navigate('declaration-main')"> הצהרה חדשה  ></button> -->
             <div *ngIf="isRegister" class="user-info">
                 <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>
+                <!-- <div class="logout">       -->
+                    <a (click)="logout()" class="menu-item">
+                        <i class="pi pi-sign-out"></i>
+                        <!-- <span>התנתקות</span> -->
+                    </a>
+                <!-- </div> -->
                 <button class="black-button" (click)="navigate('declaration-main')">הצהרה חדשה ></button>
+                <button class="black-button" (click)="navigate('dec-query')">הצהרות שלי ></button>
             </div>
         </div>
     </nav>

@@ -6,9 +6,9 @@ import { CardModule } from 'primeng/card';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { UserService } from '../../shared/services/user.service';
 import { InputTextModule } from 'primeng/inputtext';
-import { PasswordModule } from 'primeng/password';
+import { Password, PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 
@@ -24,8 +24,10 @@ export class RegistrationComponent implements OnInit {
   registrationForm!: FormGroup;
   isLoading: boolean = false;
   msg: Message[] = [];
+  showPersonalDetails: boolean = false;
+  user: any
 
-  constructor(private fb: FormBuilder, private userService: UserService, private router: Router) {
+  constructor(private fb: FormBuilder, private userService: UserService, private router: Router, private route: ActivatedRoute) {
     this.registrationForm = this.fb.group({
       FirstName: ['', [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')]],
       LastName: ['', [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')]],
@@ -34,26 +36,57 @@ export class RegistrationComponent implements OnInit {
       Password: ['', [Validators.required, Validators.minLength(6)]],
       CustomerType: ['', [Validators.required]],
       Id: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(9)]],
+      RowId: [null],
     });
   }
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['personalDetails']) {
+        this.showPersonalDetails = true;
+        this.user = JSON.parse(localStorage.getItem('user') || '{}');
 
+        if (this.user) {
+          this.registrationForm.patchValue({
+            FirstName: this.user.FirstName,
+            LastName: this.user.LastName,
+            Mobile: this.user.Mobile,
+            Email: this.user.Email,
+            CustomerType: this.user.CustomerType,
+            Id: this.user.Id,
+            RowId: this.user.RowId,
+            Password: this.user.Password,
+          });
+        }
+      }
+    });
   }
 
   onSubmit() {
     if (this.registrationForm.valid) {
       this.isLoading = true
       console.log(this.registrationForm.value);
-      this.userService.signUp(this.registrationForm.value).subscribe(
-        res => {
+      if (!this.showPersonalDetails) {
+        this.userService.signUp(this.registrationForm.value).subscribe(
+          res => {
+            this.isLoading = false
+            console.log(res);
+            this.router.navigate(['login'], { state: { user: res.body } })
+          }
+        )
+      }
+      //save updated details
+      else {debugger
+        this.userService.editUser(this.user.RowId, this.registrationForm.value).subscribe( res => {
           this.isLoading = false
           console.log(res);
-          this.router.navigate(['login'], { state: { user: res.body } })
-        }
-      )
+          this.msg = [
+            { severity: 'success', summary: '', detail: 'העדכון התבצע בהצלחה' },
+          ];
+        })
+      }
     } else {
       this.msg = [
-        { severity: 'error', summary: 'שליחת מסמך למכס', detail: 'אנא מלא את כל השדות הנדרשים' },
+        { severity: 'error', summary: '', detail: 'אנא מלא את כל השדות הנדרשים' },
       ];
     }
   }

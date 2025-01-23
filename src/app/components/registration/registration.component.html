@@ -3,7 +3,8 @@
     <div class="progress-spinner" *ngIf="isLoading">
       <p-progressSpinner></p-progressSpinner>
     </div>
-    <h2 class="form-title title">הרשמה</h2>
+    <h2 *ngIf="!showPersonalDetails" class="form-title title">הרשמה</h2>
+    <h2 *ngIf="showPersonalDetails" class="form-title title">פרטים אישיים</h2>
 
     <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
       <p-messages class="ui-ltr" dir="ltr" [(value)]="msg" [enableService]="false"></p-messages>
@@ -80,8 +81,11 @@
         </div>
 
         <div class="btnSubmit">
-          <button [ngClass]="{'disabled':registrationForm.invalid }" class="button-primary"
+          <button *ngIf="!showPersonalDetails" [ngClass]="{'disabled':registrationForm.invalid }" class="button-primary"
             [disabled]="registrationForm.invalid">הרשמה</button>
+
+          <button *ngIf="showPersonalDetails" [ngClass]="{'disabled':registrationForm.invalid }" class="button-primary"
+            [disabled]="registrationForm.invalid">שמור</button>
         </div>
       </div>
     </form>

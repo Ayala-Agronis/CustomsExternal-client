@@ -22,6 +22,11 @@ export class UserService {
     return this.http.post<any>(this.userURL, user, { observe: 'response' });
   }
 
+  editUser(id:any, user: Registration): Observable<HttpResponse<any>> {
+    const url = `${this.userURL}/${id}`;
+    return this.http.put<any>(url, user, { observe: 'response' });
+  }
+
   login(user: any): Observable<HttpResponse<any>> {
     return this.http.post<any>(`${this.userURL}login`, user, { observe: 'response' });
   }

@@ -25,8 +25,6 @@ import { StepService } from '../../shared/services/step.service';
   styleUrl: './declaration-query.component.scss'
 })
 export class DeclarationQueryComponent {
-
-
   msgs1: Message[] = [];
 
   declartions: any
@@ -90,19 +88,6 @@ export class DeclarationQueryComponent {
         this.customsStatuses = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 }));
       }),
     ).subscribe();
-
-    // this.eventService.getEventsByEntity$('1').subscribe(res => {
-    //   this.isLoading = false
-    //   this.events = res.map((event: any) => ({
-    //     code: event.EventCode,
-    //     name: event.EventForeignDescription
-    //   })
-    //   )
-    // })
-    // this.route.queryParamMap.subscribe(params => {
-    //   if (params.get('Mode') == 'b')
-    //     this.search();
-    // });
   }
 
   updateEndDateMinDate() {
@@ -110,6 +95,11 @@ export class DeclarationQueryComponent {
       // Set the minimum date for endDate to be the startDate
       this.minEndDate = new Date(this.startDate);
     }
+    this.isFiltered = false
+  }
+
+  handleDateSelect() {
+    this.isFiltered = false
   }
 
   search() {
@@ -210,7 +200,7 @@ export class DeclarationQueryComponent {
 
     // localStorage.setItem('declarationId', declaration.AgentFileReferenceID)
     // this.router.navigateByUrl('app-declaration/new-declaration?Mode=e');
-    localStorage.setItem('currentDecId',declaration.Id)
+    localStorage.setItem('currentDecId', declaration.Id)
     this.router.navigate(['declaration-main/dec-form'], { queryParams: { customsSend: true, 'Mode': 'e' } })
     this.stepService.emitStepCompleted('dec-form');
     // this.router.navigateByUrl('declaration-main/dec-form?Mode=e');

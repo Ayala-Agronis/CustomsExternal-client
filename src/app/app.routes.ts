@@ -6,8 +6,9 @@ export const routes: Routes = [
   { path: '', loadComponent: () => import('./components/home-page/home-page.component').then(c => c.HomePageComponent), pathMatch: 'full', data: { title: 'דף ראשי' } },
   { path: 'home-page', loadComponent: () => import('./components/home-page/home-page.component').then(c => c.HomePageComponent), data: { title: 'דף הבית' } },
   { path: 'register', loadComponent: () => import('./components/registration/registration.component').then(c => c.RegistrationComponent), data: { title: 'הרשמה' } },
+  { path: 'personal-details', loadComponent: () => import('./components/registration/registration.component').then(c => c.RegistrationComponent), data: { title: 'פרטים אישיים' } },
   { path: 'login', loadComponent: () => import('./components/login/login.component').then(c => c.LoginComponent), data: { title: 'התחברות' } },
-  { path: 'callback', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), data: { title: 'התחברות' } },
+  { path: 'callback', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), data: { title: '' } },
   { path: 'independent-payment', loadComponent: () => import('./components/independent-payment/independent-payment.component').then(c => c.IndependentPaymentComponent), data: { title: ' תשלום מיסים באופן עצמאי' } },
   { path: 'dec-query', loadComponent: () => import('./components/declaration-query/declaration-query.component').then(c => c.DeclarationQueryComponent), data: { title: ' הצהרות ' } },
 

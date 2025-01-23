@@ -44,23 +44,24 @@ export class LoginComponent {
       this.loginForm.controls["Email"].patchValue(user.Email);
       this.loginForm.controls["Password"].patchValue(user.Password);
     }
-    this.route.queryParams.subscribe(params => {
-      const code = params['code'];
-      console.log(code);
+    // this.route.queryParams.subscribe(params => {
+    //   const code = params['code'];
+    //   console.log(code);
 
-      if (code)
-        this.userService.getDetails(code).subscribe(res => {
-          console.log(res);
-          if (res.Email)
-            this.userService.loginByGoogle(res).subscribe((res: any) => {
-              console.log(res)
-              this.msg = [
-                { severity: 'success', summary: 'התחברות', detail: 'hi' + res.FirsName },
-              ];
-            }
-            )
-        })
-    });
+    //   if (code)
+    //     this.userService.getDetails(code).subscribe(res => {
+    //       console.log(res);
+    //       if (res.Email)
+    //         this.userService.loginByGoogle(res).subscribe((res: any) => {
+    //           console.log(res)
+
+    //           this.msg = [
+    //             { severity: 'success', summary: 'התחברות', detail: 'hi' + res.FirsName },
+    //           ];
+    //         }
+    //         )
+    //     })
+    // });
   }
 
   loginWithGoogle(): void {
@@ -90,7 +91,7 @@ export class LoginComponent {
             localStorage.setItem('isRegister', "true")
             localStorage.setItem('userId', res.body.user.Id)
             console.log(res.body.user);
-            
+
             const userJson = JSON.stringify(res.body.user);
             localStorage.setItem('user', userJson);
 

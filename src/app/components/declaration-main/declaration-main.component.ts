@@ -14,18 +14,6 @@ import { UserService } from '../../shared/services/user.service';
   styleUrl: './declaration-main.component.scss',
 })
 export class DeclarationMainComponent implements OnInit {
-
-  //   if (this.activeIndex < this.steps.length - 1) {
-  //     this.activeIndex++;
-  //     localStorage.setItem('activeIndex', this.activeIndex.toString())
-  //     if (this.activeIndex == 1) {
-  //       this.router.navigate(['declaration-main/add-doc']);
-  //     } else if (this.activeIndex == 2) {
-  //       this.router.navigate(['declaration-main/commission-payment']);
-  //     }
-  //   }
-  // }
-
   steps = [
     { label: 'הזנת נתוני הצהרה' },
     { label: 'הוספת מסמכים' },
@@ -53,7 +41,6 @@ export class DeclarationMainComponent implements OnInit {
     else {
       this.activeIndex = +savedIndex;
       this.navigateBasedOnStep();
-      //this.nextStep();
     }
 
     this.stepService.stepCompleted$.subscribe((data: any) => {
@@ -72,16 +59,18 @@ export class DeclarationMainComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
       console.log(code);
-
+      
       if (code)
         this.userService.getDetails(code).subscribe(res => {
           console.log(res);
           this.userService.loginByGoogle(res).subscribe((res: any) => {
-            console.log(res)
             console.log(res.body)
-            // this.msg = [
-            //   { severity: 'success', summary: '', detail: 'hi' + res.body.FirstName },
-            // ];
+            localStorage.setItem('isRegister', "true")
+            localStorage.setItem('userId', res.body.Id)
+
+            const userJson = JSON.stringify(res.body);
+            localStorage.setItem('user', userJson);
+            this.router.navigate(['declaration-main/dec-form']);
           })
         })
     });
@@ -92,21 +81,11 @@ export class DeclarationMainComponent implements OnInit {
   }
 
   restart() {
-    localStorage.setItem('currentDecId','')
+    this.activeIndex = 0
+    localStorage.setItem('currentDecId', '')
     localStorage.setItem("activeIndex", "0")
   }
 
-  // nextStep(): void {
-  //   if (this.activeIndex < this.steps.length - 1) {
-  //     this.activeIndex++;
-  //     localStorage.setItem('activeIndex', this.activeIndex.toString())
-  //     if (this.activeIndex == 1) {
-  //       this.router.navigate(['declaration-main/add-doc']);
-  //     } else if (this.activeIndex == 2) {
-  //       this.router.navigate(['declaration-main/commission-payment']);
-  //     }
-  //   }
-  // }
   nextStep(): void {
     if (this.activeIndex < this.steps.length - 1) {
       this.activeIndex++;
@@ -124,23 +103,22 @@ export class DeclarationMainComponent implements OnInit {
   }
 
   navigateBasedOnStep(): void {
+    let navigationExtras: any = {};
+
+    if (this.mode === 'e') {
+      navigationExtras.queryParams = { 'Mode': 'e' };
+    }
+
     if (this.activeIndex === 1) {
-      this.router.navigate(['declaration-main/add-doc']);
+      this.router.navigate(['declaration-main/add-doc'], navigationExtras);
     } else if (this.activeIndex === 2) {
-      this.router.navigate(['declaration-main/commission-payment']);
-    }
-    else if (this.activeIndex === 3) {
-      this.router.navigate(['declaration-main/independent-payment'])
-    }
-    else if (this.activeIndex === 4) {
-      this.router.navigate(['declaration-main/dec-print'])
-    }
-    else if (this.activeIndex === 0) {
-      if (this.mode == 'e') {
-        this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e' } })
-      }
-      else
-        this.router.navigate(['declaration-main/dec-form']);
+      this.router.navigate(['declaration-main/commission-payment'], navigationExtras);
+    } else if (this.activeIndex === 3) {
+      this.router.navigate(['declaration-main/independent-payment'], navigationExtras);
+    } else if (this.activeIndex === 4) {
+      this.router.navigate(['declaration-main/dec-print'], navigationExtras);
+    } else if (this.activeIndex === 0) {
+      this.router.navigate(['declaration-main/dec-form'], navigationExtras);
     }
   }
 

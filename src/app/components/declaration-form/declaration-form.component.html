@@ -11,14 +11,14 @@
         <div class="form-group">
             <div class="form-item">
                 <label>מזהה יבואן </label>
-                <input pInputText formControlName="ImporterID" readonly>
+                <input pInputText formControlName="ImporterID" readonly class="readonly-field">
             </div>
             <!-- <div class="form-item">
                 <label>מספר טלפון</label>
                 <input pInputText>
             </div> -->
             <div class="form-item">
-                <label for="customsProcess">תהליך מכס</label>
+                <label for="customsProcess">תהליך מכס <span class="required">*</span></label>
                 <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
                     inputId="autocomplete" [suggestions]="filteredCustomsProcess"
                     (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
@@ -32,23 +32,26 @@
 
         <div formGroupName="Consignments">
             <div class="form-group">
-                <div class="form-item">
-                    <label> שנה</label>
-                    <input pInputText formControlName="TransportContractDocumentID" (blur)="onCargoIDBlur()">
+                <div class="form-item" >
+                    <label> שנה <span class="required">*</span></label>
+                    <input pInputText formControlName="TransportContractDocumentID" (blur)="onCargoIDBlur(1)">
                 </div>
                 <div class="form-item">
-                    <label> מזהה מטען ראשי </label>
-                    <input pInputText formControlName="SecondCargoID" (blur)="onCargoIDBlur()">
+                    <label> מזהה מטען ראשי <span class="required">*</span></label>
+                    <input pInputText formControlName="SecondCargoID" (blur)="onCargoIDBlur(2)" maxlength="12" minlength="11">
+                </div>
+                <div class="error" *ngIf="secondCargoIDError" >
+                    {{ secondCargoIDError }}
                 </div>
                 <div class="form-item">
                     <label>מזהה מטען פנימי</label>
-                    <input pInputText formControlName="ThirdCargoID">
+                    <input pInputText formControlName="ThirdCargoID" (blur)="onCargoIDBlur(3)">
                 </div>
             </div>
             <h3>פרטי משלוח</h3>
             <div class="form-group">
                 <div class="form-item">
-                    <label>ארץ יצוא</label>
+                    <label>ארץ יצוא <span class="required">*</span></label>
                     <p-autoComplete [forceSelection]="true" formControlName="ExportationCountryCode" [required]="true"
                         inputId="autocomplete" [suggestions]="filteredCountryOfExport"
                         (completeMethod)="filterCountryOfExport($event)" field="name" [dropdown]="true"
@@ -56,27 +59,27 @@
                 </div>
 
                 <div class="form-item">
-                    <label> אתר טעינה</label>
+                    <label> אתר טעינה <span class="required">*</span></label>
                     <p-autoComplete [forceSelection]="true" id="chargingCountry" formControlName="LoadingLocation"
                         inputId="autocomplete" [suggestions]="currentFilteredChargingCountry"
                         (completeMethod)="filterChargingCountry($event)" field="name" [dropdown]="true">
                     </p-autoComplete>
                 </div>
                 <div class="form-item">
-                    <label>אתר פריקה</label>
+                    <label>אתר פריקה <span class="required">*</span></label>
                     <p-autoComplete [forceSelection]="true" id="unpackingSite" formControlName="UnloadingLocationID"
                         inputId="autocomplete" [suggestions]="filteredUnpackingSite"
                         (completeMethod)="filterUnpackingSite($event)" field="name" [dropdown]="true">
                     </p-autoComplete>
                 </div>
                 <div class="form-item">
-                    <label> תאריך הגעת טובין: </label>
+                    <label> תאריך הגעת טובין <span class="required">*</span> </label>
                     <p-calendar formControlName="ArrivalDateTime" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
                 </div>
             </div>
             <div class="form-group">
                 <div class="form-item">
-                    <label> סוג מזהה מטען:</label>
+                    <label> סוג מזהה מטען <span class="required">*</span></label>
                     <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
                         formControlName="TransportContractDocumentTypeCode" inputId="autocomplete"
                         [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)" field="name"
@@ -84,7 +87,7 @@
                     </p-autoComplete>
                 </div>
                 <div class="form-item">
-                    <label>תיאור טובין</label>
+                    <label>תיאור טובין <span class="required">*</span></label>
                     <input pInputText formControlName="CargoDescription">
                 </div>
             </div>
@@ -117,32 +120,32 @@
                     <h3>חשבוניות וסחורות</h3>
                     <div class="form-group">
                         <div class="form-item">
-                            <label> מספר חשבונית ספק</label>
+                            <label> מספר חשבונית ספק <span class="required">*</span></label>
                             <input pInputText formControlName="InvoiceNumber">
                         </div>
                         <div class="form-item">
-                            <label>שם ספק</label>
+                            <label>שם ספק <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID"
                                 inputId="autocomplete" [suggestions]="filteredSupplierID"
                                 (completeMethod)="filterSupplierID($event)" field="name" [dropdown]="true">
                             </p-autoComplete>
                         </div>
                         <div class="form-item">
-                            <label> מטבע חשבון </label>
+                            <label> מטבע חשבון <span class="required">*</span></label>
                             <p-autoComplete formControlName="CurrencyCode" (completeMethod)="filterCurrencyCode($event)"
                                 [suggestions]="filteredCurrencyCode" [forceSelection]="true" field="code"
                                 [dropdown]="true">
                             </p-autoComplete>
                         </div>
                         <div class="form-item">
-                            <label>תאריך חשבון מכר</label>
+                            <label>תאריך חשבון מכר <span class="required">*</span></label>
                             <p-calendar formControlName="IssueDateTime" [showIcon]="true"
                                 dateFormat="dd/mm/yy"></p-calendar>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="form-item">
-                            <label> ארץ יצוא </label>
+                            <label> ארץ יצוא <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="LocationID" class="ng-dirty"
                                 inputId="autocomplete" [suggestions]="filteredCountryOfExport"
                                 (completeMethod)="filterCountryOfExport($event)" field="name"
@@ -150,20 +153,20 @@
                             <!-- <input formControlName="LocationID"> -->
                         </div>
                         <div class="form-item">
-                            <label> תנאי מכר </label>
+                            <label> תנאי מכר <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" id="TradeTermsConditionCode"
                                 formControlName="TradeTermsConditionCode" inputId="autocomplete"
                                 [suggestions]="filteredTradeTermsConditionCode"
-                                (completeMethod)="filterTradeTermsConditionCode($event)" field="name" [dropdown]="true">
+                                (completeMethod)="filterTradeTermsConditionCode($event)" field="name" [dropdown]="true" (onSelect)="onTradeTermsSelect($event)">
                             </p-autoComplete>
                         </div>
                         <div class="form-item">
-                            <label>סה"כ חשבון </label>
+                            <label>סה"כ חשבון <span class="required">*</span></label>
                             <input pInputText formControlName="InvoiceAmount">
                         </div>
                     </div>
                 </div>
-                <div class="valuations">
+                <div class="valuations" *ngIf="showCustomsValuation">
                     <h4>התאמות / הפחתות</h4>
                     <div class="valuation-items">
                         <div class="valuation-item" *ngFor="let item of getValuationValue().controls; let i = index">
@@ -186,7 +189,7 @@
                 
                                 <div class="amount">
                                     <label>סה"כ:</label>
-                                    <input formControlName="OtherChargeDeductionAmount" type="number" 
+                                    <input [formControl]="getOtherChargeDeductionAmountControl(i) " type="number" field="code"
                                         pInputText />
                                 </div>
                             </div>
@@ -194,7 +197,6 @@
                     </div>
                 </div>
                 
-                <!-- [formControl]="item.get('OtherChargeDeductionAmount') "  -->
 
                 <!-- <div class="valuations">
                     <h4>התאמות / הפחתות</h4>
@@ -281,7 +283,7 @@
                             <td pEditableColumn>
                                 <p-cellEditor>
                                     <ng-template pTemplate="input">
-                                        <input pInputText type="text" formControlName="ClassificationID">
+                                        <input pInputText type="text" formControlName="ClassificationID" (blur)="onClassificationIDBlur(rowIndex)">
                                     </ng-template>
                                     <ng-template pTemplate="output">
                                         {{SupplierInvoiceItems.controls[rowIndex].get("ClassificationID")?.value}}
