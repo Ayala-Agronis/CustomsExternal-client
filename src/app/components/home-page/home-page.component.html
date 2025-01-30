@@ -1,27 +1,29 @@
 <header>
     <nav class="navbar">
-        <!-- <div class="logo">מכס נגיש</div> -->
-        <ul class="nav-links">
+        <!-- <ul class="nav-links">
             <li><a href="#">מי אנחנו</a></li>
             <li><a href="#">שירות לעסקים</a></li>
             <li><a href="#">שירות ומחירים </a></li>
             <li><a href="#">דברו איתנו</a></li>
-        </ul>
+            <li *ngIf="isRegister">
+                <p-menu [model]="menuItems"></p-menu>
+            </li>
+        </ul> -->
+        <p-menubar [model]="menuItems"></p-menubar>
+
         <div class="content">
             <button class="gray-button" *ngIf="!isRegister" (click)="navigate('register')">הרשמה </button>
             <button class="gray-button" *ngIf="!isRegister" (click)="navigate('login')">התחברות </button>
-            <!-- <button class="black-button" *ngIf="isRegister" (click)="navigate('declaration-main')"> הצהרה חדשה  ></button> -->
             <div *ngIf="isRegister" class="user-info">
-                <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>
-                <!-- <div class="logout">       -->
-                    <a (click)="logout()" class="menu-item">
-                        <i class="pi pi-sign-out"></i>
-                        <!-- <span>התנתקות</span> -->
-                    </a>
-                <!-- </div> -->
+                <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>                 
                 <button class="black-button" (click)="navigate('declaration-main')">הצהרה חדשה ></button>
                 <button class="black-button" (click)="navigate('dec-query')">הצהרות שלי ></button>
             </div>
+            <span *ngIf="!isClientAuthorized" class="power-of-attorney-message">
+                יש למלא <a href="https://www.gov.il/he/service/power-of-attorney" target="_blank" class="power-of-attorney-link">יפוי כח</a>
+                <i class="pi pi-exclamation-circle" style="margin-right: 10px;"></i>
+            </span> 
+            <!-- <span class="power-of-attorney-message" *ngIf="!isClientAuthorized">יש למלא יפוי כח</span>  -->
         </div>
     </nav>
 </header>

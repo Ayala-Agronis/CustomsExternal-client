@@ -122,16 +122,13 @@ export class AddDocumentsComponent {
         map(_ => this.loading = false)
       ).subscribe(
         res => {
-          console.log(res);
           console.log(this.documents);
           this.groupDocumentsByType()
         },
         error => {
           this.loading = false
           this.documents = []
-          this.msgs1 = [
-            { severity: 'error', summary: 'מסמכי הצהרה', detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}` },
-          ];
+        
         })
     }
   }

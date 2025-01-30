@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
@@ -22,6 +22,20 @@ export class CustomsDataService {
 
   GetSeq$(type: any): Observable<any> {
     return this.http.get<any>(`${environment.customsdbApiUrl}GetSeq/${type}`);
+  }
+
+  GetClient$(ID: any): Observable<any>  {
+    let body = new HttpParams()
+      .set('Id',ID)
+      .set('Passport','')
+
+    return this.http.post(`${environment.customsApiUrl}ImporterDetails`,
+      body.toString(),
+      {
+        headers: new HttpHeaders()
+          .set('Content-Type', 'application/x-www-form-urlencoded')
+      }
+    );
   }
 
 

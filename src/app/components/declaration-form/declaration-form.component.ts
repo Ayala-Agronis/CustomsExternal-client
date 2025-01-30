@@ -1,5 +1,5 @@
 import { CommonModule, FormatWidth, JsonPipe } from '@angular/common';
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,7 +8,8 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
-import { BehaviorSubject, forkJoin, map, of, Subject, takeUntil, tap } from 'rxjs';
+import { TabViewModule } from 'primeng/tabview';
+import { BehaviorSubject, forkJoin, map, min, of, Subject, takeUntil, tap } from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
 import { StepService } from '../../shared/services/step.service';
@@ -21,7 +22,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 @Component({
   selector: 'app-declaration-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, CardModule, ProgressSpinnerModule, MessagesModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule, ConfirmDialogModule],
+  imports: [CommonModule, ReactiveFormsModule, TabViewModule, CardModule, ProgressSpinnerModule, MessagesModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule, ConfirmDialogModule],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss',
   providers: [ConfirmationService, MessageService],
@@ -72,9 +73,9 @@ export class DeclarationFormComponent implements OnInit {
 
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
-  showCustomsValuation: boolean = false;
+  showCustomsValuation: boolean[] = [];
 
-  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService) { }
+  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private cd: ChangeDetectorRef, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -259,8 +260,8 @@ export class DeclarationFormComponent implements OnInit {
     });
   }
 
-  getOtherChargeDeductionAmountControl(index: number): FormControl {
-    const control = this.getValuationValue().at(index).get('OtherChargeDeductionAmount');
+  getOtherChargeDeductionAmountControl(suplierInvoiceIndex: any, index: number): FormControl {
+    const control = this.getValuationValue(suplierInvoiceIndex).at(index).get('OtherChargeDeductionAmount');
     return control as FormControl;
   }
 
@@ -319,57 +320,77 @@ export class DeclarationFormComponent implements OnInit {
         GrossMassMeasure: this.formBuilder.control(''),
         //MarksNumbers: this.formBuilder.control(''),
       }),
-      SupplierInvoices: this.formBuilder.group({
-        InvoiceNumber: this.formBuilder.control('', Validators.required),
-        SupplierID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-        IssueDateTime: this.formBuilder.control(new Date(), Validators.required),
-        InvoiceAmount: this.formBuilder.control('', Validators.required),
-        InvoiceTypeCode: this.formBuilder.control({ name: 'חשבון מכר', code: '380' }, Validators.required),
-        CurrencyCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-        LocationID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-        TradeTermsConditionCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-        Id: this.formBuilder.control(null),
-        CustomsValuation: this.formBuilder.array([
-          this.formBuilder.group({
-            ID: this.formBuilder.control(null),
-            ChargesTypeCode: this.formBuilder.control({ name: 'ביטוח', code: '67' }),
-            CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
-            OtherChargeDeductionAmount: this.formBuilder.control(0)
-          }),
-          this.formBuilder.group({
-            ID: this.formBuilder.control(null),
-            ChargesTypeCode: this.formBuilder.control({ name: 'הובלה', code: '144' }),
-            CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
-            OtherChargeDeductionAmount: this.formBuilder.control(0)
-          })
-        ]),
-        SupplierInvoiceItems: this.formBuilder.array([])
-      })
+      // SupplierInvoices: this.formBuilder.group({
+      //   InvoiceNumber: this.formBuilder.control('', Validators.required),
+      //   SupplierID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      //   IssueDateTime: this.formBuilder.control(new Date(), Validators.required),
+      //   InvoiceAmount: this.formBuilder.control('', Validators.required),
+      //   InvoiceTypeCode: this.formBuilder.control({ name: 'חשבון מכר', code: '380' }, Validators.required),
+      //   CurrencyCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      //   LocationID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      //   TradeTermsConditionCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      //   Id: this.formBuilder.control(null),
+      //   CustomsValuation: this.formBuilder.array([
+      //     this.formBuilder.group({
+      //       ID: this.formBuilder.control(null),
+      //       ChargesTypeCode: this.formBuilder.control({ name: 'ביטוח', code: '67' }),
+      //       CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
+      //       OtherChargeDeductionAmount: this.formBuilder.control(0)
+      //     }),
+      //     this.formBuilder.group({
+      //       ID: this.formBuilder.control(null),
+      //       ChargesTypeCode: this.formBuilder.control({ name: 'הובלה', code: '144' }),
+      //       CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
+      //       OtherChargeDeductionAmount: this.formBuilder.control(0)
+      //     })
+      //   ]),
+      //   SupplierInvoiceItems: this.formBuilder.array([])
+      // })
+      SupplierInvoices: this.formBuilder.array([this.createSupplierInvoice()])
     });
-    if (this.mode != 'e')
-      this.addNewInvoiceItem();
+    // if (this.mode != 'e')
+    //   this.addNewInvoiceItem(0);
   }
 
-  get SupplierInvoiceItems(): FormArray {
-    return this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray
-  }
-
-  addNewInvoiceItem(): void {
-    const invoiceItemsArray = this.generalDeclarationForm.get(`SupplierInvoices.SupplierInvoiceItems`) as FormArray;
-    invoiceItemsArray?.push(this.createSupplierInvoiceItem());
-  }
-
-  private createSupplierInvoiceItem(): FormGroup {
+  createSupplierInvoice(): FormGroup {
     return this.formBuilder.group({
-      ClassificationID: this.formBuilder.control('', Validators.required),
-      MeasureQualifier: this.formBuilder.control(null),
-      CustomsValueAmount: this.formBuilder.control(null, Validators.required),
-      AmountType: this.formBuilder.control('', Validators.required),
-      OriginCountryCode: this.formBuilder.control({ name: '', code: '' }, Validators.required)
+      InvoiceNumber: this.formBuilder.control('', Validators.required),
+      SupplierID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      IssueDateTime: this.formBuilder.control(new Date(), Validators.required),
+      InvoiceAmount: this.formBuilder.control('', Validators.required),
+      InvoiceTypeCode: this.formBuilder.control({ name: 'חשבון מכר', code: '380' }, Validators.required),
+      CurrencyCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      LocationID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      TradeTermsConditionCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      Id: this.formBuilder.control(null),
+      CustomsValuation: this.formBuilder.array([
+        this.formBuilder.group({
+          ID: this.formBuilder.control(null),
+          ChargesTypeCode: this.formBuilder.control({ name: 'ביטוח', code: '67' }),
+          CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
+          OtherChargeDeductionAmount: this.formBuilder.control(0, Validators.min(0))
+        }),
+        this.formBuilder.group({
+          ID: this.formBuilder.control(null),
+          ChargesTypeCode: this.formBuilder.control({ name: 'הובלה', code: '144' }),
+          CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
+          OtherChargeDeductionAmount: this.formBuilder.control(0, )
+          // OtherChargeDeductionAmount: this.formBuilder.control(1, [Validators.required, Validators.min(1)])
+        })
+      ]),
+      SupplierInvoiceItems: this.formBuilder.array([this.createSupplierInvoiceItem()]),
     });
   }
+  
+  get supplierInvoices(): FormArray {
+    return this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+  }
 
-  onDeleteRow(rowData: any, index: any): void {
+  addSupplierInvoice(): void {
+    this.supplierInvoices.push(this.createSupplierInvoice());
+  }
+
+  removeSupplierInvoice(rowData: any, index: any) {
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
         message: 'האם אתה בטוח שברצונך למחוק?',
@@ -379,19 +400,50 @@ export class DeclarationFormComponent implements OnInit {
       });
     }
     else {
-      const supplierInvoice = this.generalDeclarationForm.get('SupplierInvoices') as FormGroup;
-      const supplierInvoiceItems = supplierInvoice.get('SupplierInvoiceItems') as FormArray;
+      this.supplierInvoices.removeAt(index);
+    }
+    this.cd.detectChanges();
+  }
+
+  GetSupplierInvoiceItems(index: any): FormArray {
+    return (this.generalDeclarationForm.get(`SupplierInvoices`) as FormArray).controls[index].get("SupplierInvoiceItems") as FormArray
+  }
+
+  addNewInvoiceItem(i: any): void {
+    const invoiceItemsArray = this.GetSupplierInvoiceItems(i);
+    invoiceItemsArray?.push(this.createSupplierInvoiceItem());
+  }
+
+  private createSupplierInvoiceItem(): FormGroup {
+    return this.formBuilder.group({
+      ClassificationID: this.formBuilder.control('', Validators.required),
+      MeasureQualifier: this.formBuilder.control(null),
+      CustomsValueAmount: this.formBuilder.control(null, Validators.required),
+      AmountType: this.formBuilder.control('', Validators.required),
+      OriginCountryCode: this.formBuilder.control(null, Validators.required)
+    });
+  }
+
+  onDeleteRow(rowData: any, index: any, suplierInvoiceIndex: any): void {
+    if (rowData?.controls?.Id?.value) {
+      this.confirmationService.confirm({
+        message: 'האם אתה בטוח שברצונך למחוק?',
+        accept: () => {
+          rowData.patchValue({ Id: -rowData.controls.Id.value });
+        }
+      });
+    }
+    else {
+      const supplierInvoiceItems = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
 
       supplierInvoiceItems.removeAt(index);
 
     }
   }
 
-  onClassificationIDBlur(index: any) {
-    // this.errorMessage = '';
-    // this.importerName = ''
-
-    const tableRowArray = this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray;
+  onClassificationIDBlur(index: any, suplierInvoiceIndex: any) {
+    const tableRowArray = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
+    // const tableRowArray = this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray;
     const classificationID = tableRowArray.controls[index].get('ClassificationID');
     const MeasureQualifier = tableRowArray.controls[index].get('MeasureQualifier');
 
@@ -404,11 +456,8 @@ export class DeclarationFormComponent implements OnInit {
             MeasureQualifier?.patchValue(responseData.customsItemField[0].statisticMeasurementUnitExternalIDField)
             MeasureQualifier?.setErrors(null);
           }
-          else {
-            // this.errorMessage = responseData.responseContentHeaderField.exceptionField[0].exeptionDescriptionField
-            // MeasureQualifier?.patchValue(this.errorMessage)
-            // MeasureQualifier?.setErrors({ invalidError: true });
-          }
+          // else {        
+          // }
         },
         error: (err) => {
           console.error('Error fetching client data:', err);
@@ -418,8 +467,10 @@ export class DeclarationFormComponent implements OnInit {
   }
 
 
-  getValuationValue(): FormArray {
-    return this.generalDeclarationForm.get('SupplierInvoices.CustomsValuation') as FormArray;
+  getValuationValue(index: any): FormArray {
+
+    return (this.generalDeclarationForm.get(`SupplierInvoices`) as FormArray).controls[index].get("CustomsValuation") as FormArray
+    // return this.generalDeclarationForm.get('SupplierInvoices.CustomsValuation') as FormArray;
   }
 
   convertToDecObj(dec: any) {
@@ -434,39 +485,47 @@ export class DeclarationFormComponent implements OnInit {
 
     const supplierInvoices = dec.SupplierInvoices;
 
-    supplierInvoices.SupplierID = supplierInvoices.SupplierID.code
-      ? String(supplierInvoices.SupplierID.code)
-      : String(supplierInvoices.SupplierID);
-    supplierInvoices.CurrencyCode = supplierInvoices.CurrencyCode.code ? supplierInvoices.CurrencyCode.code : supplierInvoices.CurrencyCode;
-    supplierInvoices.LocationID = supplierInvoices.LocationID.code ? supplierInvoices.LocationID.code : supplierInvoices.LocationID;
-    supplierInvoices.TradeTermsConditionCode = supplierInvoices.TradeTermsConditionCode.code ? supplierInvoices.TradeTermsConditionCode.code : supplierInvoices.TradeTermsConditionCode;
-    supplierInvoices.InvoiceTypeCode = supplierInvoices.InvoiceTypeCode.code ? supplierInvoices.InvoiceTypeCode.code : supplierInvoices.InvoiceTypeCode;
+    supplierInvoices.forEach((invoice: any) => {
+      // invoice.InvoicesAndGoods ? invoice.InvoicesAndGoods = invoice.InvoicesAndGoods?.code : '';
+      invoice.InvoiceTypeCode ? invoice.InvoiceTypeCode = invoice.InvoiceTypeCode?.code : '';
+      invoice.LocationID ? invoice.LocationID = invoice.LocationID?.code : '';
+      invoice.SupplierID ? invoice.SupplierID = invoice.SupplierID?.code : '';
+      invoice.TradeTermsConditionCode ? invoice.TradeTermsConditionCode = invoice.TradeTermsConditionCode?.code : '';
+      invoice.CurrencyCode ? invoice.CurrencyCode = invoice.CurrencyCode?.code : '';
 
-    const CustomsValuation = supplierInvoices.CustomsValuation
-    if (CustomsValuation) {
-      CustomsValuation?.forEach((element: any) => {
-        element.ChargesTypeCode = element.ChargesTypeCode?.code ? element.ChargesTypeCode?.code : element.ChargesTypeCode;
-        element.CurrencyCode = element.CurrencyCode?.code ? element.CurrencyCode?.code : element.CurrencyCode;
-      });
-    }
+      const customValuation = invoice.CustomsValuation ? invoice.CustomsValuation : null;
+      if (customValuation) {
+        customValuation.forEach((element: any) => {
+          element.ChargesTypeCode = element.ChargesTypeCode?.code ? element.ChargesTypeCode?.code : element.ChargesTypeCode;
+          element.CurrencyCode = element.CurrencyCode?.code ? element.CurrencyCode?.code : element.CurrencyCode;
+        });
+      }
 
-    const SupplierInvoiceItems = supplierInvoices.SupplierInvoiceItems
-    if (SupplierInvoiceItems) {
-      SupplierInvoiceItems?.forEach((element: any) => {
-        element.OriginCountryCode = element.OriginCountryCode?.code ? element.OriginCountryCode?.code : element.OriginCountryCode;
-      });
-    }
+      const SupplierInvoiceItems = invoice.SupplierInvoiceItems;
+
+      if (SupplierInvoiceItems) {
+        SupplierInvoiceItems?.forEach((element: any) => {
+          element.Id == "" ? element.Id = null : element.Id = element.Id;
+          // if (element.DutyRegimeCode?.code == '')
+          //   element.DutyRegimeCode = null
+          // element.DutyRegimeCode = element.DutyRegimeCode?.code ? element.DutyRegimeCode?.code : element.DutyRegimeCode;
+          element.OriginCountryCode = element.OriginCountryCode?.code ? element.OriginCountryCode?.code : element.OriginCountryCode;
+        });
+      }
+
+      // invoice.SupplierInvoiceItems = invoice.SupplierInvoiceItems?.tableRowArray
+    });
 
     dec.Id = localStorage.getItem('currentDecId')
     dec.RoleCode = '1'
     dec.TaxationDateTime = new Date()
     dec.CreateDateTime = new Date()
-    // this.perfectDecalartion = dec
+
     this.perfectDecalartion = JSON.parse(JSON.stringify(dec));
 
     this.perfectDecalartion.Consignments = [dec.Consignments]
     this.perfectDecalartion.ConsignmentPackagesMeasures = [dec.ConsignmentPackagesMeasures]
-    this.perfectDecalartion.SupplierInvoices = [dec.SupplierInvoices];
+    this.perfectDecalartion.SupplierInvoices = dec.SupplierInvoices;
     return this.perfectDecalartion;
   }
 
@@ -605,63 +664,54 @@ export class DeclarationFormComponent implements OnInit {
         })
 
         // --SupplierInvoices--
-        const supplierInvoicesForm = this.generalDeclarationForm.controls['SupplierInvoices'];
+        const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
 
-        const matchingSupplierID = this.declarationSupplierID.find((element: { code: any }) => element.code == currentDec?.SupplierInvoices[0]?.SupplierID);
-        if (matchingSupplierID) {
-          supplierInvoicesForm.patchValue({ 'SupplierID': matchingSupplierID });
-        }
+        supplierInvoicesFormArray.clear();
 
-        const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == currentDec?.SupplierInvoices[0]?.CurrencyCode);
-        if (matchingCurrencyCode) {
-          supplierInvoicesForm.patchValue({ 'CurrencyCode': matchingCurrencyCode });
-        }
+        currentDec.SupplierInvoices.forEach((invoice: any) => {
+          const matchingSupplierID = this.declarationSupplierID.find((element: { code: any }) => element.code == invoice.SupplierID);
+          const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == invoice.CurrencyCode);
+          const matchingLocationID = this.declarationCountryOfExport.find((element: { code: any }) => element.code == invoice.LocationID);
+          const matchingTradeTermsConditionCode = this.declarationTradeTermsConditionCode.find((element: { code: any }) => element.code == invoice.TradeTermsConditionCode);
 
-        const matchingLocationID = this.declarationCountryOfExport.find((element: { code: any }) => element.code == currentDec?.SupplierInvoices[0]?.LocationID);
-        if (matchingLocationID) {
-          supplierInvoicesForm.patchValue({ 'LocationID': matchingLocationID });
-        }
+          const invoiceGroup = this.formBuilder.group({
+            'SupplierID': [matchingSupplierID, Validators.required],
+            'CurrencyCode': [matchingCurrencyCode, Validators.required],
+            'LocationID': [matchingLocationID, Validators.required],
+            'TradeTermsConditionCode': [matchingTradeTermsConditionCode, Validators.required],
+            'InvoiceNumber': [invoice.InvoiceNumber, Validators.required],
+            'IssueDateTime': [new Date(invoice.IssueDateTime), Validators.required],
+            'InvoiceAmount': [invoice.InvoiceAmount, Validators.required],
+            'Id': [invoice.Id],
 
-        const matchingTradeTermsConditionCode = this.declarationTradeTermsConditionCode.find((element: { code: any }) => element.code == currentDec?.SupplierInvoices[0]?.TradeTermsConditionCode);
-        if (matchingTradeTermsConditionCode) {
-          supplierInvoicesForm.patchValue({ 'TradeTermsConditionCode': matchingTradeTermsConditionCode });
-        }
+            // --CustomsValuation--
+            'CustomsValuation': this.formBuilder.array(invoice.CustomsValuation.map((item: any, index: any) => {
+              const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == item.CurrencyCode);
+              return this.formBuilder.group({
+                'ChargesTypeCode': !index ? { name: 'ביטוח', code: '67' } : { name: 'הובלה', code: '144' },
+                'CurrencyCode': [matchingCurrencyCode, Validators.required],
+                'OtherChargeDeductionAmount': [item.OtherChargeDeductionAmount,],
+                // 'OtherChargeDeductionAmount': [item.OtherChargeDeductionAmount, [Validators.required, index ? Validators.min(1) : Validators.min(0)]],
+                'ID': [item.ID],
+              });
+            })),
 
-        supplierInvoicesForm.patchValue({
-          'InvoiceNumber': currentDec?.SupplierInvoices[0]?.InvoiceNumber,
-          'IssueDateTime': new Date(currentDec?.SupplierInvoices[0]?.IssueDateTime),
-          'InvoiceAmount': currentDec?.SupplierInvoices[0]?.InvoiceAmount,
-          'Id': currentDec?.SupplierInvoices[0]?.Id,
+            // --SupplierInvoiceItems--
+
+            'SupplierInvoiceItems': this.formBuilder.array(invoice.SupplierInvoiceItems.map((item: any) => {
+              const matchingOriginCountryCode = this.declarationCountryOfExport.find((element: { code: any }) => element.code == item.OriginCountryCode);
+              return this.formBuilder.group({
+                'Id': [item.Id, Validators.required],
+                'ClassificationID': [item.ClassificationID, Validators.required],
+                'CustomsValueAmount': [item.CustomsValueAmount, Validators.required],
+                'AmountType': [item.AmountType, Validators.required],
+                'OriginCountryCode': [matchingOriginCountryCode, Validators.required]
+              });
+            }))
+          });
+
+          supplierInvoicesFormArray.push(invoiceGroup);
         });
-        //--CustomsValuation--
-
-        if (currentDec?.SupplierInvoices[0]?.CustomsValuation) {
-          const supplierInvoiceItemsFormArray = supplierInvoicesForm.get('CustomsValuation') as FormArray;
-          currentDec.SupplierInvoices[0].CustomsValuation.forEach((item: any, index: any) => {
-            const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == item.CurrencyCode);
-
-            supplierInvoiceItemsFormArray.controls[index].get("CurrencyCode")?.patchValue(matchingCurrencyCode)
-            supplierInvoiceItemsFormArray.controls[index].get("OtherChargeDeductionAmount")?.patchValue(item.OtherChargeDeductionAmount);
-            supplierInvoiceItemsFormArray.controls[index].get("ID")?.patchValue(item.ID);
-
-          });
-        }
-
-        // --SupplierInvoiceItems--
-        if (currentDec?.SupplierInvoices[0]?.SupplierInvoiceItems) {
-          const supplierInvoiceItemsFormArray = supplierInvoicesForm.get('SupplierInvoiceItems') as FormArray;
-          currentDec.SupplierInvoices[0].SupplierInvoiceItems.forEach((item: any) => {
-            const matchingOriginCountryCode = this.declarationCountryOfExport.find((element: { code: any }) => element.code == item.OriginCountryCode);
-
-            supplierInvoiceItemsFormArray.push(this.formBuilder.group({
-              'Id': this.formBuilder.control(item.Id, Validators.required),
-              'ClassificationID': this.formBuilder.control(item.ClassificationID, Validators.required),
-              'CustomsValueAmount': this.formBuilder.control(item.CustomsValueAmount, Validators.required),
-              'AmountType': this.formBuilder.control(item.AmountType, Validators.required),
-              'OriginCountryCode': this.formBuilder.control(matchingOriginCountryCode, Validators.required)
-            }));
-          });
-        }
       }
     });
   }
@@ -733,18 +783,36 @@ export class DeclarationFormComponent implements OnInit {
     this.generalDeclarationForm.get("Consignments.LoadingLocation")?.setValue('');
   }
 
-  onTradeTermsSelect(event: any) {
+  onTradeTermsSelect(event: any, i: any) {
     const code = event?.value.code;
     if (code) {
       const codes = ['FCA', 'FOB', 'EXW', 'FAS'];
 
       if (codes.includes(code)) {
-        this.showCustomsValuation = true;
+        this.showCustomsValuation[i] = true;
+        this.updateValuationValidators(i);
       } else {
-        this.showCustomsValuation = false
-      }
+        this.showCustomsValuation[i] = false
+      }    
     }
   }
+
+  updateValuationValidators(i: number) {
+    const supplierInvoice = this.generalDeclarationForm.get('SupplierInvoices') as FormArray
+    const customsValuation = supplierInvoice.at(i).get('CustomsValuation') as FormArray;
+    const control = customsValuation.controls[1];
+  
+    const chargesTypeControl = control.get('ChargesTypeCode');
+    const otherChargeControl = control.get('OtherChargeDeductionAmount');
+  
+    if (this.showCustomsValuation[i]) {
+      if (chargesTypeControl?.value.name === 'הובלה') {
+        otherChargeControl?.setValidators([Validators.required, Validators.min(1)]);
+      } 
+    }  
+    otherChargeControl?.updateValueAndValidity();
+  }
+  
 
   filterChargingCountryByExportCode() {
     const exportCountryCode = this.generalDeclarationForm.get("Consignments")?.get("ExportationCountryCode")?.value.code;

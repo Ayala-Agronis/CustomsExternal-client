@@ -71,13 +71,24 @@ export class RegistrationComponent implements OnInit {
             this.isLoading = false
             console.log(res);
             this.router.navigate(['login'], { state: { user: res.body } })
+          },
+          err =>{
+            this.isLoading = false
+            console.log(err);
+            this.msg = [
+              { severity: 'error', summary: '', detail: err.error.Message},
+            ];
           }
         )
       }
       //save updated details
-      else {debugger
+      else {
         this.userService.editUser(this.user.RowId, this.registrationForm.value).subscribe( res => {
-          this.isLoading = false
+          this.isLoading = false;
+
+          const userJson = JSON.stringify(res.body);
+          localStorage.setItem('user', userJson);
+
           console.log(res);
           this.msg = [
             { severity: 'success', summary: '', detail: 'העדכון התבצע בהצלחה' },

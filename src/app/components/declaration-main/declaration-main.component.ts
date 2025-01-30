@@ -5,6 +5,7 @@ import { StepsModule } from 'primeng/steps';
 import { StepService } from '../../shared/services/step.service';
 import { StepperModule } from 'primeng/stepper';
 import { UserService } from '../../shared/services/user.service';
+import { CustomsDataService } from '../../shared/services/customs-data.service';
 
 @Component({
   selector: 'app-declaration-main',
@@ -25,7 +26,7 @@ export class DeclarationMainComponent implements OnInit {
   activeIndex: number = 0;
   mode: any;
 
-  constructor(private router: Router, private route: ActivatedRoute, private stepService: StepService, private userService: UserService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private stepService: StepService, private userService: UserService, private customsDataService: CustomsDataService) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -59,7 +60,7 @@ export class DeclarationMainComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
       console.log(code);
-      
+
       if (code)
         this.userService.getDetails(code).subscribe(res => {
           console.log(res);
@@ -67,6 +68,15 @@ export class DeclarationMainComponent implements OnInit {
             console.log(res.body)
             localStorage.setItem('isRegister', "true")
             localStorage.setItem('userId', res.body.Id)
+            // this.customsDataService.GetClient$("326546033").subscribe(client => {
+              this.customsDataService.GetClient$(res.body.Id).subscribe(client => {
+                //check if power of attorney exist
+              if (client.generalCustomerDataField.costomerStatusForCAField == 6)
+                localStorage.setItem('isClientAuthorized', 'false')
+              else
+                localStorage.setItem('isClientAuthorized', 'true')
+              console.log(client);
+            })
 
             const userJson = JSON.stringify(res.body);
             localStorage.setItem('user', userJson);

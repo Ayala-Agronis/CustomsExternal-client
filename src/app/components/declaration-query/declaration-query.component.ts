@@ -60,11 +60,9 @@ export class DeclarationQueryComponent {
   isFiltered: boolean = false;
 
   constructor(
-    private messageService: MessageService,
     private router: Router,
     private declarationService: DeclarationService,
     private customsDataService: CustomsDataService,
-    private route: ActivatedRoute,
     // private customsClientService: CustomsClientsService,
     private cdRef: ChangeDetectorRef,
     private stepService: StepService,

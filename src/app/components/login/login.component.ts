@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
+import { CustomsDataService } from '../../shared/services/customs-data.service';
 
 
 @Component({
@@ -26,7 +27,7 @@ export class LoginComponent {
   loading = false
   msg: Message[] = [];
 
-  constructor(private fb: FormBuilder, private userService: UserService, private route: ActivatedRoute, private router: Router) {
+  constructor(private fb: FormBuilder, private userService: UserService, private route: ActivatedRoute, private router: Router, private customsDataService: CustomsDataService) {
     this.loginForm = this.fb.group({
       Email: ['', [Validators.required, Validators.email]],
       Password: ['', [Validators.required, Validators.minLength(6)]],
@@ -90,7 +91,15 @@ export class LoginComponent {
             localStorage.setItem('authToken', res.body.token)
             localStorage.setItem('isRegister', "true")
             localStorage.setItem('userId', res.body.user.Id)
-            console.log(res.body.user);
+
+            this.customsDataService.GetClient$(res.body.Id).subscribe(client => {
+              //check if power of attorney exist
+              if (client.generalCustomerDataField.costomerStatusForCAField == 6)
+                localStorage.setItem('isClientAuthorized', 'false')
+              else
+                localStorage.setItem('isClientAuthorized', 'true')
+              console.log(client);
+            })
 
             const userJson = JSON.stringify(res.body.user);
             localStorage.setItem('user', userJson);
