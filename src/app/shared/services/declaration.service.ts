@@ -26,9 +26,9 @@ export class DeclarationService {
     return this.http.post(`${environment.customsExternalApiUrl}fill-form/` , formData);
   }
 
-  addDeclaration(dec: any): Observable<HttpResponse<any>> {
-    return this.http.post<any>(this.DecURL, dec, { observe: 'response' });
-  }
+  // addDeclaration(dec: any): Observable<HttpResponse<any>> {
+  //   return this.http.post<any>(this.DecURL, dec, { observe: 'response' });
+  // }
 
   SendDecToInternalDB(dec: any): Observable<HttpResponse<any>> {
     return this.http.post<any>(this.InternalDecURL, dec, { observe: 'response' });
@@ -49,9 +49,9 @@ export class DeclarationService {
   // }
 
   updateDeclaration$(id: any, declaration: any): Observable<any> {
-    const url = `${this.DecURL}/${id}`;  
-    return this.http.put<any>(url, declaration);  
-  }  
+    const url = `${environment.customsdbApiUrl}dec/${id}`;
+    return this.http.put<any>(url, declaration);
+  }
 
   sendUpdateDecToInternalDB$(id: any, declaration: any): Observable<any> {
     const url = `${this.InternalDecURL}/${id}`;  

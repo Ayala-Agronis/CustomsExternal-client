@@ -3,92 +3,97 @@
     <div class="progress-spinner" *ngIf="isLoading">
       <p-progressSpinner></p-progressSpinner>
     </div>
+
     <h2 *ngIf="!showPersonalDetails" class="form-title title">הרשמה</h2>
     <h2 *ngIf="showPersonalDetails" class="form-title title">פרטים אישיים</h2>
 
     <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()">
       <p-messages class="ui-ltr" dir="ltr" [(value)]="msg" [enableService]="false"></p-messages>
       <div class="registrationForm">
-        <div class="form-group">
-          <div class="form-item">
-            <label for="firstName">שם פרטי</label>
-            <input id="firstName" pInputText formControlName="FirstName" />
-            <small class="error"
-              *ngIf="registrationForm.get('FirstName')?.invalid && registrationForm.get('FirstName')?.touched">
-              {{ getErrorMessage('FirstName') }}
-            </small>
-          </div>
-
-          <div class="form-item">
-            <label for="lastName">שם משפחה</label>
-            <input id="lastName" pInputText formControlName="LastName" />
-            <small class="error"
-              *ngIf="registrationForm.get('LastName')?.invalid && registrationForm.get('LastName')?.touched">
-              {{ getErrorMessage('LastName') }}
-            </small>
-          </div>
-
-          <div class="form-item radioBtn">
-            <label>עסקי/פרטי</label>
-            <div class="form-group">
-              <p-radioButton value="p" formControlName="CustomerType" label="פרטי"></p-radioButton>
-              <p-radioButton value="b" formControlName="CustomerType" label="עסקי" class="p-ml-3"></p-radioButton>
+        <p-card>
+          <div class="form-group">
+            <div class="form-item">
+              <label for="firstName">שם פרטי</label>
+              <input id="firstName" pInputText formControlName="FirstName" />
+              <small class="error"
+                *ngIf="registrationForm.get('FirstName')?.invalid && registrationForm.get('FirstName')?.touched">
+                {{ getErrorMessage('FirstName') }}
+              </small>
             </div>
-            <small class="error"
-              *ngIf="registrationForm.get('CustomerType')?.invalid && registrationForm.get('CustomerType')?.touched">
-              יש לבחור סוג לקוח
-            </small>
-          </div>
-        </div>
 
-        <div class="form-group">
-          <div class="form-item">
-            <label for="phone">מספר פלאפון</label>
-            <input id="phone" type="text" pInputText formControlName="Mobile" />
-            <small class="error"
-              *ngIf="registrationForm.get('Mobile')?.invalid && registrationForm.get('Mobile')?.touched">
-              {{ getErrorMessage('Mobile') }}
-            </small>
-          </div>
+            <div class="form-item">
+              <label for="lastName">שם משפחה</label>
+              <input id="lastName" pInputText formControlName="LastName" />
+              <small class="error"
+                *ngIf="registrationForm.get('LastName')?.invalid && registrationForm.get('LastName')?.touched">
+                {{ getErrorMessage('LastName') }}
+              </small>
+            </div>
 
-          <div class="form-item">
-            <label for="email">כתובת דוא״ל</label>
-            <input id="email" type="email" pInputText formControlName="Email" />
-            <small class="error"
-              *ngIf="registrationForm.get('Email')?.invalid && registrationForm.get('Email')?.touched">
-              {{ getErrorMessage('Email') }}
-            </small>
+            <div class="form-item radioBtn">
+              <label>עסקי/פרטי</label>
+              <div class="form-group">
+                <p-radioButton value="p" formControlName="CustomerType" label="פרטי"></p-radioButton>
+                <p-radioButton value="b" formControlName="CustomerType" label="עסקי" class="p-ml-3"></p-radioButton>
+              </div>
+              <small class="error"
+                *ngIf="registrationForm.get('CustomerType')?.invalid && registrationForm.get('CustomerType')?.touched">
+                יש לבחור סוג לקוח
+              </small>
+            </div>
           </div>
 
-          <div class="form-item">
-            <label for="password">סיסמה</label>
-            <input id="password" type="password" pPassword formControlName="Password" />
-            <small class="error"
-              *ngIf="registrationForm.get('Password')?.invalid && registrationForm.get('Password')?.touched">
-              {{ getErrorMessage('Password') }}
-            </small>
-          </div>
-        </div>
+          <div class="form-group">
+            <div class="form-item">
+              <label for="phone">מספר פלאפון</label>
+              <input id="phone" type="text" pInputText formControlName="Mobile" />
+              <small class="error"
+                *ngIf="registrationForm.get('Mobile')?.invalid && registrationForm.get('Mobile')?.touched">
+                {{ getErrorMessage('Mobile') }}
+              </small>
+            </div>
 
-        <div class="form-group">
-          <div class="form-item">
-            <label for="id">תעודת זהות </label>
-            <input id="id" type="text" pInputText formControlName="Id" />
-            <small class="error" *ngIf="registrationForm.get('Id')?.invalid && registrationForm.get('Id')?.touched">
-              {{ getErrorMessage('Id') }}
-            </small>
-          </div>
-        </div>
+            <div class="form-item">
+              <label for="email">כתובת דוא״ל</label>
+              <input id="email" type="email" pInputText formControlName="Email" />
+              <small class="error"
+                *ngIf="registrationForm.get('Email')?.invalid && registrationForm.get('Email')?.touched">
+                {{ getErrorMessage('Email') }}
+              </small>
+            </div>
 
+            <div class="form-item">
+              <label for="password">סיסמה</label>
+              <input id="password" type="password" pPassword formControlName="Password" />
+              <small class="error"
+                *ngIf="registrationForm.get('Password')?.invalid && registrationForm.get('Password')?.touched">
+                {{ getErrorMessage('Password') }}
+              </small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-item">
+              <label for="id">תעודת זהות </label>
+              <input id="id" type="text" pInputText formControlName="Id" />
+              <small class="error" *ngIf="registrationForm.get('Id')?.invalid && registrationForm.get('Id')?.touched">
+                {{ getErrorMessage('Id') }}
+              </small>
+            </div>
+          </div>
+        </p-card>
         <div class="btnSubmit">
           <button *ngIf="!showPersonalDetails" [ngClass]="{'disabled':registrationForm.invalid }" class="button-primary"
             [disabled]="registrationForm.invalid">הרשמה</button>
 
           <button *ngIf="showPersonalDetails" [ngClass]="{'disabled':registrationForm.invalid }" class="button-primary"
             [disabled]="registrationForm.invalid">שמור</button>
+
+          <button type="button" class="button-primary" (click)="goBack()">חזור</button>
         </div>
       </div>
     </form>
+
   </div>
   <div class="left-side">
     <img src="assets/logo.png" alt="Logo" class="logo">

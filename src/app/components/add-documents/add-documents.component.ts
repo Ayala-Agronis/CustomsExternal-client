@@ -103,6 +103,8 @@ export class AddDocumentsComponent {
       { name: 'שטר מטען (WB)', code: '714' },
       { name: 'רשימת אריזה (PL)', code: '271' },
     ];
+    this.selectedDocumentCode = this.documentCodes[0];
+
     this.cols = [
       { field: 'Code', header: 'סוג צרופה', },
       { field: 'FileName', header: 'שם קובץ' },
@@ -128,7 +130,7 @@ export class AddDocumentsComponent {
         error => {
           this.loading = false
           this.documents = []
-        
+
         })
     }
   }
@@ -544,6 +546,7 @@ export class AddDocumentsComponent {
             this.loading = false
             console.log(res)
             this.getdoc()
+            this.uploadedFilesByType = {}
           },
           err => {
             this.loading = false
@@ -574,7 +577,12 @@ export class AddDocumentsComponent {
   }
 
   nextStep() {
-    this.stepService.emitStepCompleted('+');
+    if (localStorage.getItem('CustomsStatus') !== "12" || null)
+      this.stepService.emitStepCompleted('+');
+    else {
+      this.router.navigate(['declaration-main/dec-form'], { queryParams: {fromDocs:true, customsSend: true, 'Mode': 'e' } })
+      this.stepService.emitStepCompleted('dec-form');
+    }
   }
 
   previousStep() {

@@ -1,0 +1,24 @@
+@import './../../../styles.scss';
+
+header {
+    display: flexbox;
+    direction: rtl;
+}
+
+header span {
+    margin-right: 1rem;
+}
+
+header p {
+    margin-right: 1rem;
+}
+
+header button {
+    margin-right: 1rem;
+}
+
+::ng-deep.p-button {
+    color: #ffffff;
+    background: $color-8;
+    border: none;
+}

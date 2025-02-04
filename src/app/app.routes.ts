@@ -11,9 +11,9 @@ export const routes: Routes = [
   { path: 'callback', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), data: { title: '' } },
   { path: 'independent-payment', loadComponent: () => import('./components/independent-payment/independent-payment.component').then(c => c.IndependentPaymentComponent), data: { title: ' תשלום מיסים באופן עצמאי' } },
   { path: 'dec-query', loadComponent: () => import('./components/declaration-query/declaration-query.component').then(c => c.DeclarationQueryComponent), data: { title: ' הצהרות ' } },
+  { path: 'search-vendor', loadComponent: () => import('./components/search-vendor/search-vendor.component').then(c => c.SearchVendorComponent), data: { title: ' חיפוש ספק ' } },
 
   // { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },
-  { path: 'docs', loadComponent: () => import('./components/documents/documents.component').then(c => c.DocumentsComponent), data: { title: 'מסמכים' }},
   {
     path: 'declaration-main', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), canActivate: [AuthGuard] , children: [
       { path: '', redirectTo: 'home-page', pathMatch: 'full' },

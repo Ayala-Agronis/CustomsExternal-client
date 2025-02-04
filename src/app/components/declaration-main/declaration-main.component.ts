@@ -44,6 +44,11 @@ export class DeclarationMainComponent implements OnInit {
       this.navigateBasedOnStep();
     }
 
+    // if (this.router.url.includes('callback')) {
+    //   this.activeIndex = 0; 
+    //   localStorage.setItem('activeIndex', '0');
+    // }
+
     this.stepService.stepCompleted$.subscribe((data: any) => {
       if (data.direction == 'dec-form') {
         this.activeIndex = 0
@@ -54,14 +59,14 @@ export class DeclarationMainComponent implements OnInit {
       }
       else {
         this.previousStep();
-      } 936
+      }
     });
 
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
       console.log(code);
 
-      if (code)
+      if (code) {
         this.userService.getDetails(code).subscribe(res => {
           console.log(res);
           this.userService.loginByGoogle(res).subscribe((res: any) => {
@@ -69,8 +74,8 @@ export class DeclarationMainComponent implements OnInit {
             localStorage.setItem('isRegister', "true")
             localStorage.setItem('userId', res.body.Id)
             // this.customsDataService.GetClient$("326546033").subscribe(client => {
-              this.customsDataService.GetClient$(res.body.Id).subscribe(client => {
-                //check if power of attorney exist
+            this.customsDataService.GetClient$(res.body.Id).subscribe(client => {
+              //check if power of attorney exist
               if (client.generalCustomerDataField.costomerStatusForCAField == 6)
                 localStorage.setItem('isClientAuthorized', 'false')
               else
@@ -82,7 +87,12 @@ export class DeclarationMainComponent implements OnInit {
             localStorage.setItem('user', userJson);
             this.router.navigate(['declaration-main/dec-form']);
           })
-        })
+        });
+        
+        this.activeIndex = 0;
+        localStorage.setItem('activeIndex', '0');
+      }
+
     });
   }
 
@@ -115,7 +125,7 @@ export class DeclarationMainComponent implements OnInit {
   navigateBasedOnStep(): void {
     let navigationExtras: any = {};
 
-    if (this.mode === 'e') {
+    if (this.mode === 'e' || this.activeIndex === 1) {
       navigationExtras.queryParams = { 'Mode': 'e' };
     }
 

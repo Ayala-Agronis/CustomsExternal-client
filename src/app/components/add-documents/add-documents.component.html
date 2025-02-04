@@ -67,6 +67,7 @@
                             <i [ngClass]="getFileIcon(document.FileName)"></i>{{ document.FileName }}
                         </span>
                         <div class="icons">
+                            <i (click)="deleteDocument(document.Id)" class="pi pi-times"></i>
                             <i (click)="viewFile(document)" class="pi pi-eye"></i>
                         </div>
                     </li>

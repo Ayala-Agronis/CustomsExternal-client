@@ -83,11 +83,11 @@
                                 <p-columnFilter type="text" field="GovernmentProcedure" display="menu"></p-columnFilter>
                             </div>
                         </th>
-                        <th [pSortableColumn]="'ArrivalDateTime'">
+                        <th [pSortableColumn]="'Consignments[0].ArrivalDateTime'">
                             <div class="flex align-items-center">
-                                <p-sortIcon field="ArrivalDateTime"></p-sortIcon>
+                                <p-sortIcon field="Consignments[0].ArrivalDateTime"></p-sortIcon>
                                 תאריך הגעת טובין
-                                <p-columnFilter type="date" field="ArrivalDateTime" display="menu"></p-columnFilter>
+                                <p-columnFilter type="date" field="Consignments[0].ArrivalDateTime" display="menu"></p-columnFilter>
                             </div>
                         </th>
                         <th [pSortableColumn]="'ExportationCountryCode'">
@@ -106,11 +106,12 @@
                                     display="menu"></p-columnFilter>
                             </div>
                         </th>
-                        <th [pSortableColumn]="'CargoDescription'">
+                        <th [pSortableColumn]="'Consignments[0].CargoDescription'">
                             <div class="flex align-items-center">
-                                <p-sortIcon field="CargoDescription"></p-sortIcon>
+                                <p-sortIcon field="Consignments[0].CargoDescription"></p-sortIcon>
                                 תיאור טובין
-                                <p-columnFilter type="text" field="CargoDescription" display="menu"></p-columnFilter>
+                                <!-- <p-columnFilter type="text" field="CargoDescription" display="menu"></p-columnFilter> -->
+                                <p-columnFilter type="text" field="Consignments[0].CargoDescription" display="menu"></p-columnFilter>
                             </div>
                         </th>
                         <th [pSortableColumn]="'TotalPackageQuantity'">

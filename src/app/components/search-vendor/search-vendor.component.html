@@ -1,0 +1,74 @@
+<p-card>
+    <div class="progress-spinner" *ngIf="loading">
+      <p-progressSpinner></p-progressSpinner>
+    </div>
+  
+    <header>
+      <br>
+  
+      <h2 style="direction:rtl ; margin-right: 2vb;">שאילתת ספקי מכס</h2>
+      <br>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText placeholder="שם ספק לחיפוש" [(ngModel)]="searchVendor.VendorName" />
+      </span>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText placeholder="מיקוד" [(ngModel)]="searchVendor.EnglishPostalCode" />
+      </span>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText placeholder="מספר D&B  " [(ngModel)]="searchVendor.LicensedDealerNumber" />
+      </span>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText placeholder="מספר ספק " [(ngModel)]="searchVendor.VendorID" />
+      </span>
+  
+      <button class="createBtn" pButton type="button" label="משיכת נתונים מהמכס" (click)="search()">
+      </button>
+    </header>
+    <br>
+    <br>
+  
+    <div class="ui-rtl" dir="rtl">
+      <p-toast></p-toast>
+      <p-messages [(value)]="msgs1" [enableService]="false"></p-messages>
+      <!-- <p-confirmPopup></p-confirmPopup> -->
+      <p-confirmDialog></p-confirmDialog>
+      <!-- <p-confirmDialog></p-confirmDialog> -->
+  
+      <p-table #dt [columns]="cols" [value]="vendors" sortMode="multiple">
+        <ng-template pTemplate="header" let-columns>
+          <tr>
+            <th [pSortableColumn]="col.field" *ngFor="let col of columns">
+              <div class="flex align-items-center">
+                <p-sortIcon [field]="col.field"></p-sortIcon>
+                {{col.header}}
+                <p-columnFilter type="text" [field]="col.field" display="menu"></p-columnFilter>
+              </div>
+            </th>
+            <th>קלוט ספק</th>
+  
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rowData let-columns="columns">
+          <tr [pSelectableRow]="rowData">
+            <td *ngFor="let col of columns">
+              {{rowData[col.field]}}
+            </td>
+            <td><button pButton pRipple type="button" icon="pi pi-user"
+                class="p-button-rounded p-button-info p-button-outlined" pInputText pTooltip="פתיחת ספק"
+                placeholder="Right" (click)="AddVendor(rowData)">
+              </button></td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="summary">
+          <div class="p-d-flex p-ai-center p-jc-between">
+            מספר שורות: {{vendors ? vendors.length : 0 }}
+          </div>
+        </ng-template>
+      </p-table>
+  
+    </div>
+  </p-card>

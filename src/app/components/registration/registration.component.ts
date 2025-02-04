@@ -21,6 +21,7 @@ import { MessagesModule } from 'primeng/messages';
   styleUrl: './registration.component.scss'
 })
 export class RegistrationComponent implements OnInit {
+
   registrationForm!: FormGroup;
   isLoading: boolean = false;
   msg: Message[] = [];
@@ -72,18 +73,18 @@ export class RegistrationComponent implements OnInit {
             console.log(res);
             this.router.navigate(['login'], { state: { user: res.body } })
           },
-          err =>{
+          err => {
             this.isLoading = false
             console.log(err);
             this.msg = [
-              { severity: 'error', summary: '', detail: err.error.Message},
+              { severity: 'error', summary: '', detail: err.error.Message },
             ];
           }
         )
       }
       //save updated details
       else {
-        this.userService.editUser(this.user.RowId, this.registrationForm.value).subscribe( res => {
+        this.userService.editUser(this.user.RowId, this.registrationForm.value).subscribe(res => {
           this.isLoading = false;
 
           const userJson = JSON.stringify(res.body);
@@ -126,6 +127,10 @@ export class RegistrationComponent implements OnInit {
       return 'הקש עד 9 ספרות';
     }
     return '';
+  }
+
+  goBack() {
+    window.history.back()
   }
 
 }

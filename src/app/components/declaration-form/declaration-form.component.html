@@ -91,6 +91,14 @@
                     <label>תיאור טובין <span class="required">*</span></label>
                     <input pInputText formControlName="CargoDescription">
                 </div>
+                <div class="form-item">
+                    <label> אתר מסירה   <span class="required">*</span></label>
+                    <p-autoComplete [forceSelection]="true" 
+                        formControlName="FacilityType" inputId="autocomplete"
+                        [suggestions]="filteredFacilityType" (completeMethod)="filterFacilityType($event)" field="name"
+                        [dropdown]="true">
+                    </p-autoComplete>
+                </div>
             </div>
 
         </div>
@@ -119,6 +127,8 @@
         <p-tabView>
             <p-tabPanel *ngFor="let supplierInvoice of supplierInvoices.controls; let i = index" [formGroupName]="i"
                 [header]="'חשבונית ' + (i+1)">
+                <button pButton pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
+                    (click)="addSupplierInvoice()"></button>
                 <button *ngIf="i" pButton pRipple icon="pi pi-minus" class="p-button-raised p-button-text "
                     (click)="removeSupplierInvoice(supplierInvoice,i)"></button>
                 <p-card>
@@ -126,8 +136,7 @@
                         <div class="right-side">
                             <div class="header">
                                 <h3>חשבוניות וסחורות</h3>
-                                <button pButton pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
-                                    (click)="addSupplierInvoice()"></button>
+
                             </div>
                             <div class="form-group">
                                 <div class="form-item">
@@ -135,7 +144,8 @@
                                     <input pInputText formControlName="InvoiceNumber">
                                 </div>
                                 <div class="form-item">
-                                    <label>שם ספק <span class="required">*</span></label>
+                                    <label class="vendor-label">שם ספק <span class="required">*</span> <button pButton pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
+                                        (click)="serchVendor()" title="הוסף ספק"></button></label>
                                     <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID"
                                         inputId="autocomplete" [suggestions]="filteredSupplierID"
                                         (completeMethod)="filterSupplierID($event)" field="name" [dropdown]="true">
@@ -173,6 +183,13 @@
                                     </p-autoComplete>
                                 </div>
                                 <div class="form-item">
+                                    <label>סוג חשבון <span class="required">*</span></label>
+                                    <p-autoComplete [forceSelection]="true" formControlName="InvoiceTypeCode"
+                                        inputId="autocomplete" [suggestions]="filteredInvoiceTypeCode"
+                                        (completeMethod)="filterInvoiceTypeCode($event)" field="name" [dropdown]="true">
+                                    </p-autoComplete>
+                                </div>
+                                <div class="form-item">
                                     <label>סה"כ חשבון <span class="required">*</span></label>
                                     <input pInputText formControlName="InvoiceAmount">
                                 </div>
@@ -203,7 +220,7 @@
                                         <div class="amount">
                                             <label>סה"כ:</label>
                                             <input [formControl]="getOtherChargeDeductionAmountControl(i,k) "
-                                                type="number" field="code" pInputText [min]="0"/>
+                                                type="number" field="code" pInputText [min]="0" />
                                         </div>
                                     </div>
                                 </div>
@@ -267,7 +284,7 @@
                                         <td pEditableColumn>
                                             <p-cellEditor>
                                                 <ng-template pTemplate="input">
-                                                    <div>
+                                                    <div class="ui-ltr" dir="ltr"> 
                                                         <p-autoComplete formControlName="OriginCountryCode"
                                                             [forceSelection]="true"
                                                             [suggestions]="filteredCountryOfExport"
@@ -305,15 +322,17 @@
     </div>
 
     <div class="btns">
-        <button [disabled]="generalDeclarationForm.invalid || checkVersion()"
-            [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" class="button-primary"
-            (click)="saveDeclaration()">המשך</button>
-            <!-- <button class="button-primary"(click)="saveDeclaration()">ok</button> -->
+        <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
+        <button [disabled]="generalDeclarationForm.invalid || checkVersion()" class="button-primary"
+            (click)="saveDeclaration()" pTooltip="{{ getFormErrors() }}" tooltipPosition="top"
+            [tooltipDisabled]="!generalDeclarationForm.invalid">המשך</button>
+       
         <button [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms" class="button-primary"
-            (click)="sendDeclaration()">שלח למכס</button>
+            (click)="sendDeclaration()" pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top"
+            [tooltipDisabled]="!checkVersion()">שלח למכס</button>
         <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
     </div>
-    <p-card class="customs-error">
+    <p-card *ngIf="customsError || customsErrorsContent" class="customs-error">
         <div *ngIf="customsError">
             <h3>פירוט תשובת מכס</h3>
             <p>
