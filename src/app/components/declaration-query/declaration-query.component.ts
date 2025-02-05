@@ -59,6 +59,7 @@ export class DeclarationQueryComponent {
   events: any;
   isFiltered: boolean = false;
 
+
   constructor(
     private router: Router,
     private declarationService: DeclarationService,
@@ -123,6 +124,8 @@ export class DeclarationQueryComponent {
 
               var myDate = new Date(x.Consignments[0].ArrivalDateTime)
               x.Consignments[0].ArrivalDateTime = (myDate.getMonth() + 1) + '/' + myDate.getDate() + '/' + myDate.getFullYear();
+              x.CargoDescription = x.Consignments[0].CargoDescription;
+              x.ArrivalDateTime = x.Consignments[0].ArrivalDateTime;
             }
           });
           this.filteredDeclarations = this.allDeclarations;

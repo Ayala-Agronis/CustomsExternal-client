@@ -40,13 +40,7 @@
 
                 <ng-template pTemplate="header">
                     <tr>
-                        <!-- <th [pSortableColumn]="'AgentFileReferenceID'">
-                <div class="flex align-items-center">
-                  <p-sortIcon field="AgentFileReferenceID"></p-sortIcon>
-                  תיק
-                  <p-columnFilter type="text" field="AgentFileReferenceID" display="menu"></p-columnFilter>
-                </div>
-              </th> -->
+                    
                         <th></th>
                         <th [pSortableColumn]="'Id'">
                             <div class="flex align-items-center">
@@ -83,11 +77,11 @@
                                 <p-columnFilter type="text" field="GovernmentProcedure" display="menu"></p-columnFilter>
                             </div>
                         </th>
-                        <th [pSortableColumn]="'Consignments[0].ArrivalDateTime'">
+                        <th [pSortableColumn]="'ArrivalDateTime'">
                             <div class="flex align-items-center">
-                                <p-sortIcon field="Consignments[0].ArrivalDateTime"></p-sortIcon>
+                                <p-sortIcon field="ArrivalDateTime"></p-sortIcon>
                                 תאריך הגעת טובין
-                                <p-columnFilter type="date" field="Consignments[0].ArrivalDateTime" display="menu"></p-columnFilter>
+                                <p-columnFilter type="date" field="ArrivalDateTime" display="menu"></p-columnFilter>
                             </div>
                         </th>
                         <th [pSortableColumn]="'ExportationCountryCode'">
@@ -106,12 +100,11 @@
                                     display="menu"></p-columnFilter>
                             </div>
                         </th>
-                        <th [pSortableColumn]="'Consignments[0].CargoDescription'">
+                        <th [pSortableColumn]="'CargoDescription'">
                             <div class="flex align-items-center">
-                                <p-sortIcon field="Consignments[0].CargoDescription"></p-sortIcon>
+                                <p-sortIcon field="CargoDescription"></p-sortIcon>
                                 תיאור טובין
-                                <!-- <p-columnFilter type="text" field="CargoDescription" display="menu"></p-columnFilter> -->
-                                <p-columnFilter type="text" field="Consignments[0].CargoDescription" display="menu"></p-columnFilter>
+                                <p-columnFilter type="text" field="CargoDescription" display="menu"></p-columnFilter>
                             </div>
                         </th>
                         <th [pSortableColumn]="'TotalPackageQuantity'">
@@ -141,10 +134,7 @@
 
                 <ng-template style="text-align: right;" pTemplate="body" let-declartion>
                     <tr>
-                        <!-- <td>
-                <p-button label="{{declartion.AgentFileReferenceID}}" styleClass="p-button-link"
-                  (click)="editDeclaration(declartion)"></p-button>
-              </td> -->
+                      
                         <td> <p-button styleClass="p-button-link" icon="pi pi-pencil"
                                 (click)="editDeclaration(declartion)"></p-button>
                         </td>
@@ -155,7 +145,6 @@
                         <td>{{declartion.GovernmentProcedure}}</td>
                         <td>{{declartion.Consignments[0]?.ArrivalDateTime | date:'dd/MM/yy'}}</td>
                         <td>{{declartion.ExportationCountryCode}}</td>
-                        <!-- <td>{{declartion.Consignments[0]?.TransportContractDocumentID}}</td> -->
                         <td>{{declartion.TransportContractDocumentTypeCode}}</td>
                         <td>{{declartion.Consignments[0]?.CargoDescription}}</td>
                         <td>{{declartion.TotalPackageQuantity}}</td>
@@ -170,10 +159,10 @@
                     </div>
                 </ng-template>
             </p-table>
-            <!-- <p-paginator [rows]="10" [totalRecords]="filteredDeclarations.length" (onPage)="paginate($event)"></p-paginator> -->
-
         </div>
 
     </div>
     <p-messages [(value)]="msgs1" [enableService]="false"></p-messages>
 </p-card>
+
+

@@ -3,6 +3,12 @@
         <p-progressSpinner></p-progressSpinner>
     </div>
     <h2 class="form-title title">תהליך הזנת הצהרה</h2>
+    <h4 *ngIf="customStatus">
+        סטטוס טיוטא:
+        <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
+            {{customStatusName()}}
+        </span>
+    </h4>
     <p-confirmDialog></p-confirmDialog>
     <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
 
@@ -92,9 +98,8 @@
                     <input pInputText formControlName="CargoDescription">
                 </div>
                 <div class="form-item">
-                    <label> אתר מסירה   <span class="required">*</span></label>
-                    <p-autoComplete [forceSelection]="true" 
-                        formControlName="FacilityType" inputId="autocomplete"
+                    <label> אתר מסירה <span class="required">*</span></label>
+                    <p-autoComplete [forceSelection]="true" formControlName="FacilityType" inputId="autocomplete"
                         [suggestions]="filteredFacilityType" (completeMethod)="filterFacilityType($event)" field="name"
                         [dropdown]="true">
                     </p-autoComplete>
@@ -144,8 +149,9 @@
                                     <input pInputText formControlName="InvoiceNumber">
                                 </div>
                                 <div class="form-item">
-                                    <label class="vendor-label">שם ספק <span class="required">*</span> <button pButton pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
-                                        (click)="serchVendor()" title="הוסף ספק"></button></label>
+                                    <label class="vendor-label">שם ספק <span class="required">*</span> <button pButton
+                                            pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
+                                            (click)="serchVendor()" title="הוסף ספק"></button></label>
                                     <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID"
                                         inputId="autocomplete" [suggestions]="filteredSupplierID"
                                         (completeMethod)="filterSupplierID($event)" field="name" [dropdown]="true">
@@ -191,7 +197,8 @@
                                 </div>
                                 <div class="form-item">
                                     <label>סה"כ חשבון <span class="required">*</span></label>
-                                    <input pInputText formControlName="InvoiceAmount">
+                                    <input (blur)="getFormErrors(true)" pInputText
+                                        formControlName="InvoiceAmount">
                                 </div>
                             </div>
                         </div>
@@ -274,7 +281,8 @@
                                         <td pEditableColumn>
                                             <p-cellEditor>
                                                 <ng-template pTemplate="input">
-                                                    <input pInputText type="text" formControlName="CustomsValueAmount">
+                                                    <input (blur)="getFormErrors(true)" pInputText
+                                                        type="text" formControlName="CustomsValueAmount">
                                                 </ng-template>
                                                 <ng-template pTemplate="output">
                                                     {{GetSupplierInvoiceItems(i).controls[rowIndex].get("CustomsValueAmount")?.value}}
@@ -284,7 +292,7 @@
                                         <td pEditableColumn>
                                             <p-cellEditor>
                                                 <ng-template pTemplate="input">
-                                                    <div class="ui-ltr" dir="ltr"> 
+                                                    <div class="ui-ltr" dir="ltr">
                                                         <p-autoComplete formControlName="OriginCountryCode"
                                                             [forceSelection]="true"
                                                             [suggestions]="filteredCountryOfExport"
@@ -323,15 +331,16 @@
 
     <div class="btns">
         <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
-        <button [disabled]="generalDeclarationForm.invalid || checkVersion()" class="button-primary"
-            (click)="saveDeclaration()" pTooltip="{{ getFormErrors() }}" tooltipPosition="top"
-            [tooltipDisabled]="!generalDeclarationForm.invalid">המשך</button>
-       
+        <button [disabled]="generalDeclarationForm.invalid || checkVersion() ||suplierErrorExist" class="button-primary"
+            (click)="saveDeclaration()" pTooltip="{{ getFormErrors(false) }}" tooltipPosition="top"
+            [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
+
         <button [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms" class="button-primary"
             (click)="sendDeclaration()" pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top"
             [tooltipDisabled]="!checkVersion()">שלח למכס</button>
         <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
     </div>
+
     <p-card *ngIf="customsError || customsErrorsContent" class="customs-error">
         <div *ngIf="customsError">
             <h3>פירוט תשובת מכס</h3>

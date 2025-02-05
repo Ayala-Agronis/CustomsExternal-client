@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StepsModule } from 'primeng/steps';
 import { StepService } from '../../shared/services/step.service';
@@ -26,7 +26,7 @@ export class DeclarationMainComponent implements OnInit {
   activeIndex: number = 0;
   mode: any;
 
-  constructor(private router: Router, private route: ActivatedRoute, private stepService: StepService, private userService: UserService, private customsDataService: CustomsDataService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef, private stepService: StepService, private userService: UserService, private customsDataService: CustomsDataService) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -53,6 +53,7 @@ export class DeclarationMainComponent implements OnInit {
       if (data.direction == 'dec-form') {
         this.activeIndex = 0
         localStorage.setItem('activeIndex', '0');
+        this.cdRef.detectChanges();
       }
       else if (data.direction == '+') {
         this.nextStep();
@@ -88,7 +89,7 @@ export class DeclarationMainComponent implements OnInit {
             this.router.navigate(['declaration-main/dec-form']);
           })
         });
-        
+
         this.activeIndex = 0;
         localStorage.setItem('activeIndex', '0');
       }
@@ -103,6 +104,7 @@ export class DeclarationMainComponent implements OnInit {
   restart() {
     this.activeIndex = 0
     localStorage.setItem('currentDecId', '')
+    localStorage.setItem('CustomsStatus', '')
     localStorage.setItem("activeIndex", "0")
   }
 

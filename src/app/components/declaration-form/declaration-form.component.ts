@@ -1,6 +1,6 @@
 import { CommonModule, FormatWidth, JsonPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
@@ -19,6 +19,7 @@ import { MessagesModule } from 'primeng/messages';
 import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
+import { PaymentService } from '../../shared/services/payment.service';
 
 @Component({
   selector: 'app-declaration-form',
@@ -109,8 +110,10 @@ export class DeclarationFormComponent implements OnInit {
     CustomsValueAmount: 'ערך טובין',
     OriginCountryCode: 'ארץ מקור'
   };
+  suplierErrorExist: boolean = false;
+  suplierError: string = '';
 
-  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private router: Router, private cd: ChangeDetectorRef, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService) { }
+  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private router: Router, private cd: ChangeDetectorRef, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService, private paymentService: PaymentService) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -122,12 +125,11 @@ export class DeclarationFormComponent implements OnInit {
       }
 
       if (params['customsSend'] === "true") {
-        this.showBtnCustoms = true;
+        this.msgs1 = [{ severity: 'success', summary: 'תשלום עמלה בוצע בהצלחה ', detail: "ניתן לשלוח טיוטה למכס" }]
       }
-      if(params['fromDocs'] === "true"){
-        this.msgs1 = [{ severity: 'error', summary: '  טיוטה שגויה', detail: "יש להגיע לטיוטה תקינה קודם תשלום עמלה" }]
-
-      }
+      // if (params['fromDocs'] === "true") {
+      //   this.msgs1 = [{ severity: 'error', summary: '  טיוטה שגויה', detail: "יש להגיע לטיוטה תקינה קודם תשלום עמלה" }]
+      // }
     })
 
     this.initForm();
@@ -178,8 +180,16 @@ export class DeclarationFormComponent implements OnInit {
       //init data of consignment
       this.consignmentInit();
       if (this.mode == 'e') {
-        this.showBtnCustoms = true
+        this.customStatus = localStorage.getItem('CustomsStatus');
         this.initElements();
+        //check if declaration is paid
+        const decId = localStorage.getItem('currentDecId');
+        this.paymentService.isDecPaid(decId).subscribe(res => {
+          console.log(res)
+          if (res?.isPaid) {
+            this.showBtnCustoms = true
+          }
+        })
       }
     }
     );
@@ -358,7 +368,8 @@ export class DeclarationFormComponent implements OnInit {
         //MarksNumbers: this.formBuilder.control(''),
       }),
 
-      SupplierInvoices: this.formBuilder.array([this.createSupplierInvoice()])
+      SupplierInvoices: this.formBuilder.array([this.createSupplierInvoice()],
+        { validators: this.invoiceAmountValidator })
     });
 
   }
@@ -390,6 +401,8 @@ export class DeclarationFormComponent implements OnInit {
         })
       ]),
       SupplierInvoiceItems: this.formBuilder.array([this.createSupplierInvoiceItem()]),
+      //   SupplierInvoiceItems: this.formBuilder.array([this.createSupplierInvoiceItem()]),
+      // }, { validators: this.invoiceAmountValidator 
     });
   }
 
@@ -423,6 +436,33 @@ export class DeclarationFormComponent implements OnInit {
   addNewInvoiceItem(i: any): void {
     const invoiceItemsArray = this.GetSupplierInvoiceItems(i);
     invoiceItemsArray?.push(this.createSupplierInvoiceItem());
+  }
+
+  invoiceAmountValidator(control: AbstractControl): any {
+    const invoiceFormGroup = control as FormGroup;
+    const supplierInvoiceItems = invoiceFormGroup.get('SupplierInvoiceItems')?.value || [];
+
+    const totalCustomsValueAmount = supplierInvoiceItems.reduce((sum: any, item: any) => {
+      return sum + (item.CustomsValueAmount || 0);
+    }, 0);
+
+    const invoiceAmount = invoiceFormGroup.get('InvoiceAmount')?.value;
+    if (invoiceAmount) {
+      console.log(invoiceAmount);
+
+    } if (totalCustomsValueAmount) console.log(totalCustomsValueAmount);
+
+    if (invoiceAmount && invoiceAmount !== totalCustomsValueAmount) {
+      debugger
+      // return true;
+      console.log('סה"כ ערכי טובין לא שווה לסה"כ חשבון');
+      invoiceFormGroup.setErrors({ 'invoiceAmountMismatch': true });
+
+      return { 'invoiceAmountMismatch': 'סה"כ ערכי טובין לא שווה לסה"כ חשבון' };
+
+    }
+
+    return null;
   }
 
   private createSupplierInvoiceItem(): FormGroup {
@@ -493,7 +533,7 @@ export class DeclarationFormComponent implements OnInit {
     consignments.LoadingLocation = consignments.LoadingLocation?.code ?? consignments.LoadingLocation;
     consignments.UnloadingLocationID = consignments.UnloadingLocationID?.code ?? consignments.UnloadingLocationID;
     consignments.TransportContractDocumentTypeCode = consignments.TransportContractDocumentTypeCode?.code ?? consignments.TransportContractDocumentTypeCode;
-    
+
     const ConsignmentRegisteredFacilitiesList = [];
 
     const facility1 = {
@@ -520,7 +560,7 @@ export class DeclarationFormComponent implements OnInit {
       if (customValuation) {
         customValuation.forEach((element: any) => {
           element.ChargesTypeCode = element.ChargesTypeCode?.code ?? element.ChargesTypeCode;
-          element.CurrencyCode = element.CurrencyCode?.code ?? element.CurrencyCode;          
+          element.CurrencyCode = element.CurrencyCode?.code ?? element.CurrencyCode;
         });
       }
 
@@ -553,6 +593,13 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   saveDeclaration() {
+    if (this.generalDeclarationForm.invalid) {
+      const invoiceAmountError = this.generalDeclarationForm.get('SupplierInvoices')?.errors?.['invoiceAmountMismatch'];
+      if (invoiceAmountError) {
+        console.log('הסכום הכולל לא תואם לערך ב-"InvoiceAmount"');
+      }
+    }
+
     this.loading = true
     const dec = this.generalDeclarationForm.value;
     const perfectDec = this.convertToDecObj(dec);
@@ -566,7 +613,7 @@ export class DeclarationFormComponent implements OnInit {
       })
     }
     else {
-      
+
       this.decService.updateDeclaration$(perfectDec.Id, perfectDec).subscribe((res: any) => {
         console.log(res);
         this.stepService.emitStepCompleted('+');
@@ -596,9 +643,9 @@ export class DeclarationFormComponent implements OnInit {
         dec.DeclarationNumber = res.responseField.declarationField.idField.valueField
         dec.VersionID = res.responseField.declarationField.dMExtensionsField.versionIDField.valueField
         dec.CustomsStatus = res.responseField.statusField.nameCodeField.valueField
-
+        this.customStatus = dec.CustomsStatus;
         localStorage.setItem('decVersion', dec.VersionID);
-        localStorage.setItem('CustomsStatus',dec.CustomsStatus);
+        localStorage.setItem('CustomsStatus', dec.CustomsStatus);
 
         if (+dec.VersionID > 0.5) {
           this.msgs1 = [{ severity: 'error', summary: 'נשלחו 6 טיוטות שגויות', detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ' }]
@@ -760,14 +807,45 @@ export class DeclarationFormComponent implements OnInit {
     });
   }
 
-  getFormErrors(): string {
-    if (!this.generalDeclarationForm || !this.generalDeclarationForm.controls) {
+  getFormErrors(checkInvoice: boolean) {
+    let errors: string[] = [];
+
+    if (checkInvoice) {
+      const checkSupplierInvoiceConsistency = (invoice: FormGroup, parentKey: string) => {
+        const invoiceAmount = invoice.get('InvoiceAmount')?.value;
+        const supplierInvoiceItems = invoice.get('SupplierInvoiceItems') as FormArray;
+
+        let customsValueAmountSum = 0;
+
+        supplierInvoiceItems.controls.forEach((item: any) => {
+          customsValueAmountSum += item.get('CustomsValueAmount')?.value || 0;
+        });
+
+        if (customsValueAmountSum !== +invoiceAmount) {
+          this.suplierErrorExist = true;
+          this.suplierError = ` ${parentKey} - סה"כ ערכי טובין לא שווה לסה"כ חשבון`;
+        }
+        else {
+          this.suplierErrorExist = false;
+          this.suplierError = '';
+        }
+      };
+
+
+      const supplierInvoices = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+      supplierInvoices.controls.forEach((invoice: any, index: number) => {
+        checkSupplierInvoiceConsistency(invoice, `חשבונית ${index + 1}`);
+      });
+    }
+
+    if ((!this.generalDeclarationForm || !this.generalDeclarationForm.controls) && !checkInvoice) {
       return '';
     }
 
-    let errors: string[] = [];
-
     const checkErrors = (formGroup: any, parentKey: string = '') => {
+      if (this.suplierErrorExist) {
+        errors = [this.suplierError];
+      }
       if (formGroup instanceof FormGroup) {
         Object.keys(formGroup.controls).forEach(key => {
           const control = formGroup.controls[key];
@@ -780,6 +858,7 @@ export class DeclarationFormComponent implements OnInit {
             checkErrors(control, fieldPath);
           } else if (control.errors !== null) {
             Object.keys(control.errors).forEach(errorKey => {
+
               switch (errorKey) {
                 case 'required':
                   errors.push(`${fieldLabel}: שדה חובה`);
@@ -813,11 +892,12 @@ export class DeclarationFormComponent implements OnInit {
     checkErrors(this.generalDeclarationForm);
 
     return errors.length > 0 ? errors.join('\n') : 'הטופס תקין';
+
   }
 
   checkVersion(): boolean {
     const version = +this.generalDeclarationForm.controls['VersionID'].value
-    
+
     return version > 0.5
   }
 

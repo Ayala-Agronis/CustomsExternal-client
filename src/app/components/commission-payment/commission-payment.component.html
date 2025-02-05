@@ -1,15 +1,13 @@
-<button pButton (click)="nextStep()">שלב הבא </button>
 <div class="payment-form">
     <h2 class="title">תשלום עמלה </h2>
     <div class="payment-body">
-        <div class="iframe">
+        <div  class="iframe">
             <iframe allowpaymentrequest='true' *ngIf="iframeUrl" [src]="iframeUrl | safeUrl" style="border: none;"
-                name="tranzila" sandbox="allow-scripts allow-popups allow-forms">
+                name="tranzila" sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation">
             </iframe>
-            <!-- width: 50%; height: 80vh; -->
         </div>
         <div class="btns">
-            <button class="button-primary" (click)="nextStep()"> המשך</button>
+            <!-- <button class="button-primary" (click)="nextStep()"> המשך</button> -->
             <button class="button-secondary" (click)="previousStep()"> חזור</button>
         </div>
     </div>

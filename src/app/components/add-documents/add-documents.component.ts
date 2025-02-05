@@ -398,11 +398,11 @@ export class AddDocumentsComponent {
 
     return new Promise<void>((resolve, reject) => {
       if (Object.keys(this.uploadedFilesByType).length === 0) {
-        this.msgs1 = [
-          { severity: 'error', summary: 'Error', detail: 'נא בחר קובץ לשליחה!' }
-        ];
-        this.loading = false;
-        reject('נא בחר קובץ לשליחה!');
+        // this.msgs1 = [
+        //   { severity: 'error', summary: 'Error', detail: 'נא בחר קובץ לשליחה!' }
+        // ];
+        // this.loading = false;
+        // reject('נא בחר קובץ לשליחה!');
         return;
       }
 
@@ -577,12 +577,13 @@ export class AddDocumentsComponent {
   }
 
   nextStep() {
-    if (localStorage.getItem('CustomsStatus') !== "12" || null)
+    this.saveDocuments();
+    // if (localStorage.getItem('CustomsStatus') !== "12" || null)
       this.stepService.emitStepCompleted('+');
-    else {
-      this.router.navigate(['declaration-main/dec-form'], { queryParams: {fromDocs:true, customsSend: true, 'Mode': 'e' } })
-      this.stepService.emitStepCompleted('dec-form');
-    }
+    // else {
+    //   this.router.navigate(['declaration-main/dec-form'], { queryParams: {fromDocs:true, customsSend: true, 'Mode': 'e' } })
+    //   this.stepService.emitStepCompleted('dec-form');
+    // }
   }
 
   previousStep() {

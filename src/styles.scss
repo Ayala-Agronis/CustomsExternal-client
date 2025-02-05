@@ -1,12 +1,13 @@
-$color-1: #373737; 
-$color-2: #D0D0D0; 
-$color-3: #EDEDED;  
-$color-4: #FFFFFF;  
-$color-5: #FF0000;  
-$color-6: #F1F1F1;  
-$color-7: #EC8305;  
-$color-8: #092857; 
+$color-1: #373737;
+$color-2: #D0D0D0;
+$color-3: #EDEDED;
+$color-4: #FFFFFF;
+$color-5: #FF0000;
+$color-6: #F1F1F1;
+$color-7: #EC8305;
+$color-8: #092857;
 $color-9: #ECA305;
+$color-10: #b9e0ff;
 
 .progress-spinner {
     position: fixed;
@@ -20,6 +21,7 @@ $color-9: #ECA305;
     bottom: 0;
     right: 0;
 }
+
 .button-primary {
     background-color: $color-7;
     color: #FFFFFF;
@@ -72,19 +74,27 @@ $color-9: #ECA305;
     margin: auto;
 }
 
-.title{
+.title {
     color: rgba(0, 41, 102, 1);
 }
 
-.form-title {  
+.form-title {
     padding: 1%;
-    // padding-top: 4%;
     margin-right: 10%;
+}
+
+::ng-deep .p-message.p-message-success {
+    background: $color-10;
+    border: solid #8fb8d9;
+    border-width: 0 0 0 6px;
+    color: black;
+
+}
+.p-message.p-message-success .p-message-icon {
+    display: none;
 }
 
 // ::ng-deep .p-button {
 //     color: black;
 //     background-color: white;
 // }
-
-
