@@ -756,7 +756,7 @@ export class DeclarationFormComponent implements OnInit {
 
         supplierInvoicesFormArray.clear();
 
-        currentDec.SupplierInvoices.forEach((invoice: any) => {
+        currentDec.SupplierInvoices.forEach((invoice: any, i: number) => {
           const matchingSupplierID = this.declarationSupplierID.find((element: { code: any }) => element.code == invoice.SupplierID);
           const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == invoice.CurrencyCode);
           const matchingLocationID = this.declarationCountryOfExport.find((element: { code: any }) => element.code == invoice.LocationID);
@@ -802,6 +802,13 @@ export class DeclarationFormComponent implements OnInit {
           });
 
           supplierInvoicesFormArray.push(invoiceGroup);
+          const code = matchingTradeTermsConditionCode?.code;
+          if (code) {
+            const codes = ['FCA', 'FOB', 'EXW', 'FAS'];
+            this.showCustomsValuation[i] = codes.includes(code);
+            if (codes.includes(code))
+              this.updateValuationValidators(i);
+          }
         });
       }
     });
@@ -818,7 +825,7 @@ export class DeclarationFormComponent implements OnInit {
         let customsValueAmountSum = 0;
 
         supplierInvoiceItems.controls.forEach((item: any) => {
-          customsValueAmountSum += item.get('CustomsValueAmount')?.value || 0;
+          customsValueAmountSum += +item.get('CustomsValueAmount')?.value || 0;
         });
 
         if (customsValueAmountSum !== +invoiceAmount) {
@@ -986,26 +993,27 @@ export class DeclarationFormComponent implements OnInit {
     const supplierInvoice = this.generalDeclarationForm.get('SupplierInvoices') as FormArray
     const customsValuation = supplierInvoice.at(i).get('CustomsValuation') as FormArray;
     const control = customsValuation.controls[1];
+    if (control) {
+      const chargesTypeControl = control.get('ChargesTypeCode');
+      const otherChargeControl = control.get('OtherChargeDeductionAmount');
 
-    const chargesTypeControl = control.get('ChargesTypeCode');
-    const otherChargeControl = control.get('OtherChargeDeductionAmount');
-
-    if (this.showCustomsValuation[i]) {
-      if (chargesTypeControl?.value.name === 'הובלה' && this.showCustomsValuation[i]) {
-        otherChargeControl?.setValidators([Validators.required, Validators.min(1)]);
-        otherChargeControl?.setValue(1)
-      }
-      else {
+      if (this.showCustomsValuation[i]) {
+        if (chargesTypeControl?.value.name === 'הובלה' && this.showCustomsValuation[i]) {
+          otherChargeControl?.setValidators([Validators.required, Validators.min(1)]);
+          otherChargeControl?.setValue(1)
+        }
+        else {
+          otherChargeControl?.clearValidators();
+          otherChargeControl?.setErrors(null);
+          otherChargeControl?.setValue(0)
+        }
+      } else {
         otherChargeControl?.clearValidators();
         otherChargeControl?.setErrors(null);
         otherChargeControl?.setValue(0)
       }
-    } else {
-      otherChargeControl?.clearValidators();
-      otherChargeControl?.setErrors(null);
-      otherChargeControl?.setValue(0)
+      otherChargeControl?.updateValueAndValidity();
     }
-    otherChargeControl?.updateValueAndValidity();
   }
 
 

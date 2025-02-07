@@ -1,5 +1,7 @@
 <div class="payment-form">
     <h2 class="title">תשלום עמלה </h2>
+    <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
+
     <div class="payment-body">
         <div  class="iframe">
             <iframe allowpaymentrequest='true' *ngIf="iframeUrl" [src]="iframeUrl | safeUrl" style="border: none;"

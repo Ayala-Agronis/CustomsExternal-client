@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { Title } from '@angular/platform-browser';
-import { filter } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -14,11 +14,12 @@ import { filter } from 'rxjs';
 })
 
 export class AppComponent implements OnInit {
+  routerSubscription!: Subscription;
 
   constructor(private router: Router, private titleService: Title) { }
 
   ngOnInit(): void {
-    this.router.events.pipe(
+    this.routerSubscription = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       let route = this.router.routerState.root;
@@ -31,9 +32,15 @@ export class AppComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
   navigateToHomePage() {
     this.router.navigate(['home-page']);
 
   }
-  
+
 }

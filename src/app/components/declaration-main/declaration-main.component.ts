@@ -15,16 +15,19 @@ import { CustomsDataService } from '../../shared/services/customs-data.service';
   styleUrl: './declaration-main.component.scss',
 })
 export class DeclarationMainComponent implements OnInit {
+
   steps = [
-    { label: 'הזנת נתוני הצהרה' },
-    { label: 'הוספת מסמכים' },
-    { label: 'תשלום עמלה' },
-    { label: 'תשלום מיסים' },
-    { label: 'קבלת התרה + תדפיס הצהרת יבוא' }
+    { label: 'הזנת נתוני הצהרה', icon: 'assets/steps/1.png', activeIcon: 'assets/steps/1.png' },
+    { label: 'הוספת מסמכים', icon: 'assets/steps/2.png', activeIcon: 'assets/steps/6.png' },
+    { label: 'תשלום עמלה', icon: 'assets/steps/3.png', activeIcon: 'assets/steps/7.png' },
+    { label: 'תשלום מיסים', icon: 'assets/steps/4.png', activeIcon: 'assets/steps/8.png' },
+    { label: 'קבלת התרה + תדפיס הצהרת יבוא', icon: 'assets/steps/5.png', activeIcon: 'assets/steps/9.png' }
   ];
 
   activeIndex: number = 0;
   mode: any;
+
+  currentStep = 0;
 
   constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef, private stepService: StepService, private userService: UserService, private customsDataService: CustomsDataService) { }
 
@@ -43,11 +46,6 @@ export class DeclarationMainComponent implements OnInit {
       this.activeIndex = +savedIndex;
       this.navigateBasedOnStep();
     }
-
-    // if (this.router.url.includes('callback')) {
-    //   this.activeIndex = 0; 
-    //   localStorage.setItem('activeIndex', '0');
-    // }
 
     this.stepService.stepCompleted$.subscribe((data: any) => {
       if (data.direction == 'dec-form') {

@@ -202,7 +202,7 @@ export class DeclarationQueryComponent {
     // localStorage.setItem('declarationId', declaration.AgentFileReferenceID)
     // this.router.navigateByUrl('app-declaration/new-declaration?Mode=e');
     localStorage.setItem('currentDecId', declaration.Id)
-    this.router.navigate(['declaration-main/dec-form'], { queryParams: { customsSend: true, 'Mode': 'e' } })
+    this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e' } })
     this.stepService.emitStepCompleted('dec-form');
     // this.router.navigateByUrl('declaration-main/dec-form?Mode=e');
   }

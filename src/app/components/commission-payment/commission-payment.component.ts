@@ -4,11 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
 import { PaymentService } from '../../shared/services/payment.service';
+import { Message, MessageService } from 'primeng/api';
+import { MessagesModule } from 'primeng/messages';
 
 @Component({
   selector: 'app-commission-payment',
   standalone: true,
-  imports: [CommonModule, SafeUrlPipe],
+  imports: [CommonModule, SafeUrlPipe,MessagesModule],
+  providers: [MessageService],
   templateUrl: './commission-payment.component.html',
   styleUrl: './commission-payment.component.scss'
 })
@@ -21,12 +24,17 @@ export class CommissionPaymentComponent implements OnInit {
   decId: any;
   confirmationCode: any;
 
+  msgs1: Message[] = [];
+
   constructor(private stepService: StepService, private router: Router, private route: ActivatedRoute, private paymentService: PaymentService, private renderer: Renderer2) { }
 
   ngOnInit(): void {
     this.decId = localStorage.getItem('currentDecId');
     this.route.queryParams.subscribe(params => {
-
+      const isFailed = params['fail'];
+      if (isFailed) {
+        this.msgs1 = [{ severity: 'error', summary: 'תשלום נכשל  ', detail: "נסה שוב" }]
+      }
       const success = params['Success'];
       if (success == undefined) {
         this.openTransaction();
@@ -51,10 +59,11 @@ export class CommissionPaymentComponent implements OnInit {
           this.paymentStatus = true;
           this.savePaymentStatus(true);
           this.nextStep();
-         
+
         } else {
           this.paymentStatus = false;
-          this.savePaymentStatus(false);
+          // this.savePaymentStatus(false);
+          this.nextTry();
         }
       }
     });
@@ -63,8 +72,14 @@ export class CommissionPaymentComponent implements OnInit {
   nextStep() {
     if (window.top) {
       this.stepService.emitStepCompleted('dec-form');
-
       window.top.location.href = '/declaration-main/dec-form?customsSend=true&Mode=e';
+    }
+  }
+
+  nextTry() {
+    if (window.top) {
+      // this.stepService.emitStepCompleted('commission-payment');
+      window.top.location.href = '/declaration-main/commission-payment?Mode=e&fail=true';
     }
   }
 

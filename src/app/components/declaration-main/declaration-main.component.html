@@ -15,7 +15,7 @@
                 <span>הצהרות שלי</span>
             </a>
         </li>
-        
+
         <li>
             <a (click)="restart()" routerLink="/declaration-main/dec-form" class="menu-item">
                 <i class="pi pi-cog"></i>
@@ -31,13 +31,14 @@
         </li>
 
         <li>
-            <a href="https://www.gov.il/he/service/power-of-attorney" target="_blank" rel="noopener noreferrer" class="menu-item">
+            <a href="https://www.gov.il/he/service/power-of-attorney" target="_blank" rel="noopener noreferrer"
+                class="menu-item">
                 <i class="pi pi-file-edit"></i>
                 <span>יפוי כח</span>
             </a>
         </li>
     </ul>
-    <div class="logout">      
+    <div class="logout">
         <a (click)="logout()" class="menu-item">
             <i class="pi pi-sign-out"></i>
             <span>התנתקות</span>
@@ -45,19 +46,27 @@
     </div>
 </div>
 
-<div class="steps">
+<!-- <div class="steps">
     <p-steps [model]="steps" [(activeIndex)]="activeIndex"></p-steps>
-</div>
-<!-- <div class="card flex justify-center">
-    <p-stepper [value]="1" class="basis-[50rem]">
-        <p-step-list>
-            <p-step [value]="1">Design</p-step>
-            <p-step [value]="2">Development</p-step>
-            <p-step [value]="3">QA</p-step>
-        </p-step-list>
-    </p-stepper>
 </div> -->
-<!-- <div style="margin-right: 15%;">
-<button  (click)="nextStep()">+</button>
-<button (click)="previousStep()">-</button></div> -->
+
+<div class="progress-container">
+    <div class="step" *ngFor="let step of steps; let i = index" [class.completed]="i <= activeIndex"
+        [class.active]="i === activeIndex">
+        <div class="s">
+            <div class="icon-wrapper">
+                <div class="circle"></div>
+                <!-- <img [src]="step.icon" alt="icon" class="icon" /> -->
+                <img [src]="i <= activeIndex ? step.activeIcon : step.icon" [class.active]="i === activeIndex" alt="icon" class="icon" />
+
+            </div>
+
+            <p>{{ step.label }}</p>
+        </div>
+
+        <div *ngIf="i < steps.length - 1" class="separator">
+            <img src="assets/steps/dots.png" alt="separator" class="dots-icon" />
+        </div>
+    </div>
+</div>
 <router-outlet></router-outlet>

@@ -2,9 +2,9 @@
 
 .steps {
   padding: 2%;
-  width: 85%;
-  // margin: auto;
-  margin-right: 10%;
+  width: 75%;
+  margin-top: -4%;
+  margin-right: 5%;
 }
 
 ::ng-deep.p-steps .p-steps-item.p-highlight .p-steps-number {
@@ -58,7 +58,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 15px 20px;
+  padding: 1vh 2vw;
   margin: 10px 0;
   border-radius: 5px;
   transition: background-color 0.3s ease;
@@ -102,3 +102,81 @@
     margin-left: 0;
   }
 }
+
+.progress-container {
+  width: 80%;
+  margin-right: 15%;
+  display: flex;
+  // justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-top: -3%;
+}
+
+.icon-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1vh;
+}
+
+.step {
+  display: flex;
+}
+
+.circle {
+  position: absolute;
+  // width: 2.7vw;
+  // height: 5.2vh;
+  width: 55px;
+  height: 55px;
+  gap: 0px;
+  border: 1.5px 0px 0px 0px;
+  opacity: 0px;
+  border-radius: 50%;
+  background-color: white;
+  border: 2px solid $color-11;
+  z-index: 1;
+}
+
+.icon {
+  position: relative;
+  z-index: 2;
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // margin-right: 20%;
+}
+
+.s {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1vh
+}
+
+
+.step.completed .circle {
+  background-color: $color-11;
+}
+
+// display: flex;
+// flex-direction: row;
+// justify-content: flex-end;
+// align-items: flex-start;
+// padding: 0px;
+// gap: 160px;
+// isolation: isolate;
+
+// width: 1381px;
+// height: 104px;
+
+
+// flex: none;
+// order: 0;
+// align-self: stretch;
+// flex-grow: 0;
