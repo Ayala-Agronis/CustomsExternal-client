@@ -2,13 +2,17 @@
     <div class="progress-spinner" *ngIf="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>
-    <h2 class="form-title title">תהליך הזנת הצהרה</h2>
-    <h4 *ngIf="customStatus">
+    <div class="title-container">
+        <h2 class="form-title title">תהליך הזנת הצהרה</h2>
+        <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value"> מספר הצהרה :{{generalDeclarationForm.get("DeclarationNumber")?.value }}</label>
+        <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value">סטטוס הצהרה :{{customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }} </label>
+    </div>
+    <!-- <h4 *ngIf="customStatus">
         סטטוס טיוטא:
         <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
             {{customStatusName()}}
         </span>
-    </h4>
+    </h4> -->
     <p-confirmDialog></p-confirmDialog>
     <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
 
@@ -197,8 +201,7 @@
                                 </div>
                                 <div class="form-item">
                                     <label>סה"כ חשבון <span class="required">*</span></label>
-                                    <input (blur)="getFormErrors(true)" pInputText
-                                        formControlName="InvoiceAmount">
+                                    <input (blur)="getFormErrors(true)" pInputText formControlName="InvoiceAmount">
                                 </div>
                             </div>
                         </div>
@@ -240,6 +243,7 @@
                 <div>
                     <div formArrayName="SupplierInvoiceItems">
                         <p-card>
+
                             <p-table [value]="GetSupplierInvoiceItems(i).controls">
                                 <ng-template pTemplate="header">
                                     <tr>
@@ -281,8 +285,8 @@
                                         <td pEditableColumn>
                                             <p-cellEditor>
                                                 <ng-template pTemplate="input">
-                                                    <input (blur)="getFormErrors(true)" pInputText
-                                                        type="text" formControlName="CustomsValueAmount">
+                                                    <input (blur)="getFormErrors(true)" pInputText type="text"
+                                                        formControlName="CustomsValueAmount">
                                                 </ng-template>
                                                 <ng-template pTemplate="output">
                                                     {{GetSupplierInvoiceItems(i).controls[rowIndex].get("CustomsValueAmount")?.value}}
@@ -331,7 +335,7 @@
 
     <div class="btns">
         <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
-        <button [disabled]="generalDeclarationForm.invalid || checkVersion() ||suplierErrorExist" class="button-primary"
+        <button [disabled]="generalDeclarationForm.invalid ||suplierErrorExist" class="button-primary"
             (click)="saveDeclaration()" pTooltip="{{ getFormErrors(false) }}" tooltipPosition="top"
             [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
 
@@ -347,7 +351,7 @@
             <p>
                 סטטוס טיוטא:
                 <span [ngClass]="{'highlight-error': customsError, 'highlight-success': !customsError}">
-                    {{customStatusName()}}
+                    {{customStatusName(null)}}
                 </span>
             </p>
             <ul>
@@ -362,7 +366,7 @@
             <p>
                 סטטוס טיוטא:
                 <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
-                    {{customStatusName()}}
+                    {{customStatusName(null)}}
                 </span>
             </p>
             <ul>

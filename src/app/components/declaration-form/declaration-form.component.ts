@@ -120,6 +120,18 @@ export class DeclarationFormComponent implements OnInit {
       this.mode = params['Mode'];
       if (this.mode !== 'e') {
         this.initForm()
+        this.customsError = ''
+        this.customsErrorsContent = ''
+        const decId = localStorage.getItem('currentDecId');
+        this.paymentService.isDecPaid(decId).subscribe(res => {
+          console.log(res)
+          if (!decId) this.showBtnCustoms = false
+          if (res?.isPaid) {
+            this.showBtnCustoms = true
+          }
+          else
+            this.showBtnCustoms = false
+        })
         this.customsDataService.GetSeq$('Customs').pipe(
           tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
       }
@@ -209,6 +221,8 @@ export class DeclarationFormComponent implements OnInit {
     this.columns = ["מוצר מיובא ", "כמות", "ערך טובין", "ארץ מקור"];
 
     if (this.mode != 'e') {
+      this.customsError = ''
+      this.customsErrorsContent = ''
       this.customsDataService.GetSeq$('Customs').pipe(
         tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
     }
@@ -1195,7 +1209,9 @@ export class DeclarationFormComponent implements OnInit {
     this.filteredSupplierID = filtered;
   }
 
-  customStatusName() {
+  customStatusName(status: any) {
+    if (status)
+      this.customStatus = status;
     if (this.customStatus && this.customsStatuses?.length) {
       for (let i = 0; i < this.customsStatuses.length; i++) {
         let a = this.customsStatuses[i];

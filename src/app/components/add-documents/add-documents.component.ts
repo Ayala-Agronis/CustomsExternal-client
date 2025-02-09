@@ -542,7 +542,6 @@ export class AddDocumentsComponent {
 
         this.documentsService.updateDocument$(documentId, documentObject).subscribe(
           res => {
-            // this.router.navigate(['/app-declaration/documents'], { queryParams: { 'Mode': 'e' } });
             this.loading = false
             console.log(res)
             this.getdoc()
@@ -561,17 +560,17 @@ export class AddDocumentsComponent {
         this.msgs1 = [
           { severity: 'error', summary: 'Error', detail: 'שליחת המסמך למכס נכשלה!' }
         ];
-        this.documentsService.updateDocument$(this.documentId, this.documentObject).subscribe(
-          res => {
-            this.loading = false
-            console.log(res)
-            this.getdoc()
-          },
-          err => {
-            this.loading = false
-            console.log(err)
-          }
-        )
+        // this.documentsService.updateDocument$(this.documentId, this.documentObject).subscribe(
+        //   res => {
+        //     this.loading = false
+        //     console.log(res)
+        //     this.getdoc()
+        //   },
+        //   err => {
+        //     this.loading = false
+        //     console.log(err)
+        //   }
+        // )
       }
     );
   }
@@ -579,7 +578,7 @@ export class AddDocumentsComponent {
   nextStep() {
     this.saveDocuments();
     // if (localStorage.getItem('CustomsStatus') !== "12" || null)
-      this.stepService.emitStepCompleted('+');
+    this.stepService.emitStepCompleted('+');
     // else {
     //   this.router.navigate(['declaration-main/dec-form'], { queryParams: {fromDocs:true, customsSend: true, 'Mode': 'e' } })
     //   this.stepService.emitStepCompleted('dec-form');
