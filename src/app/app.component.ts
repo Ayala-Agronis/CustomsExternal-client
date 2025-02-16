@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/rout
 import { ButtonModule } from 'primeng/button';
 import { Title } from '@angular/platform-browser';
 import { filter, Subscription } from 'rxjs';
+import { PrimeNGConfig } from 'primeng/api';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,7 @@ import { filter, Subscription } from 'rxjs';
 export class AppComponent implements OnInit {
   routerSubscription!: Subscription;
 
-  constructor(private router: Router, private titleService: Title) { }
+  constructor(private router: Router, private titleService: Title,private primengConfig:PrimeNGConfig) { }
 
   ngOnInit(): void {
     this.routerSubscription = this.router.events.pipe(
@@ -29,6 +30,45 @@ export class AppComponent implements OnInit {
       if (route.snapshot.data['title']) {
         this.titleService.setTitle(route.snapshot.data['title']);
       }
+    });
+
+    this.primengConfig.setTranslation({
+      startsWith: "מתחיל עם",
+      contains: "מכיל",
+      notContains: "לא מכיל",
+      endsWith: "מסתיים עם",
+      equals: "שווה ל",
+      notEquals: "שונה מ",
+      matchAll: "התאם הכל",
+      matchAny: "התאמה כלשהי",
+      apply: "החל",
+      clear: "איפוס",
+      noFilter: "ללא סינון",
+      lt: "פחות מ",
+      lte: "פחות או שווה ל",
+      gt: "גדול מ",
+      gte: "גדול או שווה ל",
+      is: "הוא",
+      isNot: "אינו",
+      before: "לפני",
+      after: "אחרי",
+      addRule:" ",
+      removeRule:"הסר",
+      dayNames: ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"],
+      dayNamesShort: ["א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"],
+      dayNamesMin: ["א", "ב", "ג", "ד", "ה", "ו", "ש"],
+      monthNames: [
+        "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", 
+        "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"
+      ],
+      monthNamesShort: [
+        "ינו'", "פבר'", "מרץ", "אפר'", "מאי", "יונ'", 
+        "יול'", "אוג'", "ספט'", "אוק'", "נוב'", "דצמ'"
+      ],
+      today: "היום",
+      // clear: "נקה",
+      dateFormat: "dd/mm/yy",
+      firstDayOfWeek: 0
     });
   }
 

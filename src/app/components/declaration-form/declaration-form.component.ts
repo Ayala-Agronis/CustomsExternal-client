@@ -192,6 +192,7 @@ export class DeclarationFormComponent implements OnInit {
       //init data of consignment
       this.consignmentInit();
       if (this.mode == 'e') {
+        localStorage.setItem("maxIndex", "2");
         this.customStatus = localStorage.getItem('CustomsStatus');
         this.initElements();
         //check if declaration is paid
@@ -1208,10 +1209,23 @@ export class DeclarationFormComponent implements OnInit {
     }
     this.filteredSupplierID = filtered;
   }
-
+  i = 0
   customStatusName(status: any) {
-    if (status)
+    console.log(this.i++);
+
+    // if (status ) {
+      if (status && status !== this.customStatus) {
       this.customStatus = status;
+      if (status == 7) {
+        localStorage.setItem("maxIndex", "4");
+        this.stepService.updateMaxIndex(4);
+      }
+      else {
+        localStorage.setItem("maxIndex", "2");
+        this.stepService.updateMaxIndex(2);
+      }
+    }
+
     if (this.customStatus && this.customsStatuses?.length) {
       for (let i = 0; i < this.customsStatuses.length; i++) {
         let a = this.customsStatuses[i];

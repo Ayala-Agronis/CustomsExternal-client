@@ -7,26 +7,26 @@
 <p-card class="queryDec">
     <div class="card">
         <div class="ui-rtl" dir="rtl">
-            <h2> הצהרות שלי</h2>
+            <h2 class="title"> הצהרות שלי</h2>
             <div class="p-grid p-fluid p-nogutter center-content">
                 <div class="p-md-4 p-lg-3">
                     <div class="p-field">
-                        <label class="date-label" for="Start">מתאריך <span class="text-danger">*</span></label>
+                        <label class="date-label" for="Start">מתאריך </label>
                         <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="Start" [required]="true"
                             [(ngModel)]="startDate" (onSelect)="updateEndDateMinDate()"></p-calendar>
                     </div>
                 </div>
                 <div class="p-md-4 p-lg-3">
                     <div class="p-field">
-                        <label class="date-label" for="End">עד תאריך <span class="text-danger">*</span></label>
+                        <label class="date-label" for="End">עד תאריך </label>
                         <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="End" [required]="true"
                             [(ngModel)]="endDate" [minDate]="minEndDate" (onselect)="handleDateSelect()"></p-calendar>
                     </div>
                 </div>
 
-                <div class="currency-label p-lg-3">
-                    <button *ngIf="!isFiltered" pButton type="submit" label="סנן" (click)="filterByDates()"></button>
-                    <button *ngIf="isFiltered" pButton type="submit" label="בטל סינון"
+                <div class="currency-label p-lg-3 ">
+                    <button class="filter-btn" *ngIf="!isFiltered" pButton type="submit" label="סנן" (click)="filterByDates()"></button>
+                    <button class="filter-btn" *ngIf="isFiltered" pButton type="submit" label="בטל סינון"
                         (click)="cancelFilter()"></button>
                 </div>
             </div>
@@ -135,8 +135,8 @@
                 <ng-template style="text-align: right;" pTemplate="body" let-declartion>
                     <tr>
                       
-                        <td> <p-button styleClass="p-button-link" icon="pi pi-pencil"
-                                (click)="editDeclaration(declartion)"></p-button>
+                        <td> <button class="edit" pButton icon="pi pi-pencil"
+                                (click)="editDeclaration(declartion)"></button>
                         </td>
                         <td>{{declartion.Id}}</td>
                         <td>{{declartion.DeclarationNumber}}</td>

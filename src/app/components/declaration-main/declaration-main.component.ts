@@ -6,6 +6,7 @@ import { StepService } from '../../shared/services/step.service';
 import { StepperModule } from 'primeng/stepper';
 import { UserService } from '../../shared/services/user.service';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
+import { max } from 'rxjs';
 
 @Component({
   selector: 'app-declaration-main',
@@ -28,6 +29,7 @@ export class DeclarationMainComponent implements OnInit {
   mode: any;
 
   currentStep = 0;
+  maxIndex: number = 0;
 
   constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef, private stepService: StepService, private userService: UserService, private customsDataService: CustomsDataService) { }
 
@@ -37,6 +39,7 @@ export class DeclarationMainComponent implements OnInit {
     })
 
     var savedIndex = localStorage.getItem('activeIndex');
+    this.maxIndex = +(localStorage.getItem('maxIndex') || 0);
 
     if (!savedIndex) {
       savedIndex = '0'
@@ -44,8 +47,12 @@ export class DeclarationMainComponent implements OnInit {
     }
     else {
       this.activeIndex = +savedIndex;
-      this.navigateBasedOnStep();
+      this.navigateBasedOnStep(null);
     }
+
+    this.stepService.maxIndex$.subscribe((index:any)=>{
+      this.maxIndex = index;
+    })
 
     this.stepService.stepCompleted$.subscribe((data: any) => {
       if (data.direction == 'dec-form') {
@@ -104,13 +111,20 @@ export class DeclarationMainComponent implements OnInit {
     localStorage.setItem('currentDecId', '')
     localStorage.setItem('CustomsStatus', '')
     localStorage.setItem("activeIndex", "0")
+    localStorage.setItem("maxIndex", "0")
+    this.stepService.updateMaxIndex(0);
   }
 
   nextStep(): void {
     if (this.activeIndex < this.steps.length - 1) {
-      this.activeIndex++;
+
+      if(this.activeIndex == this.maxIndex){
+        this.maxIndex++;
+        localStorage.setItem('maxIndex',this.maxIndex.toString())
+      }
+      this.activeIndex++;    
       localStorage.setItem('activeIndex', this.activeIndex.toString());
-      this.navigateBasedOnStep();
+      this.navigateBasedOnStep(null);
     }
   }
 
@@ -118,11 +132,15 @@ export class DeclarationMainComponent implements OnInit {
     if (this.activeIndex > 0) {
       this.activeIndex--;
       localStorage.setItem('activeIndex', this.activeIndex.toString());
-      this.navigateBasedOnStep();
+      this.navigateBasedOnStep(null);
     }
   }
 
-  navigateBasedOnStep(): void {
+  navigateBasedOnStep(i: any): void {
+    if (i) {
+      this.activeIndex = i;
+    }
+
     let navigationExtras: any = {};
 
     if (this.mode === 'e' || this.activeIndex === 1) {

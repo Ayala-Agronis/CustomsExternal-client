@@ -11,6 +11,7 @@
     align-items: center;
     margin: 0 5px;
     direction: ltr;
+    width: 90%;
 }
 
 .p-grid {
@@ -38,8 +39,8 @@
 
 .p-table th,
 .p-table td {
-    padding: 5px; 
-    font-size: 0.9em; 
+    padding: 5px;
+    font-size: 0.9em;
 }
 
 .button-container {
@@ -48,11 +49,12 @@
     align-items: center;
 }
 
-::ng-deep .queryDec .p-datatable .p-datatable-tbody > tr > td {
-  text-align: center;
- }
+::ng-deep .queryDec .p-datatable .p-datatable-tbody>tr>td {
+    text-align: center;
+}
 
 @media only screen and (max-width: 600px) {
+
     .p-md-4,
     .p-lg-3 {
         width: 100%;
@@ -63,6 +65,19 @@
 ::ng-deep .p-fieldset .p-fieldset-legend {
     border: none !important;
     background-color: transparent !important;
+}
+
+::ng-deep .queryDec .p-datatable .p-datatable-thead>tr>th {
+    color: white;
+    background: $color-8;
+}
+
+::ng-deep .queryDec .p-datatable .p-sortable-column .p-sortable-column-icon {
+    color: white;
+}
+
+::ng-deep .queryDec .p-column-filter-menu-button {
+    color: white;
 }
 
 .p-md-3 {
@@ -80,22 +95,81 @@
     order: 3;
 }
 
-::ng-deep .p-calendar {
+::ng-deep .queryDec .p-calendar {
     width: 100%;
+    border: 1px solid $color-8;
 }
 
- ::ng-deep .queryDec .p-datatable .p-datatable-tbody>tr>td, .p-datatable .p-datatable-tfoot>tr>td {
+::ng-deep .queryDec .p-datatable .p-datatable-tbody>tr>td,
+.p-datatable .p-datatable-tfoot>tr>td {
     padding: 0.1rem 0.5rem;
 }
 
-::ng-deep .p-button {
-    color: #ffffff;
-    background:$color-8;
+::ng-deep .queryDec .p-button {
+    color: $color-8;
+    border: 1px solid $color-8;
+    background: none;
+}
+
+::ng-deep .queryDec .edit.p-button {
     border: none;
 }
 
+::ng-deep .queryDec .p-calendar .p-button {
+    border: none;
+}
+
+::ng-deep .p-inputtext:enabled:hover {
+    border-color: $color-8;
+}
+
+::ng-deep.p-calendar {
+    position: relative;
+}
+
+::ng-deep .p-calendar .p-datepicker-trigger {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    cursor: pointer;
+    z-index: 2;
+    color: #000;
+    padding: 0 10px;
+}
+
+::ng-deep .p-calendar .p-inputtext {
+    padding-right: 30px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+}
+
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+    background: $color-7;
+    border-color: $color-7;
+    color: white;
+}
+
+::ng-deep .p-card .p-card-content {
+    padding: 0;
+}
+
+::ng-deep.p-column-filter-buttonbar .p-button {
+    background: $color-8;
+    border: 1px solid;
+}
+
+::ng-deep .p-button.p-button-text {
+    color: $color-8;
+}
+
+::ng-deep.p-button.p-button-outlined {
+    background-color: transparent;
+    color: $color-8;
+    border: 1px solid;
+}
 
 .text-danger {
     color: #ff0000;
 }
-

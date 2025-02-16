@@ -51,13 +51,13 @@
 </div> -->
 
 <div class="progress-container">
-    <div class="step" *ngFor="let step of steps; let i = index" [class.completed]="i <= activeIndex"
+    <div class="step" *ngFor="let step of steps; let i = index" [class.completed]="i <= maxIndex"
         [class.active]="i === activeIndex">
         <div class="s">
-            <div class="icon-wrapper">
-                <div class="circle"></div>
+            <div (click)="i <= maxIndex ? navigateBasedOnStep(i) : null" [class.active]="i === maxIndex" [class.clickable]="i <= maxIndex" class="icon-wrapper">
+                <div class="circle" ></div>
                 <!-- <img [src]="step.icon" alt="icon" class="icon" /> -->
-                <img [src]="i <= activeIndex ? step.activeIcon : step.icon" [class.active]="i === activeIndex" alt="icon" class="icon" />
+                <img [src]="i <= maxIndex ? step.activeIcon : step.icon" [class.active]="i === maxIndex" alt="icon" class="icon" />
 
             </div>
 

@@ -15,7 +15,7 @@ export class DocumentService {
     // return this.http.get<any>(`${environment.customsExternalApiUrl}Document/entity/${id}`);
   }
 
-  getDocumentsById$(id: string): Observable<any> {
+  getDocumentsById$(id: string): Observable<any> { 
     return this.http.get<any>(`${environment.customsdbApiUrl}Documents/${id}`);
     // return this.http.get<any>(`${environment.customsExternalApiUrl}Document/${id}`);
   }

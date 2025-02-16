@@ -18,3 +18,11 @@ header {
   margin-top: 1%;
   margin-left: 1%;
 }
+
+::ng-deep.p-calendar .p-datepicker {
+  direction: rtl;
+}
+
+::ng-deep.p-fluid .p-button {
+  width: auto;
+}

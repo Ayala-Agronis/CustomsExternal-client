@@ -98,6 +98,7 @@ export class HomePageComponent implements OnInit {
   navigate(destination: string) {
     if (destination == 'declaration-main') {
       localStorage.setItem("currentDecId", '')
+      localStorage.setItem("maxIndex", '0')
     }
     this.router.navigateByUrl(destination)
   }

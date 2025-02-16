@@ -7,12 +7,7 @@
         <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value"> מספר הצהרה :{{generalDeclarationForm.get("DeclarationNumber")?.value }}</label>
         <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value">סטטוס הצהרה :{{customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }} </label>
     </div>
-    <!-- <h4 *ngIf="customStatus">
-        סטטוס טיוטא:
-        <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
-            {{customStatusName()}}
-        </span>
-    </h4> -->
+  
     <p-confirmDialog></p-confirmDialog>
     <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
 

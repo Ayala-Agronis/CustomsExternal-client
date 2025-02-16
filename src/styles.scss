@@ -10,6 +10,11 @@ $color-9: #ECA305;
 $color-10: #b9e0ff;
 $color-11:#0066FF;
 
+// ::ng-deep:root {
+//     --primary-color: $color8; 
+//     --primary-color-text: #ffffff; 
+// }
+
 .progress-spinner {
     position: fixed;
     z-index: 999;
@@ -91,6 +96,11 @@ $color-11:#0066FF;
     color: black;
 
 }
+
+::ng-deep.p-column-filter-overlay {
+    direction: rtl;
+  }
+  
 .p-message.p-message-success .p-message-icon {
     display: none;
 }

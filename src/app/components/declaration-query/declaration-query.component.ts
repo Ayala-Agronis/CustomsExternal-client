@@ -118,7 +118,7 @@ export class DeclarationQueryComponent {
         _ => {
           console.log(this.allDeclarations);
 
-          this.getImporterName();
+          // this.getImporterName();
           this.allDeclarations.forEach((x: any) => {
             if (x.Consignments && x.Consignments.length > 0 && x.Consignments[0] && x.Consignments[0].ArrivalDateTime) {
 

@@ -140,6 +140,11 @@
   z-index: 1;
 }
 
+.icon-wrapper.clickable {
+  cursor: pointer; 
+  opacity: 1;      
+}
+
 .icon {
   position: relative;
   z-index: 2;
