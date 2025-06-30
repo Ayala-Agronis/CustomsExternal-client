@@ -20,17 +20,26 @@ export class AppComponent implements OnInit {
   constructor(private router: Router, private titleService: Title,private primengConfig:PrimeNGConfig) { }
 
   ngOnInit(): void {
-    this.routerSubscription = this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      let route = this.router.routerState.root;
-      while (route.firstChild) {
-        route = route.firstChild;
-      }
-      if (route.snapshot.data['title']) {
-        this.titleService.setTitle(route.snapshot.data['title']);
-      }
-    });
+   this.routerSubscription = this.router.events.pipe(
+  filter(event => event instanceof NavigationEnd)
+).subscribe(() => {
+  let route = this.router.routerState.root;
+  while (route.firstChild) {
+    route = route.firstChild;
+  }
+  if (route.snapshot.data['title']) {
+    this.titleService.setTitle(route.snapshot.data['title']);
+  }
+
+  // 🚨 הוספה פה:
+  const currentUrl = this.router.url;
+  if (currentUrl.includes('/login')) {
+    document.body.classList.add('login-page');
+  } else {
+    document.body.classList.remove('login-page');
+  }
+});
+
 
     this.primengConfig.setTranslation({
       startsWith: "מתחיל עם",

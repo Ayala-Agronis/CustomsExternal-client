@@ -64,7 +64,7 @@
 
             <div class="form-item">
               <label for="password">סיסמה</label>
-              <input id="password" type="password" pPassword formControlName="Password" />
+              <input id="password" type="password" pPassword [feedback]="false" formControlName="Password" />
               <small class="error"
                 *ngIf="registrationForm.get('Password')?.invalid && registrationForm.get('Password')?.touched">
                 {{ getErrorMessage('Password') }}

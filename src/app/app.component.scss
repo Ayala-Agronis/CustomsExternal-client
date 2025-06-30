@@ -26,3 +26,13 @@ header {
 ::ng-deep.p-fluid .p-button {
   width: auto;
 }
+body.login-page header {
+  display: none !important;
+}
+
+body.login-page .general {
+  background: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+}

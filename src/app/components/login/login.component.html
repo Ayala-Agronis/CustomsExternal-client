@@ -1,36 +1,45 @@
-<div class="progress-spinner" *ngIf="loading">
-    <p-progressSpinner></p-progressSpinner>
+<!-- ✅ שכבת טעינה -->
+<div class="overlay-spinner" *ngIf="loading">
+  <p-progressSpinner></p-progressSpinner>
 </div>
+
 <div class="login-container">
-    <div class="login-form">
-        <h2>התחברות</h2>
-        <p-messages class="ui-ltr" dir="ltr" [(value)]="msg" [enableService]="false"></p-messages>
+  <div class="login-form">
+    <h2>התחברות</h2>
+    <p-messages class="ui-ltr" dir="ltr" [(value)]="msg" [enableService]="false"></p-messages>
 
-        <form [formGroup]="loginForm">
-            <div class="form-group">
+    <form [formGroup]="loginForm">
+      <div class="form-group">
+        <div class="form-item">
+          <label for="email">אימייל </label>
+          <input #emailInput id="email" type="email" pInputText autocomplete="username" formControlName="Email" />
+        </div>
+        <div class="form-item">
+          <label for="password">סיסמה </label>
+          <input
+            #passwordInput
+            id="password"
+            type="password"
+            pPassword
+            [feedback]="false"
+            autocomplete="current-password"
+            formControlName="Password"
+          />
+        </div>
+      </div>
 
-                <div class="form-item">
-                    <label for="email">אימייל </label>
-                    <input id="email" type="email" pInputText autocomplete="username" formControlName="Email" />
-                </div>
-                <div class="form-item">
-                    <label for="password">סיסמה </label>
-                    <input id="password" type="password" pPassword autocomplete="current-password"
-                        formControlName="Password" />
-                </div>
-            </div>
+      <div class="btnSubmit">
+        <button type="submit" (click)="onSubmit()" class="button-primary">התחברות</button>
+      </div>
 
-            <div class="btnSubmit">
-                <button (click)="onSubmit()" class="button-primary">התחברות</button>
-                <!-- <button (click)="onSubm6it()" class="button-primary">הת3חברות</button> -->
-            </div>
+      <button class="btnGoogle" (click)="loginWithGoogle()">
+        <i class="pi pi-google google-icon"></i>התחברות באמצעות גוגל
+      </button>
+    </form>
+  </div>
 
-            <button class="btnGoogle" (click)="loginWithGoogle()"><i class="pi pi-google google-icon"></i>התחברות
-                באמצעות גוגל </button>
-        </form>
-    </div>
-    <div class="left-side">
-        <img src="assets/box.png" alt="box" class="box">
-        <img src="assets/logo.png" alt="Logo" class="logo">
-    </div>
+  <div class="left-side">
+    <img src="assets/box.png" alt="box" class="box" />
+    <img src="assets/logo.png" alt="Logo" class="logo" />
+  </div>
 </div>
