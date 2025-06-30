@@ -25,12 +25,7 @@
     gap: 4px;
 }
 
-.btnSubmit {
-    //display: flex;
-    margin-top: 15px;
-    direction: ltr;
-    margin-left: 40%;
-}
+
 
 .btnGoogle {
     height: 3.0625rem;
@@ -70,9 +65,39 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap:2vh;
+    gap: 2vh;
+}
+
+.progress-spinner {
+    pointer-events: none; // ❗️מאפשר קליקים דרך האלמנט
+    z-index: 1; // לוודא שהוא לא חוסם שום דבר חשוב
+}
+
+.p-password-panel {
+    display: none !important;
+}
+.btnSubmit {
+    //display: flex;
+    margin-top: 15px;
+    direction: ltr;
+    margin-left: 40%;
+    z-index: 90000;
+    position: relative;
 }
 
 // .left-side .logo {
-   
+
 // }
+
+.overlay-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

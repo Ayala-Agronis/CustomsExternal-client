@@ -14,11 +14,13 @@
         <div class="content">
             <button class="gray-button" *ngIf="!isRegister" (click)="navigate('register')">הרשמה </button>
             <button class="gray-button" *ngIf="!isRegister" (click)="navigate('login')">התחברות </button>
-            <div *ngIf="isRegister" class="user-info">
-                <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>                 
-                <button class="black-button" (click)="navigate('declaration-main')">הצהרה חדשה ></button>
-                <button class="black-button" (click)="navigate('dec-query')">הצהרות שלי ></button>
-            </div>
+          <div *ngIf="isRegister" class="user-info">
+  <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>                 
+  <button class="black-button" (click)="navigate('declaration-main')">הצהרה חדשה ></button>
+  <button class="black-button" (click)="navigate('dec-query')">הצהרות שלי ></button>
+  <button class="black-button" (click)="logout()">התנתקות</button>
+</div>
+
             <span *ngIf="!isClientAuthorized" class="power-of-attorney-message">
                 יש למלא <a href="https://www.gov.il/he/service/power-of-attorney" target="_blank" class="power-of-attorney-link">יפוי כח</a>
                 <i class="pi pi-exclamation-circle" style="margin-right: 10px;"></i>

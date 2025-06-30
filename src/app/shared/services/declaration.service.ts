@@ -87,7 +87,7 @@ export class DeclarationService {
       .set('importerId', importerId)
       .set('eventCode', eventCode);
 
-    return this.http.get<any>(`${environment.customsdbApiUrl}/DecQuery`, { params });
+    return this.http.get<any>(`${environment.customsdbApiUrl}DecQuery`, { params });
   }
 
   GetClassificationID$(classification: any) {

@@ -74,20 +74,31 @@ export class DeclarationQueryComponent {
     this.cdRef.detectChanges();
   }
 
-  ngOnInit(): void {
-    this.importerId = localStorage.getItem('userId')
-    window.dispatchEvent(new Event('resize'));
+ ngOnInit(): void {
+  // קבלת מזהה המשתמש
+  this.importerId = localStorage.getItem('userId');
 
-    this.startDate.setDate(this.startDate.getDate() - 7);
+  // עדכון גודל רכיבים אם יש כאלה תלוים ברזולוציה
+  window.dispatchEvent(new Event('resize'));
 
-    this.search();
+  // קביעת טווח תאריכים של 7 ימים אחורה כברירת מחדל
+  this.endDate = new Date(); // להבטיח שהוא עדכני
+  this.startDate = new Date();
+  this.startDate.setDate(this.endDate.getDate() - 7);
 
-    this.customsDataService.getCustomsTableValues$('1981').pipe(
-      map(res => {
-        this.customsStatuses = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 }));
-      }),
-    ).subscribe();
-  }
+  // שליפה ראשונית של הצהרות לטווח ברירת מחדל
+  this.search();
+
+  // טעינת ערכי סטטוסי מכס
+  this.customsDataService.getCustomsTableValues$('1981').pipe(
+    map(res => {
+      this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
+        name: item.Value2,
+        code: item.Value1
+      }));
+    })
+  ).subscribe();
+}
 
   updateEndDateMinDate() {
     if (this.startDate) {
@@ -101,45 +112,68 @@ export class DeclarationQueryComponent {
     this.isFiltered = false
   }
 
+ noDeclarationsFound: boolean = false; // ✅ חדש
+
+ noDeclarationsMsg: Message[] = [
+  {
+    severity: 'info',
+    summary: 'תוצאה',
+    detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.'
+  }
+];
+
+
+
+ 
   search() {
     if (!this.endDate || !this.startDate) {
       this.msgs1 = [
-        { severity: 'error', summary: 'שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }]
+        { severity: 'error', summary: 'שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
+      ];
+      return;
     }
-    else {
-      this.loading = true
-      let i = 0
-      this.declarationService.getDeclarations$('', '', this.importerId || "", this.eventCode || "").pipe(
-        // this.declarationService.getDeclarations$(this.startDate.toJSON(), this.endDate.toJSON(), this.importerId || "", this.eventCode || "").pipe(
-        tap(res => this.initialDeclarationsCount = res.length),
-        tap(res => this.allDeclarations = res),
-        tap(_ => this.loading = false),
-      ).subscribe(
-        _ => {
-          console.log(this.allDeclarations);
 
-          // this.getImporterName();
-          this.allDeclarations.forEach((x: any) => {
-            if (x.Consignments && x.Consignments.length > 0 && x.Consignments[0] && x.Consignments[0].ArrivalDateTime) {
+    this.loading = true;
 
-              var myDate = new Date(x.Consignments[0].ArrivalDateTime)
-              x.Consignments[0].ArrivalDateTime = (myDate.getMonth() + 1) + '/' + myDate.getDate() + '/' + myDate.getFullYear();
-              x.CargoDescription = x.Consignments[0].CargoDescription;
-              x.ArrivalDateTime = x.Consignments[0].ArrivalDateTime;
-            }
-          });
-          this.filteredDeclarations = this.allDeclarations;
+    const start = this.startDate instanceof Date ? this.startDate : new Date(this.startDate);
+    const end = this.endDate instanceof Date ? this.endDate : new Date(this.endDate);
 
-          this.filteredDeclarationsCount = this.allDeclarations.length
-          this.isShowFilter = true
-        }
-      )
-    }
+    this.declarationService.getDeclarations$(
+      start.toISOString(),
+      end.toISOString(),
+      this.importerId || "",
+      this.eventCode || ""
+    ).pipe(
+      tap(res => {
+        this.allDeclarations = res;
+
+        this.allDeclarations.forEach((x: any) => {
+          const arrival = x.Consignments?.[0]?.ArrivalDateTime;
+          if (arrival) {
+            const myDate = new Date(arrival);
+            const formatted = (myDate.getMonth() + 1) + '/' + myDate.getDate() + '/' + myDate.getFullYear();
+            x.ArrivalDateTime = formatted;
+            x.CargoDescription = x.Consignments?.[0]?.CargoDescription;
+          }
+        });
+
+        this.filteredDeclarations = this.allDeclarations;
+        this.filteredDeclarationsCount = this.filteredDeclarations.length;
+        this.noDeclarationsFound = this.filteredDeclarationsCount === 0; // ✅ חדש
+        this.isShowFilter = true;
+        this.isFiltered = true;
+      }),
+      tap(_ => this.loading = false)
+    ).subscribe({
+      error: err => {
+        this.loading = false;
+        this.msgs1 = [{ severity: 'error', summary: 'שגיאה', detail: 'שגיאה בעת שליפת ההצהרות' }];
+      }
+    });
   }
 
   filterByDates() {
     if (this.startDate && this.endDate) {
-
       const start = new Date(this.startDate);
       const end = new Date(this.endDate);
 
@@ -154,20 +188,18 @@ export class DeclarationQueryComponent {
       this.filteredDeclarations = this.allDeclarations;
     }
 
-    this.isFiltered = true
     this.filteredDeclarationsCount = this.filteredDeclarations.length;
+    this.noDeclarationsFound = this.filteredDeclarationsCount === 0; // ✅ חדש
+    this.isFiltered = true;
   }
 
   cancelFilter() {
-    this.filteredDeclarations = this.allDeclarations;
-    this.startDate = new Date();
-    this.endDate = new Date();
-    this.startDate.setDate(this.startDate.getDate() - 7);
-
+    this.filteredDeclarations = [];
+    this.filteredDeclarationsCount = 0;
+    this.noDeclarationsFound = true; // ✅ חדש
     this.isFiltered = false;
-    this.filteredDeclarationsCount = this.filteredDeclarations.length;
+    this.isShowFilter = false;
   }
-
 
   getImporterName() {
     // this.customsClientService.GetClient$(this.importerId, '').subscribe({

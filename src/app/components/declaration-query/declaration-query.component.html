@@ -25,7 +25,8 @@
                 </div>
 
                 <div class="currency-label p-lg-3 ">
-                    <button class="filter-btn" *ngIf="!isFiltered" pButton type="submit" label="סנן" (click)="filterByDates()"></button>
+                    <button class="filter-btn" *ngIf="!isFiltered" pButton type="submit" label="סנן"
+                        (click)="search()"></button>
                     <button class="filter-btn" *ngIf="isFiltered" pButton type="submit" label="בטל סינון"
                         (click)="cancelFilter()"></button>
                 </div>
@@ -40,7 +41,7 @@
 
                 <ng-template pTemplate="header">
                     <tr>
-                    
+
                         <th></th>
                         <th [pSortableColumn]="'Id'">
                             <div class="flex align-items-center">
@@ -134,7 +135,7 @@
 
                 <ng-template style="text-align: right;" pTemplate="body" let-declartion>
                     <tr>
-                      
+
                         <td> <button class="edit" pButton icon="pi pi-pencil"
                                 (click)="editDeclaration(declartion)"></button>
                         </td>
@@ -143,10 +144,17 @@
                         <td>{{declartion.ImporterID}} {{importerName}}</td>
                         <td>{{declartion.DeclarationOfficeID}}</td>
                         <td>{{declartion.GovernmentProcedure}}</td>
-                        <td>{{declartion.Consignments[0]?.ArrivalDateTime | date:'dd/MM/yy'}}</td>
+                        <td>
+                            {{ declartion.Consignments?.length > 0 ? (declartion.Consignments[0].ArrivalDateTime |
+                            date:'dd/MM/yy') : '---' }}
+                        </td>
+
                         <td>{{declartion.ExportationCountryCode}}</td>
                         <td>{{declartion.TransportContractDocumentTypeCode}}</td>
-                        <td>{{declartion.Consignments[0]?.CargoDescription}}</td>
+                        <td>
+                            {{ declartion.Consignments?.length > 0 ? declartion.Consignments[0].CargoDescription : '---'
+                            }}
+                        </td>
                         <td>{{declartion.TotalPackageQuantity}}</td>
                         <td>{{declartion.FacilityID}}</td>
                         <td>{{customStatusName(declartion.CustomsStatus)}}</td>
@@ -159,10 +167,10 @@
                     </div>
                 </ng-template>
             </p-table>
+            <p-messages *ngIf="noDeclarationsFound" [value]="noDeclarationsMsg" [enableService]="false"></p-messages>
+
         </div>
 
     </div>
     <p-messages [(value)]="msgs1" [enableService]="false"></p-messages>
 </p-card>
-
-

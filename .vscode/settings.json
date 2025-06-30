@@ -1,0 +1,5 @@
+{
+  "appService.defaultWebAppToDeploy": "",
+  "appService.deploySubpath": "dist\\browser\\browser"
+}
+                                                                              
