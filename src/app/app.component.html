@@ -1,6 +1,11 @@
-<div class="general">
-  <header>
-    <img (click)="navigateToHomePage()" src="assets/logo1.png" alt="Logo" class="logo">
-  </header>
-  <router-outlet></router-outlet>
+<div class="app-layout">
+  <app-sidebar *ngIf="isLoggedIn()"></app-sidebar>
+
+  <div class="main-content">
+    <header>
+      <img (click)="navigateToHomePage()" src="assets/logo1.png" alt="Logo" class="logo">
+    </header>
+
+    <router-outlet></router-outlet>
+  </div>
 </div>

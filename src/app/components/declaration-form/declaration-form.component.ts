@@ -30,6 +30,7 @@ import { PaymentService } from '../../shared/services/payment.service';
   providers: [ConfirmationService, MessageService],
 })
 export class DeclarationFormComponent implements OnInit {
+  
 
   generalDeclarationForm!: FormGroup
   filteredCustomsProcess: any[] = [];
@@ -114,6 +115,7 @@ export class DeclarationFormComponent implements OnInit {
   suplierError: string = '';
 
   constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private router: Router, private cd: ChangeDetectorRef, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService, private paymentService: PaymentService) { }
+  
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -1041,17 +1043,30 @@ export class DeclarationFormComponent implements OnInit {
       this.isCustomsChargingCountry = true
   }
 
-  filterCustomsProcess(event: any) {
-    let filtered: any[] = [];
-    let query = event.query;
-    for (let i = 0; i < this.declarationCustomsProcess.length; i++) {
-      let a = this.declarationCustomsProcess[i];
-      if (a.name.indexOf(query) != -1) {
-        filtered.push(a);
-      }
+ filterCustomsProcess(event: any) {
+  let filtered: any[] = [];
+  let query = event.query;
+  
+  const allowedOptions = [
+    'יבוא אישי',
+    'יבוא מסחרי',
+    'שטעון מסחרי - שטעון באותו נמל'
+  ];
+
+  for (let i = 0; i < this.declarationCustomsProcess.length; i++) {
+    let a = this.declarationCustomsProcess[i];
+    
+    // בודק גם שהשם קיים ברשימה וגם תואם לחיפוש
+    if (
+      allowedOptions.includes(a.name) &&
+      a.name.toLowerCase().includes(query.toLowerCase())
+    ) {
+      filtered.push(a);
     }
-    this.filteredCustomsProcess = filtered
   }
+
+  this.filteredCustomsProcess = filtered;
+}
 
   filterCountryOfExport(event: any) {
     let filtered: any[] = [];
@@ -1236,4 +1251,6 @@ export class DeclarationFormComponent implements OnInit {
     }
     else return "לא תקין"
   }
+  
+
 }

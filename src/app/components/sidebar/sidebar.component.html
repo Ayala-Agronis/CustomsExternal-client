@@ -1,0 +1,41 @@
+<div class="sidebar">
+  <ul class="sidebar-menu">
+    <li>
+      <a routerLink="/home-page" class="menu-item">
+        <i class="pi pi-home"></i>
+        <span>ראשי</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/dec-query" class="menu-item">
+        <i class="pi pi-user"></i>
+        <span>הצהרות שלי</span>
+      </a>
+    </li>
+    <li>
+      <a (click)="restart()" class="menu-item">
+        <i class="pi pi-cog"></i>
+        <span>הצהרה חדשה</span>
+      </a>
+    </li>
+    <li>
+      <a routerLink="/personal-details" [queryParams]="{ personalDetails: true }" class="menu-item">
+        <i class="pi pi-user"></i>
+        <span>פרטים אישיים </span>
+      </a>
+    </li>
+    <li>
+      <a href="https://www.gov.il/he/service/power-of-attorney" target="_blank" rel="noopener noreferrer" class="menu-item">
+        <i class="pi pi-file-edit"></i>
+        <span>יפוי כח</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="logout">
+    <a (click)="logout()" class="menu-item">
+      <i class="pi pi-sign-out"></i>
+      <span>התנתקות</span>
+    </a>
+  </div>
+</div>

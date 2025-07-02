@@ -112,6 +112,7 @@ export class LoginComponent implements AfterViewInit {
 
       this.userService.login(this.loginForm.value).subscribe({
         next: res => {
+            console.log('🔐 Token response:', res); // ✅ שורת בדיקה
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token);
             localStorage.setItem('isRegister', "true");

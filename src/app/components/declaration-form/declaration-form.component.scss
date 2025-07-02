@@ -257,6 +257,12 @@ input {
     border-color: $color-8;
     color: $color-8;
 }
+::ng-deep .p-card-body {
+margin: -0.5%;
+}
+.p-tabview-panel{
+    margin: -0.5%;
+}
 
 // .p-table .p-cell-editor input {
 //     width: 100% !important; 

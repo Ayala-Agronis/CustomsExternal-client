@@ -1,0 +1,84 @@
+@import './../../../styles.scss'; // ודאי שהנתיב נכון לפי מיקום הקובץ
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 80px;
+  background-color: $color-8; // צבע כחול כהה (מהמוגדרים שלך)
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  z-index: 1000;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+  transition: width 0.3s ease-in-out;
+  border-radius: 1.25rem 0 0 1.25rem;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin-top: 3vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-item {
+  width: 100%;
+  color: white;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.2rem 0;
+  font-size: 14px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.menu-item i {
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.menu-item span {
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.menu-item:hover {
+  background-color: lighten($color-8, 10%);
+  color: $color-9; // צבע נוסף שהגדרת
+  cursor: pointer;
+}
+
+.menu-item.active {
+  background-color: $color-11; // למשל כחול נבחר
+  border-radius: 8px;
+}
+
+.logout {
+  margin-top: auto;
+  padding-bottom: 2rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* רספונסיביות למובייל */
+@media screen and (max-width: 768px) {
+  .sidebar {
+    width: 60px;
+  }
+
+  .menu-item span {
+    display: none;
+  }
+
+  .menu-item i {
+    margin-bottom: 0;
+  }
+}

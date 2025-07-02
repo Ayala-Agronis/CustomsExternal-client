@@ -1,31 +1,52 @@
+
+/* סידור עמוד כולל עם Sidebar */
+.app-layout {
+  display: flex;
+  flex-direction: row-reverse; // Sidebar בצד ימין
+  min-height: 100vh;
+}
+
+/* התוכן הראשי */
+.main-content {
+  flex-grow: 1;
+  padding-right: 80px; // להשאיר מקום לצד הסרגל (מותאם לרוחבו)
+  direction: rtl;
+  background-color: white; // אפשר לשנות לפי הצורך
+}
+
+/* כיווניות */
 .general {
   direction: rtl;
 }
 
+/* Header - יישאר שמאל לימין */
 header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px;
   direction: ltr;
-  // background-color: #0e0d0f;  
 }
 
+/* לוגו */
 .logo {
-  // max-width: 100px;  
   height: auto;
   cursor: pointer;
   margin-top: 1%;
   margin-left: 1%;
 }
 
+/* התאמה ללוח שנה של PrimeNG */
 ::ng-deep.p-calendar .p-datepicker {
   direction: rtl;
 }
 
+/* כפתורי PrimeNG */
 ::ng-deep.p-fluid .p-button {
   width: auto;
 }
+
+/* עיצוב לעמוד כניסה */
 body.login-page header {
   display: none !important;
 }

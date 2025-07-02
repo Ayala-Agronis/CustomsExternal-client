@@ -46,7 +46,7 @@ export class HomePageComponent implements OnInit {
     if (userData) {
       this.user = JSON.parse(userData);
     }
-    
+
     this.isClientAuthorized = localStorage.getItem('isClientAuthorized') === 'true' || true;
 
     const isRegisterValue = localStorage.getItem("isRegister");
@@ -104,8 +104,9 @@ export class HomePageComponent implements OnInit {
   }
 
   logout() {
-    this.isRegister = false
-    localStorage.setItem("isRegister", "false")
+    localStorage.clear();
+    this.isRegister = false;
+    this.router.navigate(['/login']);
   }
 
 }

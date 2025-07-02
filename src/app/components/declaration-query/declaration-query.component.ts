@@ -74,31 +74,31 @@ export class DeclarationQueryComponent {
     this.cdRef.detectChanges();
   }
 
- ngOnInit(): void {
-  // קבלת מזהה המשתמש
-  this.importerId = localStorage.getItem('userId');
+  ngOnInit(): void {
+    // קבלת מזהה המשתמש
+    this.importerId = localStorage.getItem('userId');
 
-  // עדכון גודל רכיבים אם יש כאלה תלוים ברזולוציה
-  window.dispatchEvent(new Event('resize'));
+    // עדכון גודל רכיבים אם יש כאלה תלוים ברזולוציה
+    window.dispatchEvent(new Event('resize'));
 
-  // קביעת טווח תאריכים של 7 ימים אחורה כברירת מחדל
-  this.endDate = new Date(); // להבטיח שהוא עדכני
-  this.startDate = new Date();
-  this.startDate.setDate(this.endDate.getDate() - 7);
+    // קביעת טווח תאריכים של 7 ימים אחורה כברירת מחדל
+    this.endDate = new Date(); // להבטיח שהוא עדכני
+    this.startDate = new Date();
+    this.startDate.setDate(this.endDate.getDate() - 7);
 
-  // שליפה ראשונית של הצהרות לטווח ברירת מחדל
-  this.search();
+    // שליפה ראשונית של הצהרות לטווח ברירת מחדל
+    this.search();
 
-  // טעינת ערכי סטטוסי מכס
-  this.customsDataService.getCustomsTableValues$('1981').pipe(
-    map(res => {
-      this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
-        name: item.Value2,
-        code: item.Value1
-      }));
-    })
-  ).subscribe();
-}
+    // טעינת ערכי סטטוסי מכס
+    this.customsDataService.getCustomsTableValues$('1981').pipe(
+      map(res => {
+        this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
+          name: item.Value2,
+          code: item.Value1
+        }));
+      })
+    ).subscribe();
+  }
 
   updateEndDateMinDate() {
     if (this.startDate) {
@@ -112,24 +112,29 @@ export class DeclarationQueryComponent {
     this.isFiltered = false
   }
 
- noDeclarationsFound: boolean = false; // ✅ חדש
+  noDeclarationsFound: boolean = false; // ✅ חדש
 
- noDeclarationsMsg: Message[] = [
-  {
-    severity: 'info',
-    summary: 'תוצאה',
-    detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.'
-  }
-];
+  noDeclarationsMsg: Message[] = [
+    {
+      severity: 'info ',
+      summary: ' תוצאה',
+      detail: ' לא נמצאו הצהרות בטווח התאריכים שבחרת.'
+    }
+  ];
 
 
 
- 
+
   search() {
+
+    this.msgs1 = []; // 🧹 ניקוי ההודעות הישנות
+
     if (!this.endDate || !this.startDate) {
       this.msgs1 = [
-        { severity: 'error', summary: 'שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
+        { severity: 'error', summary: ' שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
       ];
+      this.noDeclarationsFound = false; // ✅ פתרון הבעיה
+      this.noDeclarationsMsg = [];      // ✅ לא להציג את הודעת "לא נמצאו הצהרות"
       return;
     }
 
@@ -160,6 +165,18 @@ export class DeclarationQueryComponent {
         this.filteredDeclarations = this.allDeclarations;
         this.filteredDeclarationsCount = this.filteredDeclarations.length;
         this.noDeclarationsFound = this.filteredDeclarationsCount === 0; // ✅ חדש
+
+        if (this.noDeclarationsFound) {
+          this.noDeclarationsMsg = [{
+            severity: 'info',
+            summary: 'תוצאה',
+            detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.'
+          }];
+        } else {
+          this.noDeclarationsMsg = [];
+        }
+
+        this.msgs1 = []; // מחיקת הודעות שגיאה קודמות
         this.isShowFilter = true;
         this.isFiltered = true;
       }),
