@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { apiConfig } from '../../config/api-endpoints';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
@@ -8,8 +8,8 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class DeclarationService {
 
-  private DecURL = `${environment.customsExternalApiUrl}Declaration/`;
-  private InternalDecURL = `${environment.customsdbApiUrl}Declaration/`;
+  private DecURL = `${apiConfig.customsExternalApiUrl}Declaration/`;
+  private InternalDecURL = `${apiConfig.customsdbApiUrl}Declaration/`;
 
   constructor(private http: HttpClient) { }
 
@@ -23,7 +23,7 @@ export class DeclarationService {
   fillFormAndRedirect(k_asmachta: string, k_importer_num: string): Observable<any> {
     const formData = { Asmachta: k_asmachta, ImporterNum: k_importer_num };
 
-    return this.http.post(`${environment.customsExternalApiUrl}fill-form/` , formData);
+    return this.http.post(`${apiConfig.customsExternalApiUrl}fill-form/` , formData);
   }
 
   // addDeclaration(dec: any): Observable<HttpResponse<any>> {
@@ -36,12 +36,12 @@ export class DeclarationService {
 
   sendDeclarationToInternal(dec: any): Observable<HttpResponse<any>> {
     // return this.http.post<any>(`${environment.customsWebServiceUrl}Declaration`, dec, { observe: 'response' });
-    return this.http.post<any>(`${environment.customsdbApiUrl}Dec`, dec, { observe: 'response' });
+    return this.http.post<any>(`${apiConfig.customsdbApiUrl}Dec`, dec, { observe: 'response' });
   }
 
   getDeclaration(decId: any): Observable<any> {
     // return this.http.get<any>(`${this.DecURL}?decId=${decId}`);
-    return this.http.get<any>(`${environment.customsdbApiUrl}Dec/${decId}`);
+    return this.http.get<any>(`${apiConfig.customsdbApiUrl}Dec/${decId}`);
   }
 
   // sendDeclaration$(decId: any, declaration: any, isSign: any): Observable<any> {
@@ -49,7 +49,7 @@ export class DeclarationService {
   // }
 
   updateDeclaration$(id: any, declaration: any): Observable<any> {
-    const url = `${environment.customsdbApiUrl}dec/${id}`;
+    const url = `${apiConfig.customsdbApiUrl}dec/${id}`;
     return this.http.put<any>(url, declaration);
   }
 
@@ -59,7 +59,7 @@ export class DeclarationService {
   }  
 
   updateAndSendDeclaration$(id: any, declaration: any, isSign: any): Observable<any> {
-    return this.http.post<any>(`${environment.customsdbApiUrl}dec/PutAndSend/${id}?isSign=${isSign}`, declaration)
+    return this.http.post<any>(`${apiConfig.customsdbApiUrl}dec/PutAndSend/${id}?isSign=${isSign}`, declaration)
 
     // return this.http.post<any>(`${environment.customsExternalApiUrl}dec/GetAndSend/${id}?isSign=${isSign}`, declaration)
   }
@@ -70,7 +70,7 @@ export class DeclarationService {
       .set('CargoIdentifierKey2', params.secondCargoID || '')    
       .set('CargoIdentifierKey3', params.thirdCargoID || '');
 
-    return this.http.post(`${environment.customsApiUrl}CargoQuery`,
+    return this.http.post(`${apiConfig.customsApiUrl}CargoQuery`,
       body.toString(),
       {
         headers: new HttpHeaders()
@@ -87,14 +87,14 @@ export class DeclarationService {
       .set('importerId', importerId)
       .set('eventCode', eventCode);
 
-    return this.http.get<any>(`${environment.customsdbApiUrl}DecQuery`, { params });
+    return this.http.get<any>(`${apiConfig.customsdbApiUrl}DecQuery`, { params });
   }
 
   GetClassificationID$(classification: any) {
     let body = new HttpParams()
       .set('classification',classification)
 
-    return this.http.post(`${environment.customsApiUrl}CustomItemDetails`,
+    return this.http.post(`${apiConfig.customsApiUrl}CustomItemDetails`,
       body.toString(),
       {
         headers: new HttpHeaders()

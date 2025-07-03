@@ -18,10 +18,6 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const token = localStorage.getItem('authToken');
 
-    console.log('🔒 AuthInterceptor מופעל');
-    console.log('🔑 Token שנמצא ב־localStorage:', token);
-    console.log('🌐 בקשת API:', req.url);
-
     let authReq = req;
 
     if (token) {

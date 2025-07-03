@@ -2,7 +2,7 @@ import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/comm
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Registration } from '../models/registration';
-import { environment } from '../../../environments/environment';
+import { apiConfig } from '../../config/api-endpoints';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment';
 
 export class UserService {
 
-  private userURL = `${environment.customsExternalApiUrl}User/`;
+  private userURL = `${apiConfig.customsExternalApiUrl}User/`;
   IsConncet: boolean = false;
 
   constructor(private http: HttpClient) { }
@@ -45,7 +45,7 @@ export class UserService {
     const formData = new HttpParams()
       .set('Code', code);
 
-    return this.http.post<any>(`${environment.customsExternalApiUrl}GoogleLogin/auth`, formData.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+    return this.http.post<any>(`${apiConfig.customsExternalApiUrl}GoogleLogin/auth`, formData.toString(), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
 
   }
   getAllUsers(): Observable<any> {

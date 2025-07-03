@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { apiConfig } from '../../config/api-endpoints';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -11,17 +11,17 @@ export class CustomsDataService {
   constructor(private http: HttpClient) { }
 
   getCustomsTableValues$(id: string): Observable<any> {
-    const url = `${environment.customsdbApiUrl}/Sys`;
+    const url = `${apiConfig.customsdbApiUrl}/Sys`;
     return this.http.get<any>(url, { params: { id } });
   }
 
   getVendor$(): Observable<any> {
-    const url = `${environment.customsdbApiUrl}/vendors`;
+    const url = `${apiConfig.customsdbApiUrl}/vendors`;
     return this.http.get<any>(url);
   }
 
   GetSeq$(type: any): Observable<any> {
-    return this.http.get<any>(`${environment.customsdbApiUrl}GetSeq/${type}`);
+    return this.http.get<any>(`${apiConfig.customsdbApiUrl}GetSeq/${type}`);
   }
 
   GetClient$(ID: any): Observable<any>  {
@@ -29,7 +29,7 @@ export class CustomsDataService {
       .set('Id',ID)
       .set('Passport','')
 
-    return this.http.post(`${environment.customsApiUrl}ImporterDetails`,
+    return this.http.post(`${apiConfig.customsApiUrl}ImporterDetails`,
       body.toString(),
       {
         headers: new HttpHeaders()
