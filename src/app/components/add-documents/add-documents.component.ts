@@ -500,13 +500,34 @@ export class AddDocumentsComponent {
         value: 'true'
       }));
     }
-    else if (typeCode == '714') {
+    else if (typeCode === '714') {
       const decId = localStorage.getItem('currentDecId');
       const res = await this.decService.getDeclaration(decId).toPromise();
+      console.log('res:', res);
+
+      const consignmentData = res?.[0]?.ConsignmentPackagesMeasures?.[0]?.Consignments;
+
       formData.append(`attributes[57]`, JSON.stringify({ id: 57, value: new Date() }));
-      formData.append(`attributes[99]`, JSON.stringify({ id: 99, value: res[0].ConsignmentPackagesMeasures[0].Consignments.TransportContractDocumentTypeCode }));
-      formData.append(`attributes[100]`, JSON.stringify({ id: 100, value: res[0].ConsignmentPackagesMeasures[0].Consignments.TransportContractDocumentID }));
+
+      if (consignmentData?.TransportContractDocumentTypeCode) {
+        formData.append(`attributes[99]`, JSON.stringify({
+          id: 99,
+          value: consignmentData.TransportContractDocumentTypeCode
+        }));
+      } else {
+        console.warn('TransportContractDocumentTypeCode is missing');
+      }
+
+      if (consignmentData?.TransportContractDocumentID) {
+        formData.append(`attributes[100]`, JSON.stringify({
+          id: 100,
+          value: consignmentData.TransportContractDocumentID
+        }));
+      } else {
+        console.warn('TransportContractDocumentID is missing');
+      }
     }
+
 
     this.loading = true;
 

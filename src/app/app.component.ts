@@ -6,6 +6,8 @@ import { Title } from '@angular/platform-browser';
 import { filter, Subscription } from 'rxjs';
 import { PrimeNGConfig } from 'primeng/api';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { MixpanelService } from './shared/services/mixpanel.service';
+
 
 
 @Component({
@@ -26,7 +28,7 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 export class AppComponent implements OnInit {
   routerSubscription!: Subscription;
 
-  constructor(private router: Router, private titleService: Title, private primengConfig: PrimeNGConfig) { }
+  constructor(private router: Router, private titleService: Title, private primengConfig: PrimeNGConfig, private mixpanel: MixpanelService) { }
 
   ngOnInit(): void {
     this.routerSubscription = this.router.events.pipe(
@@ -42,6 +44,9 @@ export class AppComponent implements OnInit {
 
       // 🚨 הוספה פה:
       const currentUrl = this.router.url;
+
+      this.mixpanel.track('Page View', { page: currentUrl });
+
       if (currentUrl.includes('/login')) {
         document.body.classList.add('login-page');
       } else {

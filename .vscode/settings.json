@@ -1,5 +1,5 @@
 {
-  "appService.defaultWebAppToDeploy": "",
+  "appService.defaultWebAppToDeploy": "/subscriptions/ea4af2c2-07f1-4c7c-be20-8e685dde5063/resourceGroups/CustomsReleaseAppService/providers/Microsoft.Web/sites/CustomsExternalClientNew",
   "appService.deploySubpath": "dist\\browser\\browser"
 }
                                                                               

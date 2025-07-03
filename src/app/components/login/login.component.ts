@@ -11,6 +11,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
+import { MixpanelService } from '../../shared/services/mixpanel.service';
+
 
 @Component({
   selector: 'app-login',
@@ -44,7 +46,9 @@ export class LoginComponent implements AfterViewInit {
     private router: Router,
     private customsDataService: CustomsDataService,
     private cd: ChangeDetectorRef,
-    private zone: NgZone
+    private zone: NgZone,
+    private mixpanel: MixpanelService
+
   ) {
     this.loginForm = this.fb.group({
       Email: ['', {
@@ -112,7 +116,7 @@ export class LoginComponent implements AfterViewInit {
 
       this.userService.login(this.loginForm.value).subscribe({
         next: res => {
-            console.log('🔐 Token response:', res); // ✅ שורת בדיקה
+          console.log('🔐 Token response:', res); // ✅ שורת בדיקה
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token);
             localStorage.setItem('isRegister', "true");
@@ -125,6 +129,20 @@ export class LoginComponent implements AfterViewInit {
 
             const userJson = JSON.stringify(res.body.user);
             localStorage.setItem('user', userJson);
+
+            const user = res.body.user;
+            this.mixpanel.identify(user.Id);
+            this.mixpanel.setUserProperties({
+              $name: `${user.FirstName} ${user.LastName}`,  // שם מלא
+              $email: user.Email,
+              customerType: user.CustomerType,
+              mobile: user.Mobile
+            });
+            this.mixpanel.track('Login Successful', {
+              email: user.Email,
+              customerType: user.CustomerType
+            });
+
           }
 
           this.router.navigate(['declaration-main/dec-form']);
