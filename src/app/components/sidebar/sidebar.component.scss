@@ -82,3 +82,33 @@
     margin-bottom: 0;
   }
 }
+.submenu-container {
+  position: relative;
+  width: 100%;
+}
+
+.submenu {
+  position: absolute;
+  right: 100%; // אם RTL, נפתח משמאל לסרגל
+  top: 0;
+  background-color: lighten($color-8, 5%);
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  z-index: 999;
+}
+
+.submenu li {
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submenu li:hover {
+  background-color: $color-9;
+}

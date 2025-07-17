@@ -313,12 +313,6 @@ input {
 
 }
 
-.supplierInvoices-container .right-side>.form-group {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    gap: 8px;
-}
 
 .supplierInvoices-container .right-side>.form-group>.form-item {
     flex: 0 0 calc(100% / 8 - 8px);
@@ -392,20 +386,38 @@ input {
     margin-bottom: -0.1%;
     margin-top: -0.3rem;
 }
+
 .form-group .form-item input,
 .form-group .form-item select,
 .form-group .form-item .p-inputwrapper,
 .form-group .form-item .p-dropdown,
 .form-group .form-item .p-calendar {
-  width: 178px;
-  box-sizing: border-box;
+    width: 178px;
+    box-sizing: border-box;
 }
+
 .form-item {
-  width: 178px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+    width: 178px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
+
 :host ::ng-deep .p-card-content .p-datatable-wrapper {
-  overflow: hidden !important;
+    overflow: hidden !important;
+}
+
+:host ::ng-deep .p-tabview .p-tabview-panels {
+    padding: 0 !important;
+    padding-top: 0.5rem !important;
+}
+:host ::ng-deep .form-group[_ngcontent-ng-c255484967] {
+    gap: 2% !important;
+    margin-bottom: 0%;
+}
+:host ::ng-deep .supplierInvoices-container .right-side>.form-group {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 8px !important;
 }

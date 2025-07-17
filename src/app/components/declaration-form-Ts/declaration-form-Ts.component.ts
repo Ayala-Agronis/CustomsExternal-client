@@ -22,14 +22,14 @@ import { TooltipModule } from 'primeng/tooltip';
 import { PaymentService } from '../../shared/services/payment.service';
 
 @Component({
-  selector: 'app-declaration-form',
+  selector: 'app-declaration-form-Ts',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, TabViewModule, TooltipModule, CardModule, ProgressSpinnerModule, MessagesModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule, ConfirmDialogModule],
-  templateUrl: './declaration-form.component.html',
-  styleUrl: './declaration-form.component.scss',
+  templateUrl: './declaration-form-Ts.component.html',
+  styleUrl: './declaration-form-Ts.component.scss',
   providers: [ConfirmationService, MessageService],
 })
-export class DeclarationFormComponent implements OnInit {
+export class DeclarationFormTsComponent implements OnInit {
 
 
   generalDeclarationForm!: FormGroup
@@ -44,6 +44,7 @@ export class DeclarationFormComponent implements OnInit {
   filteredInvoiceTypeCode: any[] = [];
   filteredSupplierID: any[] = [];
   filteredFacilityType: any[] = [];
+  activeTabIndex: number = 0; // 0 = יצוא, 1 = יבוא
 
 
   declarationCountryOfExport: any;
@@ -550,7 +551,7 @@ export class DeclarationFormComponent implements OnInit {
     console.log('📦 Received dec object:', dec);
     console.log('🧾 GovernmentProcedure:', dec.GovernmentProcedure);
 dec.Consignments.GovernmentProcedure = dec.Consignments.GovernmentProcedure?.code ?? dec.Consignments.GovernmentProcedure;
-    dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID')
+     dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID')
     const consignments = dec.Consignments;
 
     consignments.ExportationCountryCode = consignments.ExportationCountryCode?.code ?? consignments.ExportationCountryCode;

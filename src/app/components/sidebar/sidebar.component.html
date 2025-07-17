@@ -12,12 +12,20 @@
         <span>הצהרות שלי</span>
       </a>
     </li>
-    <li>
-      <a (click)="restart()" class="menu-item">
-        <i class="pi pi-cog"></i>
-        <span>הצהרה חדשה</span>
-      </a>
-    </li>
+   <li class="submenu-container" 
+    (mouseenter)="showSubmenu = true" 
+    (mouseleave)="showSubmenu = false">
+  <a class="menu-item">
+    <i class="pi pi-cog"></i>
+    <span>הצהרה חדשה</span>
+  </a>
+  <ul class="submenu" *ngIf="showSubmenu">
+    <li (click)="navigateToNewDeclaration('import')">הצהרת יבוא</li>
+    <li (click)="navigateToNewDeclaration('export')">הצהרת יצוא</li>
+    <li (click)="navigateToNewDeclaration('transshipment')">הצהרת שטעון</li>
+  </ul>
+</li>
+
     <li>
       <a routerLink="/personal-details" [queryParams]="{ personalDetails: true }" class="menu-item">
         <i class="pi pi-user"></i>
