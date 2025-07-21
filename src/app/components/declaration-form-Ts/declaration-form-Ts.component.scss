@@ -253,11 +253,16 @@ input {
 }
 
 ::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-    background: #ffffff;
-    border-color: $color-8;
-    color: $color-8;
+    background: #092857;
+    border-color: #092857;
+    color: #ffffff;
+    padding: 0.5rem;
+    margin-top: 1rem;
 }
-
+::ng-deep .p-tabview .p-tabview-nav li .p-tabview-nav-link{
+ padding: 0.5rem;
+    margin-top: 1rem;
+}
 .consignment-tabs {
     margin-bottom: 1rem;
     display: flex;
@@ -403,21 +408,33 @@ input {
     gap: 4px;
 }
 
-:host ::ng-deep .p-card-content .p-datatable-wrapper {
-    overflow: hidden !important;
+:host ::ng-deep div[formGroupName="Consignments"] .p-tabview .p-tabview-panels {
+    padding: 0 !important;
+    margin-inline: 24rem;
+    margin-inline-start: 0rem;
 }
 
-:host ::ng-deep .p-tabview .p-tabview-panels {
-    padding: 0 !important;
-    padding-top: 0.5rem !important;
+:host ::ng-deep div[formGroupName="Consignments"] .p-tabview-panel .form-group {
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
 }
-:host ::ng-deep .form-group[_ngcontent-ng-c255484967] {
-    gap: 2% !important;
+
+:host ::ng-deep div[formGroupName="Consignments"] .form-group .form-item {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+:host ::ng-deep div[formGroupName="Consignments"] .form-group .form-item > * {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-group[_ngcontent-ng-c2823166736] {
     margin-bottom: 0%;
 }
-:host ::ng-deep .supplierInvoices-container .right-side>.form-group {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: space-between;
-    gap: 8px !important;
+:host ::ng-deep .supplierInvoices-container .right-side > .form-group {
+  gap: 0.5rem !important; /* או כל ערך שמתאים לך */
 }

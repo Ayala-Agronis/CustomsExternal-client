@@ -356,16 +356,16 @@ export class DeclarationFormComponent implements OnInit {
       VersionID: this.formBuilder.control(''),
       // DeclarationOfficeID: this.formBuilder.control({ name: 'בית מכס נתב"ג', code: '4' }, Validators.required),
       DeclarationOfficeID: this.formBuilder.control('4'),
-
+     
       //TypeCode: this.formBuilder.control({ name: 'הצהרת יבוא ', code: '1' }),
       TypeCode: this.formBuilder.control('1'),
       //AutonomyRegionType: this.formBuilder.control({ name: '', code: '' }),
       //EntitlementTypeCode: this.formBuilder.control({ name: '', code: '' }),
-
+    
       //AcceptanceDateTime: this.formBuilder.control(''),
       Consignments: this.formBuilder.group({
-        ImporterID: this.formBuilder.control(localStorage.getItem('userId') || '2', Validators.required),
-        GovernmentProcedure: this.formBuilder.control({ name: 'יבוא מסחרי', code: '4000001' }),
+       ImporterID: this.formBuilder.control(localStorage.getItem('userId') || '2', Validators.required),
+       GovernmentProcedure: this.formBuilder.control({ name: 'יבוא מסחרי', code: '4000001' }),
 
         ExportationCountryCode: this.formBuilder.control('', Validators.required),
         LoadingLocation: this.formBuilder.control('', Validators.required),
@@ -547,9 +547,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   convertToDecObj(dec: any) {
-    console.log('📦 Received dec object:', dec);
-    console.log('🧾 GovernmentProcedure:', dec.GovernmentProcedure);
-dec.Consignments.GovernmentProcedure = dec.Consignments.GovernmentProcedure?.code ?? dec.Consignments.GovernmentProcedure;
+    dec.GovernmentProcedure = dec.GovernmentProcedure.code ? dec.GovernmentProcedure.code : dec.GovernmentProcedure
     dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID')
     const consignments = dec.Consignments;
 
