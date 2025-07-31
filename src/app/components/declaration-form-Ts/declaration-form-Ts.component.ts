@@ -97,52 +97,52 @@ export class DeclarationFormTsComponent implements OnInit {
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
   showCustomsValuation: boolean[] = [];
- fieldLabels: any = {
-  // משגור יבוא
-  ImporterID: 'מזהה יבואן',
-  CustomsProcess: 'תהליך מכס',
-  TransportContractDocumentID: 'שנה (משגור יבוא)',
-  SecondCargoID: 'מזהה מטען ראשי (משגור יבוא)',
-  ThirdCargoID: 'מזהה מטען פנימי (משגור יבוא)',
-  ExportationCountryCode: 'ארץ יצוא (משגור יבוא)',
-  LoadingLocation: 'אתר טעינה (משגור יבוא)',
-  UnloadingLocationID: 'אתר פריקה (משגור יבוא)',
-  ArrivalDateTime: 'תאריך הגעת טובין (משגור יבוא)',
-  TransportContractDocumentTypeCode: 'סוג מזהה מטען (משגור יבוא)',
-  CargoDescription: 'תיאור טובין (משגור יבוא)',
-  FacilityType: 'אתר מסירה (משגור יבוא)',
+  fieldLabels: any = {
+    // משגור יבוא
+    ImporterID: 'מזהה יבואן',
+    CustomsProcess: 'תהליך מכס',
+    TransportContractDocumentID: 'שנה (משגור יבוא)',
+    SecondCargoID: 'מזהה מטען ראשי (משגור יבוא)',
+    ThirdCargoID: 'מזהה מטען פנימי (משגור יבוא)',
+    ExportationCountryCode: 'ארץ יצוא (משגור יבוא)',
+    LoadingLocation: 'אתר טעינה (משגור יבוא)',
+    UnloadingLocationID: 'אתר פריקה (משגור יבוא)',
+    ArrivalDateTime: 'תאריך הגעת טובין (משגור יבוא)',
+    TransportContractDocumentTypeCode: 'סוג מזהה מטען (משגור יבוא)',
+    CargoDescription: 'תיאור טובין (משגור יבוא)',
+    FacilityType: 'אתר מסירה (משגור יבוא)',
 
-  // משגור יצוא
-  ExportationCountryCode2: 'ארץ יצוא (משגור יצוא)',
-  LoadingLocation2: 'אתר טעינה (משגור יצוא)',
-  UnloadingLocationID2: 'אתר פריקה (משגור יצוא)',
-  ArrivalDateTime2: 'תאריך הגעת טובין (משגור יצוא)',
-  TransportContractDocumentID2: 'שנה (משגור יצוא)',
-  TransportContractDocumentTypeCode2: 'סוג מזהה מטען (משגור יצוא)',
-  SecondCargoID2: 'מזהה מטען ראשי (משגור יצוא)',
-  ThirdCargoID2: 'מזהה מטען פנימי (משגור יצוא)',
-  CargoDescription2: 'תיאור טובין (משגור יצוא)',
-  FacilityType2: 'אתר מסירה (משגור יצוא)',
+    // משגור יצוא
+    ExportationCountryCode2: 'ארץ יצוא (משגור יצוא)',
+    LoadingLocation2: 'אתר טעינה (משגור יצוא)',
+    UnloadingLocationID2: 'אתר פריקה (משגור יצוא)',
+    ArrivalDateTime2: 'תאריך הגעת טובין (משגור יצוא)',
+    TransportContractDocumentID2: 'שנה (משגור יצוא)',
+    TransportContractDocumentTypeCode2: 'סוג מזהה מטען (משגור יצוא)',
+    SecondCargoID2: 'מזהה מטען ראשי (משגור יצוא)',
+    ThirdCargoID2: 'מזהה מטען פנימי (משגור יצוא)',
+    CargoDescription2: 'תיאור טובין (משגור יצוא)',
+    FacilityType2: 'אתר מסירה (משגור יצוא)',
 
-  // אחרים
-  TotalPackageQuantity: 'כמות',
-  GrossMassMeasure: 'משקל',
-  InvoiceNumber: 'מספר חשבונית ספק',
-  SupplierID: 'שם ספק',
-  CurrencyCode: 'מטבע חשבון',
-  IssueDateTime: 'תאריך חשבון מכר',
-  LocationID: 'ארץ יצוא',
-  TradeTermsConditionCode: 'תנאי מכר',
-  InvoiceTypeCode: 'סוג חשבון',
-  InvoiceAmount: 'סה"כ חשבון',
-  ChargesTypeCode: 'סוג חיוב',
-  CurrencyCodeValuation: 'מטבע חיוב',
-  OtherChargeDeductionAmount: 'סה"כ (הובלה)',
-  ClassificationID: 'מזהה סיווג',
-  AmountType: 'כמות',
-  CustomsValueAmount: 'ערך טובין',
-  OriginCountryCode: 'ארץ מקור'
-};
+    // אחרים
+    TotalPackageQuantity: 'כמות',
+    GrossMassMeasure: 'משקל',
+    InvoiceNumber: 'מספר חשבונית ספק',
+    SupplierID: 'שם ספק',
+    CurrencyCode: 'מטבע חשבון',
+    IssueDateTime: 'תאריך חשבון מכר',
+    LocationID: 'ארץ יצוא',
+    TradeTermsConditionCode: 'תנאי מכר',
+    InvoiceTypeCode: 'סוג חשבון',
+    InvoiceAmount: 'סה"כ חשבון',
+    ChargesTypeCode: 'סוג חיוב',
+    CurrencyCodeValuation: 'מטבע חיוב',
+    OtherChargeDeductionAmount: 'סה"כ (הובלה)',
+    ClassificationID: 'מזהה סיווג',
+    AmountType: 'כמות',
+    CustomsValueAmount: 'ערך טובין',
+    OriginCountryCode: 'ארץ מקור'
+  };
 
   suplierErrorExist: boolean = false;
   suplierError: string = '';
@@ -444,6 +444,10 @@ export class DeclarationFormTsComponent implements OnInit {
         CargoDescription: this.formBuilder.control('', Validators.required),
         //FacilityID: this.formBuilder.control({ name: '', code: '' }),
         FacilityType: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+        Quantity: this.formBuilder.control(''),
+        UnitType: this.formBuilder.control(''),
+        MarksAndNumbers: this.formBuilder.control(''),
+        IsHazardous: this.formBuilder.control(''),
 
 
         ExportationCountryCode2: this.formBuilder.control('', Validators.required),
@@ -457,7 +461,11 @@ export class DeclarationFormTsComponent implements OnInit {
         ThirdCargoID2: this.formBuilder.control('',),
         CargoDescription2: this.formBuilder.control('', Validators.required),
         //FacilityID: this.formBuilder.control({ name: '', code: '' }),
-        FacilityType2: this.formBuilder.control({ name: '', code: '' }, Validators.required)
+        FacilityType2: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+        Quantity2: this.formBuilder.control(''),
+        UnitType2: this.formBuilder.control(''),
+        MarksAndNumbers2: this.formBuilder.control(''),
+        IsHazardous2: this.formBuilder.control('')
       }),
       ConsignmentPackagesMeasures: this.formBuilder.group({
         //PackageMeasureQualifier: this.formBuilder.control({ name: 'כמות אריזות באתר אחסון', code: '2' }),
@@ -653,114 +661,114 @@ export class DeclarationFormTsComponent implements OnInit {
     // return this.generalDeclarationForm.get('SupplierInvoices.CustomsValuation') as FormArray;
   }
 
-convertToDecObj(dec: any) {
-  console.log('📦 Received dec object:', dec);
-  dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID');
+  convertToDecObj(dec: any) {
+    console.log('📦 Received dec object:', dec);
+    dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID');
 
-  const cons = dec.Consignments;
-  cons.GovernmentProcedure = cons.GovernmentProcedure?.code ?? cons.GovernmentProcedure;
+    const cons = dec.Consignments;
+    cons.GovernmentProcedure = cons.GovernmentProcedure?.code ?? cons.GovernmentProcedure;
 
-  // מזהים ייחודיים למשגורים
-  const importId = crypto.randomUUID();
-  const exportId = crypto.randomUUID();
+    // מזהים ייחודיים למשגורים
+    const importId = crypto.randomUUID();
+    const exportId = crypto.randomUUID();
 
-  // בסיס החבילה
-  const baseMeasure = dec.ConsignmentPackagesMeasures ?? {};
+    // בסיס החבילה
+    const baseMeasure = dec.ConsignmentPackagesMeasures ?? {};
 
-  const processFacilities = (facility: any, consignmentId: string, sequence: number) => {
-    return facility?.code
-      ? [{
+    const processFacilities = (facility: any, consignmentId: string, sequence: number) => {
+      return facility?.code
+        ? [{
           Id: null,
           FacilityID: facility.code,
           FacilityType: "004",
           FacilitySequenceNumeric: sequence,
           ConsignmentId: consignmentId
         }]
-      : [];
-  };
+        : [];
+    };
 
-  // משגור יבוא
-  const consignmentImport = {
-    Id: importId,
-    ImportExportConsigment: 'I',
-    ExportationCountryCode: cons.ExportationCountryCode?.code ?? cons.ExportationCountryCode,
-    LoadingLocation: cons.LoadingLocation?.code ?? cons.LoadingLocation,
-    UnloadingLocationID: cons.UnloadingLocationID?.code ?? cons.UnloadingLocationID,
-    TransportContractDocumentTypeCode: cons.TransportContractDocumentTypeCode?.code ?? cons.TransportContractDocumentTypeCode,
-    ArrivalDateTime: cons.ArrivalDateTime,
-    TransportContractDocumentID: cons.TransportContractDocumentID,
-    SecondCargoID: cons.SecondCargoID,
-    ThirdCargoID: cons.ThirdCargoID,
-    CargoDescription: cons.CargoDescription,
-    ConsignmentRegisteredFacilities: processFacilities(cons.FacilityType, importId, 1),
-    ConsignmentPackagesMeasures: [{
-      Id: null,
-      ConsignmentId: importId,
-      PackageMeasureQualifier: baseMeasure.PackageMeasureQualifier?.code ?? baseMeasure.PackageMeasureQualifier,
-      TypeCode: baseMeasure.TypeCode?.code ?? baseMeasure.TypeCode,
-      ...baseMeasure
-    }]
-  };
+    // משגור יבוא
+    const consignmentImport = {
+      Id: importId,
+      ImportExportConsigment: 'I',
+      ExportationCountryCode: cons.ExportationCountryCode?.code ?? cons.ExportationCountryCode,
+      LoadingLocation: cons.LoadingLocation?.code ?? cons.LoadingLocation,
+      UnloadingLocationID: cons.UnloadingLocationID?.code ?? cons.UnloadingLocationID,
+      TransportContractDocumentTypeCode: cons.TransportContractDocumentTypeCode?.code ?? cons.TransportContractDocumentTypeCode,
+      ArrivalDateTime: cons.ArrivalDateTime,
+      TransportContractDocumentID: cons.TransportContractDocumentID,
+      SecondCargoID: cons.SecondCargoID,
+      ThirdCargoID: cons.ThirdCargoID,
+      CargoDescription: cons.CargoDescription,
+      ConsignmentRegisteredFacilities: processFacilities(cons.FacilityType, importId, 1),
+      ConsignmentPackagesMeasures: [{
+        Id: null,
+        ConsignmentId: importId,
+        PackageMeasureQualifier: baseMeasure.PackageMeasureQualifier?.code ?? baseMeasure.PackageMeasureQualifier,
+        TypeCode: baseMeasure.TypeCode?.code ?? baseMeasure.TypeCode,
+        ...baseMeasure
+      }]
+    };
 
-  // משגור יצוא
-  const consignmentExport = {
-    Id: exportId,
-    ImportExportConsigment: 'E',
-    ExportationCountryCode: cons.ExportationCountryCode2?.code ?? cons.ExportationCountryCode2,
-    LoadingLocation: cons.LoadingLocation2?.code ?? cons.LoadingLocation2,
-    UnloadingLocationID: cons.UnloadingLocationID2?.code ?? cons.UnloadingLocationID2,
-    TransportContractDocumentTypeCode: cons.TransportContractDocumentTypeCode2?.code ?? cons.TransportContractDocumentTypeCode2,
-    ArrivalDateTime: cons.ArrivalDateTime2,
-    TransportContractDocumentID: cons.TransportContractDocumentID2,
-    SecondCargoID: cons.SecondCargoID2,
-    ThirdCargoID: cons.ThirdCargoID2,
-    CargoDescription: cons.CargoDescription2,
-    ConsignmentRegisteredFacilities: processFacilities(cons.FacilityType2, exportId, 2),
-    ConsignmentPackagesMeasures: [{
-      Id: null,
-      ConsignmentId: exportId,
-      PackageMeasureQualifier: baseMeasure.PackageMeasureQualifier?.code ?? baseMeasure.PackageMeasureQualifier,
-      TypeCode: baseMeasure.TypeCode?.code ?? baseMeasure.TypeCode,
-      ...JSON.parse(JSON.stringify(baseMeasure))
-    }]
-  };
+    // משגור יצוא
+    const consignmentExport = {
+      Id: exportId,
+      ImportExportConsigment: 'E',
+      ExportationCountryCode: cons.ExportationCountryCode2?.code ?? cons.ExportationCountryCode2,
+      LoadingLocation: cons.LoadingLocation2?.code ?? cons.LoadingLocation2,
+      UnloadingLocationID: cons.UnloadingLocationID2?.code ?? cons.UnloadingLocationID2,
+      TransportContractDocumentTypeCode: cons.TransportContractDocumentTypeCode2?.code ?? cons.TransportContractDocumentTypeCode2,
+      ArrivalDateTime: cons.ArrivalDateTime2,
+      TransportContractDocumentID: cons.TransportContractDocumentID2,
+      SecondCargoID: cons.SecondCargoID2,
+      ThirdCargoID: cons.ThirdCargoID2,
+      CargoDescription: cons.CargoDescription2,
+      ConsignmentRegisteredFacilities: processFacilities(cons.FacilityType2, exportId, 2),
+      ConsignmentPackagesMeasures: [{
+        Id: null,
+        ConsignmentId: exportId,
+        PackageMeasureQualifier: baseMeasure.PackageMeasureQualifier?.code ?? baseMeasure.PackageMeasureQualifier,
+        TypeCode: baseMeasure.TypeCode?.code ?? baseMeasure.TypeCode,
+        ...JSON.parse(JSON.stringify(baseMeasure))
+      }]
+    };
 
-  // חשבוניות
-  const supplierInvoices = dec.SupplierInvoices ?? [];
-  supplierInvoices.forEach((invoice: any) => {
-    invoice.InvoiceTypeCode = invoice.InvoiceTypeCode?.code ?? invoice.InvoiceTypeCode;
-    invoice.LocationID = invoice.LocationID?.code ?? invoice.LocationID;
-    invoice.SupplierID = invoice.SupplierID?.code ?? invoice.SupplierID;
-    invoice.TradeTermsConditionCode = invoice.TradeTermsConditionCode?.code ?? invoice.TradeTermsConditionCode;
-    invoice.CurrencyCode = invoice.CurrencyCode?.code ?? invoice.CurrencyCode;
+    // חשבוניות
+    const supplierInvoices = dec.SupplierInvoices ?? [];
+    supplierInvoices.forEach((invoice: any) => {
+      invoice.InvoiceTypeCode = invoice.InvoiceTypeCode?.code ?? invoice.InvoiceTypeCode;
+      invoice.LocationID = invoice.LocationID?.code ?? invoice.LocationID;
+      invoice.SupplierID = invoice.SupplierID?.code ?? invoice.SupplierID;
+      invoice.TradeTermsConditionCode = invoice.TradeTermsConditionCode?.code ?? invoice.TradeTermsConditionCode;
+      invoice.CurrencyCode = invoice.CurrencyCode?.code ?? invoice.CurrencyCode;
 
-    invoice.CustomsValuation?.forEach((val: any) => {
-      val.ChargesTypeCode = val.ChargesTypeCode?.code ?? val.ChargesTypeCode;
-      val.CurrencyCode = val.CurrencyCode?.code ?? val.CurrencyCode;
+      invoice.CustomsValuation?.forEach((val: any) => {
+        val.ChargesTypeCode = val.ChargesTypeCode?.code ?? val.ChargesTypeCode;
+        val.CurrencyCode = val.CurrencyCode?.code ?? val.CurrencyCode;
+      });
+
+      invoice.SupplierInvoiceItems?.forEach((item: any) => {
+        item.Id = item.Id || null;
+        item.OriginCountryCode = item.OriginCountryCode?.code ?? item.OriginCountryCode;
+      });
     });
 
-    invoice.SupplierInvoiceItems?.forEach((item: any) => {
-      item.Id = item.Id || null;
-      item.OriginCountryCode = item.OriginCountryCode?.code ?? item.OriginCountryCode;
-    });
-  });
+    // פרטי דקלרציה כלליים
+    dec.Id = localStorage.getItem('currentDecId');
+    dec.RoleCode = '1';
+    dec.TaxationDateTime = new Date();
+    dec.CreateDateTime = new Date();
 
-  // פרטי דקלרציה כלליים
-  dec.Id = localStorage.getItem('currentDecId');
-  dec.RoleCode = '1';
-  dec.TaxationDateTime = new Date();
-  dec.CreateDateTime = new Date();
+    // אובייקט סופי
+    this.perfectDecalartion = {
+      ...JSON.parse(JSON.stringify(dec)),
+      Consignments: [consignmentImport, consignmentExport],
+      SupplierInvoices: supplierInvoices
+    };
 
-  // אובייקט סופי
-  this.perfectDecalartion = {
-    ...JSON.parse(JSON.stringify(dec)),
-    Consignments: [consignmentImport, consignmentExport],
-    SupplierInvoices: supplierInvoices
-  };
-
-  console.log('🚀 perfectDec:', this.perfectDecalartion);
-  return this.perfectDecalartion;
-}
+    console.log('🚀 perfectDec:', this.perfectDecalartion);
+    return this.perfectDecalartion;
+  }
 
   saveDeclaration() {
     if (this.generalDeclarationForm.invalid) {

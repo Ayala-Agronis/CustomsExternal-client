@@ -44,6 +44,14 @@
                 <p-tabPanel header="משגור יבוא">
                     <div class="form-group">
                         <div class="form-item">
+                            <label> סוג מזהה מטען <span class="required">*</span></label>
+                            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
+                                formControlName="TransportContractDocumentTypeCode" inputId="autocomplete"
+                                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)"
+                                field="name" [dropdown]="true">
+                            </p-autoComplete>
+                        </div>
+                        <div class="form-item">
                             <label> שנה <span class="required">*</span></label>
                             <input pInputText formControlName="TransportContractDocumentID" (blur)="onCargoIDBlur(1)">
                         </div>
@@ -68,7 +76,7 @@
                         </div>
 
                         <div class="form-item">
-                            <label> אתר טעינה <span class="required">*</span></label>
+                            <label> נמל טעינה <span class="required">*</span></label>
                             <p-autoComplete [disabled]="!isImportCountrySelected" formControlName="LoadingLocation"
                                 [suggestions]="currentFilteredChargingCountryImport"
                                 (completeMethod)="filterChargingCountry($event, 'import')" field="name"
@@ -76,29 +84,12 @@
 
                         </div>
                         <div class="form-item">
-                            <label>אתר פריקה <span class="required">*</span></label>
+                            <label>נמל פריקה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" id="unpackingSite"
                                 formControlName="UnloadingLocationID" inputId="autocomplete"
                                 [suggestions]="filteredUnpackingSite" (completeMethod)="filterUnpackingSite($event)"
                                 field="name" [dropdown]="true">
                             </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label> תאריך הגעת טובין <span class="required">*</span> </label>
-                            <p-calendar formControlName="ArrivalDateTime" [showIcon]="true"
-                                dateFormat="dd/mm/yy"></p-calendar>
-                        </div>
-                        <div class="form-item">
-                            <label> סוג מזהה מטען <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
-                                formControlName="TransportContractDocumentTypeCode" inputId="autocomplete"
-                                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)"
-                                field="name" [dropdown]="true">
-                            </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label>תיאור טובין <span class="required">*</span></label>
-                            <input pInputText formControlName="CargoDescription">
                         </div>
                         <div class="form-item">
                             <label> אתר מסירה <span class="required">*</span></label>
@@ -107,10 +98,51 @@
                                 (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true">
                             </p-autoComplete>
                         </div>
+                        <div class="form-item">
+                            <label for="Quantity">כמות אריזות</label>
+                            <input id="Quantity" formControlName="Quantity" type="number" pInputText min="0" />
+                        </div>
+
+
+                        <div class="form-item">
+                            <label for="UnitType">סוג אריזה </label>
+                            <input id="UnitType" formControlName="UnitType" type="text" pInputText />
+                        </div>
+
+                        <div class="form-item">
+                            <label for="MarksAndNumbers">סימנים ומספרים</label>
+                            <input id="MarksAndNumbers" formControlName="MarksAndNumbers" type="text" pInputText />
+                        </div>
+                        <div class="form-item">
+                            <label for="IsHazardous">חומר מסוכן </label>
+                            <select id="IsHazardous" formControlName="IsHazardous" class="p-inputtext">
+                                <option value="Y">Y</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+                        <!-- <div class="form-item">
+                            <label> תאריך הגעת טובין <span class="required">*</span> </label>
+                            <p-calendar formControlName="ArrivalDateTime" [showIcon]="true"
+                                dateFormat="dd/mm/yy"></p-calendar>
+                        </div> -->
+
+                        <div class="form-item">
+                            <label>תיאור טובין <span class="required">*</span></label>
+                            <input pInputText formControlName="CargoDescription">
+                        </div>
+
                     </div>
                 </p-tabPanel>
                 <p-tabPanel header=" משגור יצוא">
                     <div class="form-group">
+                        <div class="form-item">
+                            <label> סוג מזהה מטען <span class="required">*</span></label>
+                            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
+                                formControlName="TransportContractDocumentTypeCode2" inputId="autocomplete"
+                                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)"
+                                field="name" [dropdown]="true">
+                            </p-autoComplete>
+                        </div>
                         <div class="form-item">
                             <label> שנה <span class="required">*</span></label>
                             <input pInputText formControlName="TransportContractDocumentID2" (blur)="onCargoIDBlur(1)">
@@ -127,47 +159,30 @@
                             <label>מזהה מטען פנימי</label>
                             <input pInputText formControlName="ThirdCargoID2" (blur)="onCargoIDBlur(3)">
                         </div>
-                        <div class="form-item">
+                        <!-- <div class="form-item">
                             <label>ארץ יצוא <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="ExportationCountryCode2"
                                 [required]="true" inputId="autocomplete" [suggestions]="filteredCountryOfExport"
                                 (completeMethod)="filterCountryOfExport($event)" field="name" [dropdown]="true"
                                 (onSelect)="onExportationCountrySelect($event)"></p-autoComplete>
-                        </div>
+                        </div> -->
 
                         <div class="form-item">
-                            <label> אתר טעינה <span class="required">*</span></label>
+                            <label> נמל טעינה <span class="required">*</span></label>
                             <p-autoComplete [disabled]="!isExportCountrySelected" formControlName="LoadingLocation2"
                                 [suggestions]="currentFilteredChargingCountryExport"
                                 (completeMethod)="filterChargingCountry($event, 'export')" field="name"
                                 [dropdown]="true"></p-autoComplete>
 
                         </div>
-                        <div class="form-item">
-                            <label>אתר פריקה <span class="required">*</span></label>
+                        <!-- <div class="form-item">
+                            <label>נמל פריקה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" id="unpackingSite"
                                 formControlName="UnloadingLocationID2" inputId="autocomplete"
                                 [suggestions]="filteredUnpackingSite" (completeMethod)="filterUnpackingSite($event)"
                                 field="name" [dropdown]="true">
                             </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label> תאריך הגעת טובין <span class="required">*</span> </label>
-                            <p-calendar formControlName="ArrivalDateTime2" [showIcon]="true"
-                                dateFormat="dd/mm/yy"></p-calendar>
-                        </div>
-                        <div class="form-item">
-                            <label> סוג מזהה מטען <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
-                                formControlName="TransportContractDocumentTypeCode2" inputId="autocomplete"
-                                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)"
-                                field="name" [dropdown]="true">
-                            </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label>תיאור טובין <span class="required">*</span></label>
-                            <input pInputText formControlName="CargoDescription2">
-                        </div>
+                        </div> -->
                         <div class="form-item">
                             <label> אתר מסירה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="FacilityType2"
@@ -175,6 +190,38 @@
                                 (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true">
                             </p-autoComplete>
                         </div>
+                        <!-- <div class="form-item">
+                            <label> תאריך הגעת טובין <span class="required">*</span> </label>
+                            <p-calendar formControlName="ArrivalDateTime2" [showIcon]="true"
+                                dateFormat="dd/mm/yy"></p-calendar>
+                        </div> -->
+                        <div class="form-item">
+                            <label for="Quantity2">כמות אריזות</label>
+                            <input id="Quantity2" formControlName="Quantity2" type="number" pInputText min="0" />
+                        </div>
+
+
+                        <div class="form-item">
+                            <label for="UnitType2">סוג אריזה </label>
+                            <input id="UnitType2" formControlName="UnitType2" type="text" pInputText />
+                        </div>
+
+                        <div class="form-item">
+                            <label for="MarksAndNumbers2">סימנים ומספרים</label>
+                            <input id="MarksAndNumbers2" formControlName="MarksAndNumbers2" type="text" pInputText />
+                        </div>
+                        <div class="form-item">
+                            <label for="IsHazardous2">חומר מסוכן </label>
+                            <select id="IsHazardous2" formControlName="IsHazardous2" class="p-inputtext">
+                                <option value="Y">Y</option>
+                                <option value="N">N</option>
+                            </select>
+                        </div>
+                        <div class="form-item">
+                            <label>תיאור טובין <span class="required">*</span></label>
+                            <input pInputText formControlName="CargoDescription2">
+                        </div>
+
                     </div>
                 </p-tabPanel>
 

@@ -259,10 +259,12 @@ input {
     padding: 0.5rem;
     margin-top: 1rem;
 }
-::ng-deep .p-tabview .p-tabview-nav li .p-tabview-nav-link{
- padding: 0.5rem;
+
+::ng-deep .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+    padding: 0.5rem;
     margin-top: 1rem;
 }
+
 .consignment-tabs {
     margin-bottom: 1rem;
     display: flex;
@@ -415,26 +417,38 @@ input {
 }
 
 :host ::ng-deep div[formGroupName="Consignments"] .p-tabview-panel .form-group {
-  display: grid !important;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.5rem;
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2.3rem;
+    row-gap: 0.5rem;
+
 }
 
 :host ::ng-deep div[formGroupName="Consignments"] .form-group .form-item {
-  margin: 0 !important;
-  padding: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-:host ::ng-deep div[formGroupName="Consignments"] .form-group .form-item > * {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
-  box-sizing: border-box;
+:host ::ng-deep div[formGroupName="Consignments"] .form-group .form-item>* {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
 }
 
 .form-group[_ngcontent-ng-c2823166736] {
     margin-bottom: 0%;
 }
-:host ::ng-deep .supplierInvoices-container .right-side > .form-group {
-  gap: 0.5rem !important; /* או כל ערך שמתאים לך */
+
+:host ::ng-deep .supplierInvoices-container .right-side>.form-group {
+    gap: 0.5rem !important;
+    /* או כל ערך שמתאים לך */
+}
+
+::ng-deep select#IsHazardous.p-inputtext {
+    padding: 0.5rem !important;
+}
+
+.form-group[_ngcontent-ng-c125043880] {
+    margin-bottom: 0%;
 }
