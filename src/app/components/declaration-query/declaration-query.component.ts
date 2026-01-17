@@ -27,7 +27,8 @@ import { StepService } from '../../shared/services/step.service';
 export class DeclarationQueryComponent {
   msgs1: Message[] = [];
 
-  declartions: any
+  declartions: any;
+  decType = 'tr'
   allDeclarations: any;
   // declartion!: Declaration;
   initialDeclarationsCount: number = 0;
@@ -75,21 +76,16 @@ export class DeclarationQueryComponent {
   }
 
   ngOnInit(): void {
-    // קבלת מזהה המשתמש
     this.importerId = localStorage.getItem('userId');
 
-    // עדכון גודל רכיבים אם יש כאלה תלוים ברזולוציה
     window.dispatchEvent(new Event('resize'));
 
-    // קביעת טווח תאריכים של 7 ימים אחורה כברירת מחדל
-    this.endDate = new Date(); // להבטיח שהוא עדכני
+    this.endDate = new Date(); 
     this.startDate = new Date();
-    this.startDate.setDate(this.endDate.getDate() - 7);
+    this.startDate.setDate(this.endDate.getDate() - 10);
 
-    // שליפה ראשונית של הצהרות לטווח ברירת מחדל
     this.search();
 
-    // טעינת ערכי סטטוסי מכס
     this.customsDataService.getCustomsTableValues$('1981').pipe(
       map(res => {
         this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
@@ -112,7 +108,7 @@ export class DeclarationQueryComponent {
     this.isFiltered = false
   }
 
-  noDeclarationsFound: boolean = false; // ✅ חדש
+  noDeclarationsFound: boolean = false;
 
   noDeclarationsMsg: Message[] = [
     {
@@ -122,19 +118,16 @@ export class DeclarationQueryComponent {
     }
   ];
 
-
-
-
   search() {
 
-    this.msgs1 = []; // 🧹 ניקוי ההודעות הישנות
+    this.msgs1 = []; 
 
     if (!this.endDate || !this.startDate) {
       this.msgs1 = [
         { severity: 'error', summary: ' שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
       ];
-      this.noDeclarationsFound = false; // ✅ פתרון הבעיה
-      this.noDeclarationsMsg = [];      // ✅ לא להציג את הודעת "לא נמצאו הצהרות"
+      this.noDeclarationsFound = false; 
+      this.noDeclarationsMsg = [];    
       return;
     }
 
@@ -164,7 +157,7 @@ export class DeclarationQueryComponent {
 
         this.filteredDeclarations = this.allDeclarations;
         this.filteredDeclarationsCount = this.filteredDeclarations.length;
-        this.noDeclarationsFound = this.filteredDeclarationsCount === 0; // ✅ חדש
+        this.noDeclarationsFound = this.filteredDeclarationsCount === 0; 
 
         if (this.noDeclarationsFound) {
           this.noDeclarationsMsg = [{
@@ -176,7 +169,7 @@ export class DeclarationQueryComponent {
           this.noDeclarationsMsg = [];
         }
 
-        this.msgs1 = []; // מחיקת הודעות שגיאה קודמות
+        this.msgs1 = []; 
         this.isShowFilter = true;
         this.isFiltered = true;
       }),
@@ -230,7 +223,7 @@ export class DeclarationQueryComponent {
   }
 
   customStatusName(code: any) {
-    for (let i = 0; i < this.customsStatuses.length; i++) {
+    for (let i = 0; i < this.customsStatuses?.length; i++) {
       let a = this.customsStatuses[i];
       if (a.code == code) {
         return a.name
@@ -251,8 +244,19 @@ export class DeclarationQueryComponent {
     // localStorage.setItem('declarationId', declaration.AgentFileReferenceID)
     // this.router.navigateByUrl('app-declaration/new-declaration?Mode=e');
     localStorage.setItem('currentDecId', declaration.Id)
-    this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e' } })
-    this.stepService.emitStepCompleted('dec-form');
+    this.decType = declaration.Type;
+    localStorage.setItem('decType', declaration.Type);
+
+    if (this.decType == 'tr') {
+      this.router.navigate(['declaration-main/dec-form-ts'], { queryParams: { 'Mode': 'e', } })
+      this.stepService.emitStepCompleted('dec-form-ts');
+
+    }
+    else {
+      this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e', } })
+      this.stepService.emitStepCompleted('dec-form');
+    }
+
     // this.router.navigateByUrl('declaration-main/dec-form?Mode=e');
   }
 

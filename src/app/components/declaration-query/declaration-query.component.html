@@ -50,11 +50,18 @@
                                 <p-columnFilter type="text" field="Id" display="menu"></p-columnFilter>
                             </div>
                         </th>
-                        <th [pSortableColumn]="'DeclarationNumber'">
+                        <!-- <th [pSortableColumn]="'DeclarationNumber'">
                             <div class="flex align-items-center">
                                 <p-sortIcon field="DeclarationNumber"></p-sortIcon>
                                 הצהרה
                                 <p-columnFilter type="text" field="DeclarationNumber" display="menu"></p-columnFilter>
+                            </div>
+                        </th> -->
+                             <th [pSortableColumn]="'AgentFileReferenceID'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="DeclarationNumber"></p-sortIcon>
+                                הצהרה
+                                <p-columnFilter type="text" field="AgentFileReferenceID" display="menu"></p-columnFilter>
                             </div>
                         </th>
                         <th [pSortableColumn]="'ImporterID'">

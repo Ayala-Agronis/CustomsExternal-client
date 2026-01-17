@@ -24,10 +24,10 @@ export class CustomsDataService {
     return this.http.get<any>(`${apiConfig.customsdbApiUrl}GetSeq/${type}`);
   }
 
-  GetClient$(ID: any): Observable<any>  {
+  GetClient$(ID: any): Observable<any> {
     let body = new HttpParams()
-      .set('Id',ID)
-      .set('Passport','')
+      .set('Id', ID)
+      .set('Passport', '')
 
     return this.http.post(`${apiConfig.customsApiUrl}ImporterDetails`,
       body.toString(),
@@ -38,5 +38,13 @@ export class CustomsDataService {
     );
   }
 
-
+  addEntityEvent$(event: any): Observable<any> {
+    return this.http.post(
+      `${apiConfig.customsdbApiUrl}Events/AddEntityEvent`,
+      event,
+      {
+        headers: new HttpHeaders().set('Content-Type', 'application/json')
+      }
+    );
+  }
 }

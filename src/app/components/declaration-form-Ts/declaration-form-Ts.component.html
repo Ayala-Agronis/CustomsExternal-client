@@ -8,6 +8,9 @@
             :{{generalDeclarationForm.get("DeclarationNumber")?.value }}</label>
         <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value">סטטוס הצהרה
             :{{customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }} </label>
+        <label *ngIf="generalDeclarationForm.get('LogisticStatusCode')?.value">סטטוס לוגיסטי
+
+            :{{customStatusName(generalDeclarationForm.get("LogisticStatusCode")?.value) }} </label>
     </div>
 
     <p-confirmDialog></p-confirmDialog>
@@ -15,31 +18,55 @@
 
     <!-- General Information -->
     <p-card>
+        <div class="form-group">
+
+            <div class="form-item">
+                <label>מזהה יצואן </label>
+                <input pInputText formControlName="ImporterID" readonly class="readonly-field">
+            </div>
+
+            <div class="form-item">
+                <label for="customsProcess">תהליך מכס <span class="required">*</span></label>
+                <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
+                    inputId="autocomplete" [suggestions]="filteredCustomsProcess"
+                    (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
+                </p-autoComplete>
+            </div>
+            <div class="form-item">
+                <label> מדינת יעד *</label>
+                <p-autoComplete [forceSelection]="true" id="DestinationCountry" formControlName="DestinationCountry"
+                    class="ng-dirty" [required]="true" inputId="autocomplete" [suggestions]="filteredDestinationCountry"
+                    (completeMethod)="filterDestinationCountry($event)" field="name" [dropdown]="true"
+                    (onSelect)="onDestinationCountrySelect($event,null)">
+                </p-autoComplete>
+            </div>
+
+            <div class="form-item">
+                <label for="RecipientName">שם מקבל *</label>
+                <input id="RecipientName" formControlName="RecipientName" type="text" />
+            </div>
+
+            <div class="form-item">
+                <label for="RecipientAddress">כתובת מקבל *</label>
+                <input id="RecipientAddress" formControlName="RecipientAddress" type="text" />
+            </div>
+
+            <div class="form-item">
+                <label for="RecipientIssueLocation">מדינת מקבל *</label>
+                <div class="ui-ltr" dir="ltr">
+                    <p-autoComplete [forceSelection]="true" formControlName="RecipientIssueLocation"
+                        [suggestions]="filteredRecipientCountries" (completeMethod)="filterRecipientCountries($event)"
+                        (onDropdownClick)="onRecipientDropdownClick()" field="name" [forceSelection]="true"
+                        [dropdown]="true" placeholder="בחר מדינה" (onSelect)="onRecipientIssueLocationSelect($event)">
+                    </p-autoComplete>
+                </div>
+            </div>
+        </div>
 
         <!-- Consignment Details -->
 
         <div formGroupName="Consignments">
-            <div class="form-group">
 
-                <div class="form-item">
-                    <label>מזהה יבואן </label>
-                    <input pInputText formControlName="ImporterID" readonly class="readonly-field">
-                </div>
-                <!-- <div class="form-item">
-                <label>מספר טלפון</label>
-                <input pInputText>
-            </div> -->
-                <div class="form-item">
-                    <label for="customsProcess">תהליך מכס <span class="required">*</span></label>
-                    <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
-                        inputId="autocomplete" [suggestions]="filteredCustomsProcess"
-                        (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
-                    </p-autoComplete>
-
-                </div>
-
-
-            </div>
             <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
                 <p-tabPanel header="משגור יבוא">
                     <div class="form-group">
@@ -74,10 +101,10 @@
                                 (completeMethod)="filterCountryOfExport($event)" field="name" [dropdown]="true"
                                 (onSelect)="onExportationCountrySelect($event)"></p-autoComplete>
                         </div>
-
+                        <!-- [disabled]="formDisabled ||!isImportCountrySelected"  -->
                         <div class="form-item">
                             <label> נמל טעינה <span class="required">*</span></label>
-                            <p-autoComplete [disabled]="!isImportCountrySelected" formControlName="LoadingLocation"
+                            <p-autoComplete formControlName="LoadingLocation"
                                 [suggestions]="currentFilteredChargingCountryImport"
                                 (completeMethod)="filterChargingCountry($event, 'import')" field="name"
                                 [dropdown]="true"></p-autoComplete>
@@ -88,38 +115,47 @@
                             <p-autoComplete [forceSelection]="true" id="unpackingSite"
                                 formControlName="UnloadingLocationID" inputId="autocomplete"
                                 [suggestions]="filteredUnpackingSite" (completeMethod)="filterUnpackingSite($event)"
-                                field="name" [dropdown]="true">
+                                field="name" [dropdown]="true" (onSelect)="onUnloadingLocationIDSelect($event,i)">
                             </p-autoComplete>
                         </div>
                         <div class="form-item">
                             <label> אתר מסירה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="FacilityType"
                                 inputId="autocomplete" [suggestions]="filteredFacilityType"
-                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true">
+                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true" (onSelect)="onFacilityTypeSelect($event,i)">
                             </p-autoComplete>
                         </div>
-                        <div class="form-item">
+                        <!-- <div class="form-item">
                             <label for="Quantity">כמות אריזות</label>
                             <input id="Quantity" formControlName="Quantity" type="number" pInputText min="0" />
-                        </div>
+                        </div> -->
 
 
-                        <div class="form-item">
+                        <!-- <div class="form-item">
                             <label for="UnitType">סוג אריזה </label>
                             <input id="UnitType" formControlName="UnitType" type="text" pInputText />
-                        </div>
+                        </div> -->
+                        <!-- <div class="form-item">
+                            <label for="UnitType">סוג אריזה</label>
+                            <div class="ui-ltr" dir="ltr">
+                                <p-autoComplete id="UnitType" formControlName="UnitType" [forceSelection]="true"
+                                    inputId="autocomplete" field="name" [dropdown]="true"
+                                    [suggestions]="filteredTypeCode" (completeMethod)="filterTypeCode($event)">
+                                </p-autoComplete>
+                            </div>
+                        </div> -->
 
                         <div class="form-item">
                             <label for="MarksAndNumbers">סימנים ומספרים</label>
                             <input id="MarksAndNumbers" formControlName="MarksAndNumbers" type="text" pInputText />
                         </div>
-                        <div class="form-item">
+                        <!-- <div class="form-item">
                             <label for="IsHazardous">חומר מסוכן </label>
                             <select id="IsHazardous" formControlName="IsHazardous" class="p-inputtext">
                                 <option value="Y">Y</option>
                                 <option value="N">N</option>
                             </select>
-                        </div>
+                        </div> -->
                         <!-- <div class="form-item">
                             <label> תאריך הגעת טובין <span class="required">*</span> </label>
                             <p-calendar formControlName="ArrivalDateTime" [showIcon]="true"
@@ -149,8 +185,7 @@
                         </div>
                         <div class="form-item">
                             <label> מזהה מטען ראשי <span class="required">*</span></label>
-                            <input pInputText formControlName="SecondCargoID2" (blur)="onCargoIDBlur(2)" maxlength="12"
-                                minlength="11">
+                            <input pInputText formControlName="SecondCargoID2" (blur)="onCargoIDBlur(2)" maxlength="12">
                         </div>
                         <div class="error" *ngIf="secondCargoIDError">
                             {{ secondCargoIDError }}
@@ -169,33 +204,42 @@
 
                         <div class="form-item">
                             <label> נמל טעינה <span class="required">*</span></label>
-                            <p-autoComplete [disabled]="!isExportCountrySelected" formControlName="LoadingLocation2"
+                            <p-autoComplete formControlName="LoadingLocation2"
                                 [suggestions]="currentFilteredChargingCountryExport"
                                 (completeMethod)="filterChargingCountry($event, 'export')" field="name"
-                                [dropdown]="true"></p-autoComplete>
+                                [dropdown]="true">
+                                <!-- <ng-template let-item pTemplate="item">
+                                    <div pTooltip="{{ item.fullName }}" tooltipPosition="top">
+                                        {{ item.code }}
+                                    </div>
+                                </ng-template> -->
+                            </p-autoComplete>
 
                         </div>
-                        <!-- <div class="form-item">
-                            <label>נמל פריקה <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="unpackingSite"
-                                formControlName="UnloadingLocationID2" inputId="autocomplete"
-                                [suggestions]="filteredUnpackingSite" (completeMethod)="filterUnpackingSite($event)"
-                                field="name" [dropdown]="true">
-                            </p-autoComplete>
-                        </div> -->
                         <div class="form-item">
                             <label> אתר מסירה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="FacilityType2"
                                 inputId="autocomplete" [suggestions]="filteredFacilityType"
-                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true">
+                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true" (onSelect)="onFacilityType2Select($event,i)">
                             </p-autoComplete>
                         </div>
+
+                        <div class="form-item">
+                            <label>נמל פריקה <span class="required">*</span></label>
+                            <p-autoComplete [forceSelection]="true" id="unpackingSite"
+                                formControlName="UnloadingLocationID2" inputId="autocomplete"
+                                [suggestions]="filteredUnpackingSite"
+                                (completeMethod)="filterUnpackingSiteByReceiptCountry($event)" field="name"
+                                [dropdown]="true" (onSelect)="onUnloadingLocationID2Select($event,i)">
+                            </p-autoComplete>
+                        </div>
+
                         <!-- <div class="form-item">
                             <label> תאריך הגעת טובין <span class="required">*</span> </label>
                             <p-calendar formControlName="ArrivalDateTime2" [showIcon]="true"
                                 dateFormat="dd/mm/yy"></p-calendar>
                         </div> -->
-                        <div class="form-item">
+                        <!-- <div class="form-item">
                             <label for="Quantity2">כמות אריזות</label>
                             <input id="Quantity2" formControlName="Quantity2" type="number" pInputText min="0" />
                         </div>
@@ -204,23 +248,27 @@
                         <div class="form-item">
                             <label for="UnitType2">סוג אריזה </label>
                             <input id="UnitType2" formControlName="UnitType2" type="text" pInputText />
-                        </div>
+                        </div> -->
 
                         <div class="form-item">
                             <label for="MarksAndNumbers2">סימנים ומספרים</label>
                             <input id="MarksAndNumbers2" formControlName="MarksAndNumbers2" type="text" pInputText />
                         </div>
                         <div class="form-item">
-                            <label for="IsHazardous2">חומר מסוכן </label>
-                            <select id="IsHazardous2" formControlName="IsHazardous2" class="p-inputtext">
-                                <option value="Y">Y</option>
-                                <option value="N">N</option>
-                            </select>
-                        </div>
-                        <div class="form-item">
                             <label>תיאור טובין <span class="required">*</span></label>
                             <input pInputText formControlName="CargoDescription2">
                         </div>
+                        <div class="form-item" *ngIf="activeTabIndex === 1">
+                            <label for="IsHazardous2">חומר מסוכן</label>
+                            <p-checkbox inputId="IsHazardous2" formControlName="IsHazardous2"
+                                [binary]="true"></p-checkbox>
+                            <!-- <label for="IsHazardous2">חומר מסוכן </label>
+                            <select id="IsHazardous2" formControlName="IsHazardous2" class="p-inputtext">
+                                <option value="Y">Y</option>
+                                <option value="N">N</option>
+                            </select> -->
+                        </div>
+
 
                     </div>
                 </p-tabPanel>
@@ -234,13 +282,24 @@
         <h3 class="form-subtitle">פירוט חבילות</h3>
         <div class="form-group" formGroupName="ConsignmentPackagesMeasures">
             <div class="form-item">
-                <label> כמות</label>
-                <input pInputText type="number" formControlName="TotalPackageQuantity">
+                <label for="TypeCode">סוג אריזה </label>
+                <div class="ui-ltr" dir="ltr">
+                    <p-autoComplete id="TypeCode" formControlName="TypeCode" [forceSelection]="true"
+                        inputId="autocomplete" field="name" [dropdown]="true" [suggestions]="filteredTypeCode"
+                        (completeMethod)="filterTypeCode($event)">
+                    </p-autoComplete>
+                </div>
+                <!-- <input id="UnitType" formControlName="UnitType" type="text" pInputText /> -->
             </div>
             <div class="form-item">
-                <label> משקל </label>
-                <input pInputText type="number" formControlName="GrossMassMeasure">
+                <label> כמות *
+                </label>
+                <input pInputText type="number" formControlName="TotalPackageQuantity">
             </div>
+            <!-- <div class="form-item">
+                <label> משקל *</label>
+                <input pInputText type="number" formControlName="GrossMassMeasure">
+            </div> -->
         </div>
     </p-card>
 
@@ -252,10 +311,10 @@
         <p-tabView>
             <p-tabPanel *ngFor="let supplierInvoice of supplierInvoices.controls; let i = index" [formGroupName]="i"
                 [header]="'חשבונית ' + (i+1)">
-                <button pButton pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
-                    (click)="addSupplierInvoice()"></button>
-                <button *ngIf="i" pButton pRipple icon="pi pi-minus" class="p-button-raised p-button-text "
-                    (click)="removeSupplierInvoice(supplierInvoice,i)"></button>
+                <button [disabled]="formDisabled" pButton pRipple icon="pi pi-plus"
+                    class="p-button-raised p-button-text" (click)="addSupplierInvoice()"></button>
+                <button [disabled]="formDisabled" *ngIf="i" pButton pRipple icon="pi pi-minus"
+                    class="p-button-raised p-button-text " (click)="removeSupplierInvoice(supplierInvoice,i)"></button>
                 <p-card>
                     <div class="supplierInvoices-container">
                         <div class="right-side">
@@ -318,9 +377,40 @@
                                     <input (blur)="getFormErrors(true)" pInputText formControlName="InvoiceAmount">
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <div class="form-item">
+                                    <label for="BuyerName"> שם הקונה <span class="required">*</span></label>
+                                    <input id="Name" formControlName="BuyerName" type="text" pInputText />
+                                </div>
+                                <div class="form-item">
+                                    <label for="BuyerAddress"> כתובת הקונה<span class="required">*</span></label>
+                                    <input id="Address" formControlName="BuyerAddress" type="text" pInputText />
+                                </div>
+                                <div class="form-item">
+                                    <label for="BuyerIssueLocation"> מדינת הקונה <span class="required">*</span></label>
+                                    <div class="ui-ltr" dir="ltr">
+                                        <p-autoComplete [forceSelection]="true" id="IssueLocation"
+                                            formControlName="BuyerIssueLocation" [required]="true"
+                                            inputId="autocomplete" [suggestions]="filteredIssueLocation"
+                                            (completeMethod)="filterIssueLocation($event)" field="name"
+                                            [dropdown]="true">
+                                        </p-autoComplete>
+                                    </div>
+                                </div>
+                                <div class="form-item">
+                                    <label for="BuyerRole"> תפקיד קונה <span class="required">*</span></label>
+                                    <div class="ui-ltr" dir="ltr">
+                                        <p-autoComplete [forceSelection]="true" id="RoleCode"
+                                            formControlName="BuyerRole" [required]="true" inputId="autocomplete"
+                                            [suggestions]="filteredRoleCode" (completeMethod)="filterRoleCode($event)"
+                                            field="name" [dropdown]="true">
+                                        </p-autoComplete>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="valuations" *ngIf="showCustomsValuation[i]">
+                        <!-- <div class="valuations" *ngIf="showCustomsValuation[i]">
                             <h4>התאמות / הפחתות</h4>
                             <div class="valuation-items">
                                 <div class="valuation-item"
@@ -349,7 +439,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </p-card>
                 <br />
@@ -370,11 +460,28 @@
                                 <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
                                     <tr [formGroupName]="rowIndex">
                                         <td class="sCol">
-                                            <button pButton pRipple icon="pi pi-minus"
+                                            <button [disabled]="formDisabled" pButton pRipple icon="pi pi-minus"
                                                 class="p-button-raised p-button-text"
                                                 (click)="onDeleteRow(rowData,rowIndex,i)"></button>
                                         </td>
                                         <td pEditableColumn>
+                                            <p-cellEditor>
+                                                <ng-template pTemplate="input">
+                                                    <p-autoComplete [forceSelection]="true" [appendTo]="'body'"
+                                                        (onSelect)="selectClassification($event)"
+                                                        formControlName="ClassificationID"
+                                                        [suggestions]="filteredClassification"
+                                                        (completeMethod)="filterClassification($event)" field="name"
+                                                        [dropdown]="true" placeholder="בחר מוצר">
+                                                    </p-autoComplete>
+                                                </ng-template>
+                                                <ng-template pTemplate="output">
+                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("ClassificationID")?.value?.name}}
+                                                </ng-template>
+                                            </p-cellEditor>
+                                        </td>
+
+                                        <!-- <td pEditableColumn>
                                             <p-cellEditor>
                                                 <ng-template pTemplate="input">
                                                     <input pInputText type="text" formControlName="ClassificationID"
@@ -384,7 +491,7 @@
                                                     {{GetSupplierInvoiceItems(i).controls[rowIndex].get("ClassificationID")?.value}}
                                                 </ng-template>
                                             </p-cellEditor>
-                                        </td>
+                                        </td> -->
 
                                         <td pEditableColumn>
                                             <p-cellEditor>
@@ -403,7 +510,8 @@
                                                         formControlName="CustomsValueAmount">
                                                 </ng-template>
                                                 <ng-template pTemplate="output">
-                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("CustomsValueAmount")?.value}}
+                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("CustomsValueAmount")?.value
+                                                    | number: '1.0-0'}}
                                                 </ng-template>
                                             </p-cellEditor>
                                         </td>
@@ -415,7 +523,7 @@
                                                             [forceSelection]="true"
                                                             [suggestions]="filteredCountryOfExport"
                                                             (completeMethod)="filterCountryOfExport($event)"
-                                                            field="name" [dropdown]="true">
+                                                            field="name" [dropdown]="true" [appendTo]="'body'">
                                                         </p-autoComplete>
                                                     </div>
                                                 </ng-template>
@@ -430,7 +538,7 @@
                                 <ng-template pTemplate="footer">
                                     <tr>
                                         <td>
-                                            <button pButton pRipple icon="pi pi-plus"
+                                            <button [disabled]="formDisabled" pButton pRipple icon="pi pi-plus"
                                                 class="p-button-raised p-button-text"
                                                 (click)="addNewInvoiceItem(i)"></button>
                                         </td>
@@ -453,9 +561,11 @@
             (click)="saveDeclaration()" pTooltip="{{ getFormErrors(false) }}" tooltipPosition="top"
             [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
 
-        <button [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms" class="button-primary"
-            (click)="sendDeclaration()" pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top"
-            [tooltipDisabled]="!checkVersion()">שלח למכס</button>
+        <button [disabled]="generalDeclarationForm.invalid"
+            [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms"
+            class="button-primary" (click)="sendDeclaration()" pTooltip="ניתן לשלוח למכס עד 6 טיוטות "
+            tooltipPosition="top" [tooltipDisabled]="!checkVersion()">שלח
+            למכס</button>
         <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
     </div>
 

@@ -22,11 +22,12 @@ import { map } from 'rxjs';
 import { StepService } from '../../shared/services/step.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-add-documents',
   standalone: true,
-  imports: [CommonModule, TableModule, CardModule, DialogModule, FormsModule, ReactiveFormsModule, DropdownModule, FileUploadModule, ButtonModule, CalendarModule, CheckboxModule, AutoCompleteModule, MessagesModule, ConfirmDialogModule, ProgressSpinnerModule, InputTextModule],
+  imports: [CommonModule, TableModule, TooltipModule, CardModule, DialogModule, FormsModule, ReactiveFormsModule, DropdownModule, FileUploadModule, ButtonModule, CalendarModule, CheckboxModule, AutoCompleteModule, MessagesModule, ConfirmDialogModule, ProgressSpinnerModule, InputTextModule],
   templateUrl: './add-documents.component.html',
   styleUrl: './add-documents.component.scss',
   providers: [ConfirmationService, MessageService]
@@ -92,6 +93,9 @@ export class AddDocumentsComponent {
 
   uploadedFilesByType: { [key: string]: any[] } = {};
   groupedDocuments: any;
+  showBtnCustoms: boolean = false;
+  deleting: { [id: string]: boolean } = {};
+
   // selectedDocumentCode: any;
   // uploadedFiles: any[] = [];
   constructor(private documentsService: DocumentService, private sanitizer: DomSanitizer, private stepService: StepService, private decService: DeclarationService, private confirmationService: ConfirmationService, private messageService: MessageService, private router: Router, private customsDataService: CustomsDataService) { }
@@ -99,8 +103,8 @@ export class AddDocumentsComponent {
   ngOnInit(): void {
 
     this.documentCodes = [
-      { name: 'חשבונית ספק (INV)', code: '380' },
       { name: 'שטר מטען (WB)', code: '714' },
+      { name: 'חשבונית ספק (INV)', code: '380' },
       { name: 'רשימת אריזה (PL)', code: '271' },
     ];
     this.selectedDocumentCode = this.documentCodes[0];
@@ -124,7 +128,11 @@ export class AddDocumentsComponent {
         map(_ => this.loading = false)
       ).subscribe(
         res => {
-          console.log(this.documents);
+          const hasType714 = this.documents.some((doc: any) => doc.DocumentType === '714');
+
+          const hasType380 = this.documents.some((doc: any) => doc.DocumentType === '380');
+
+          this.showBtnCustoms = hasType714 && hasType380;
           this.groupDocumentsByType()
         },
         error => {
@@ -168,6 +176,8 @@ export class AddDocumentsComponent {
   }
 
   deleteDocument(docId: string) {
+    if (this.deleting[docId]) return;
+    this.deleting[docId] = true;
     this.documentsService.deleteDocument$(docId).subscribe(
       response => {
         console.log(response);
@@ -179,11 +189,29 @@ export class AddDocumentsComponent {
         this.getdoc();
       },
       error => {
+        this.deleting[docId] = false;
+
         this.msgs1 = [
           { severity: 'error', summary: 'מחיקת מסמך ', detail: `קרתה שגיאה בעת מחיקת המסמך  ` },
         ];
       }
     )
+  }
+
+  sendDecToCustoms() {
+    let navigationExtras: any = {};
+
+    navigationExtras.queryParams = { 'Mode': 'e', 'Send': 'T' };
+
+    this.router.navigate(['declaration-main/dec-form-ts'], navigationExtras);
+
+    // const decId = localStorage.getItem('currentDecId');
+
+    // this.decService.getDeclaration(decId).subscribe(res => {
+    //   console.log(res);
+    //   const currentDec = res;
+
+    // })
   }
 
   navigateToAddDocument(rowData: any) {
@@ -239,8 +267,9 @@ export class AddDocumentsComponent {
       console.log(this.uploadedFilesByType);
 
     }
-    //  else {
-    // }
+
+    // this.uploadedFilesByType = {};
+    // this.uploadedFiles = [];
 
     event.target.value = ''
   }
@@ -279,123 +308,51 @@ export class AddDocumentsComponent {
       delete this.uploadedFilesByType[documentType];
     }
   }
+  hasDocument(type: string): boolean {
+    return this.documents && this.documents.some((doc: any) => doc.DocumentType === type);
+  }
 
+  // עדכון הטולטיפ
+  getDocumentsTooltip(): string {
+    const has714 = this.hasDocument('714');
+    const has380 = this.hasDocument('380');
 
-  // saveDocuments() {
-  //   console.log(this.uploadedFilesByType);
+    if (!has714 && !has380) {
+      return 'לא ניתן לשמור – יש להוסיף שטר מטען (714) וחשבון ספק (380)';
+    } else if (!has714) {
+      return 'לא ניתן לשמור – חסר שטר מטען (714)';
+    } else if (!has380) {
+      return 'לא ניתן לשמור – חסר חשבון ספק (380)';
+    }
+    return '';
+  }
 
-  //   return new Promise<void>((resolve, reject) => {
-  //     if (Object.keys(this.uploadedFilesByType).length === 0) {
-  //       // if (!this.uploadedFiles.length) {
-  //       this.msgs1 = [
-  //         { severity: 'error', summary: 'Error', detail: 'נא בחר קובץ לשליחה!' }
-  //       ];
-  //       this.loading = false;
-  //       reject('נא בחר קובץ לשליחה!');
-  //       return;
-  //     }
-  //     // for (let index = 0; index < this.uploadedFiles.length; index++) {
-  //     //   this.uploadedFile = this.uploadedFiles[index];
-  //     //   console.log(this.uploadedFile);
-  //     for (const documentTypeCode in this.uploadedFilesByType) {
-  //       const files = this.uploadedFilesByType[documentTypeCode];
-
-  //       for (let index = 0; index < files.length; index++) {
-  //         this.uploadedFile = files[index];
-  //         this.msgs1 = [];
-
-  //         // this.confirmationService.confirm({
-  //         //   message: 'האם אתה בטוח שברצונך להעלות את הקובץ?',
-  //         // accept: () => {
-  //         const englishName = this.translateHebrewToEnglish('dec');
-  //         const timestamp = new Date().getTime();
-  //         const uniqueFileName = `${englishName}_${timestamp}`;
-  //         const formData = new FormData();
-  //         formData.append('dtvalues', this.uploadedFile);
-  //         formData.append('EntityID', this.currentDecId || '');
-  //         formData.append('DocumentType', documentTypeCode);
-  //         formData.append('BlobName', uniqueFileName);
-
-  //         this.loading = true;
-
-  //         console.log('FormData entries:');
-  //         formData.forEach((value, key) => {
-  //           console.log(`${key}:`, value);
-  //         });
-
-  //         // Upload to Azure
-  //         this.documentsService.uploadDocument(formData).subscribe(
-  //           (response: any) => {
-  //             console.log(response);
-  //             if (response.url) {
-  //               this.documentObject = {
-  //                 Id: 0,
-  //                 Code: documentTypeCode,
-  //                 Url: response.url,
-  //                 FileName: this.selectedFileName,
-  //                 DocumentType: documentTypeCode,
-  //                 CustomsId: 0,
-  //                 InternalID: 0,
-  //                 CustomsStatus: 0,
-  //                 ErrorDesc: '',
-  //                 RelatedEntity: 1055,
-  //                 RelatedID: this.currentDecId || ''
-  //               };
-
-  //               // Save doc to DB
-  //               if (!this.isUpdateMode) {
-  //                 this.documentsService.postDocuments$(this.documentObject).subscribe(
-  //                   async (response) => {
-  //                     console.log(response);
-  //                     this.documentId = response.Id;
-  //                     this.documentObject.Id = response.Id;
-  //                     this.internalDocumentNumber = response.Id;
-  //                     this.loading = false;
-
-  //                     this.msgs1 = [
-  //                       { severity: 'success', summary: 'Success', detail: 'המסמך נשמר בהצלחה !' },
-  //                     ];
-  //                     await this.sendToCustoms(this.uploadedFile, documentTypeCode, this.documentId,this.documentObject)
-  //                     // resolve();  // Resolve the promise after the document is saved
-  //                   },
-  //                   (error) => {
-  //                     console.log(error);
-  //                     this.loading = false;
-  //                     reject(error);
-  //                   }
-  //                 );
-  //               } else {
-  //                 this.documentObject.Id = this.relatedID;
-  //                 this.documentsService.updateDocument$(this.relatedID, this.documentObject).subscribe(
-  //                   (response) => {
-  //                     console.log(response);
-  //                     this.documentId = response.Id;
-  //                     resolve();  // Resolve the promise after the document is updated
-  //                   },
-  //                   (error) => {
-  //                     console.log(error);
-  //                     this.loading = false;
-  //                     reject(error);
-  //                   }
-  //                 );
-  //               }
-  //             }
-  //           },
-  //           (error) => {
-  //             console.log(error);
-  //             this.loading = false;
-  //             this.messageService.add({ severity: 'error', summary: 'Error', detail: 'העלאת המסמך נכשלה!' });
-  //             reject(error);
-  //           }
-  //         );
-
-  //       }
-  //     }
-  //   });
+  canSaveDocuments(): boolean {
+    return this.hasDocument('714') && this.hasDocument('380');
+  }
+  // hasDocument714(): boolean {
+  //   return Object.keys(this.uploadedFilesByType).includes('714')
+  //     || this.documents.some((doc: any) => doc.DocumentType === '714');
   // }
-  async saveDocuments() {
-    console.log(this.uploadedFilesByType);
 
+  // get714Tooltip(): string {
+  //   if (!this.hasDocument714()) {
+  //     return 'לא ניתן לשמור – יש להוסיף שטר מטען';
+  //   }
+  //   return '';
+  // }
+
+
+  async saveDocuments() {
+    const hasCode714 = Object.keys(this.uploadedFilesByType).includes('714')
+      || this.documents.some(doc => doc.DocumentType === '714');
+
+    if (!hasCode714) {
+      this.msgs1 = [
+        { severity: 'error', summary: 'שגיאה', detail: 'לא ניתן לשמור! יש להעלות לפחות מסמך קוד 714' }
+      ];
+      return;
+    }
     return new Promise<void>((resolve, reject) => {
       if (Object.keys(this.uploadedFilesByType).length === 0) {
         // this.msgs1 = [
@@ -463,8 +420,12 @@ export class AddDocumentsComponent {
                     { severity: 'success', summary: 'Success', detail: 'המסמך נשמר בהצלחה !' },
                   ];
 
+                  this.uploadedFilesByType = {};
+                  this.uploadedFiles = [];
+                  this.getdoc();
+
                   // Send to customs for each document
-                  await this.sendToCustoms(this.uploadedFile, documentTypeCode, this.documentId, this.documentObject);
+                  // await this.sendToCustoms(this.uploadedFile, documentTypeCode, this.documentId, this.documentObject);
                 } else {
                   this.documentObject.Id = this.relatedID;
                   const updateResponse = await this.documentsService.updateDocument$(this.relatedID, this.documentObject).toPromise();
@@ -487,114 +448,114 @@ export class AddDocumentsComponent {
     });
   }
 
-  async sendToCustoms(file: any, typeCode: any, documentId: any, documentObject: any) {
-    // const file = this.uploadedFile;
-    const formData = new FormData();
+  // async sendToCustoms(file: any, typeCode: any, documentId: any, documentObject: any) {
+  //   // const file = this.uploadedFile;
+  //   const formData = new FormData();
 
-    formData.append('Content', file);
-    formData.append('Name', file.name);
-    formData.append('DocumentType', typeCode);
-    if (typeCode == '380') {
-      formData.append(`attributes[87]`, JSON.stringify({
-        id: 87,
-        value: 'true'
-      }));
-    }
-    else if (typeCode === '714') {
-      const decId = localStorage.getItem('currentDecId');
-      const res = await this.decService.getDeclaration(decId).toPromise();
-      console.log('res:', res);
+  //   formData.append('Content', file);
+  //   formData.append('Name', file.name);
+  //   formData.append('DocumentType', typeCode);
+  //   if (typeCode == '380') {
+  //     formData.append(`attributes[87]`, JSON.stringify({
+  //       id: 87,
+  //       value: 'true'
+  //     }));
+  //   }
+  //   else if (typeCode === '714') {
+  //     const decId = localStorage.getItem('currentDecId');
+  //     const res = await this.decService.getDeclaration(decId).toPromise();
+  //     console.log('res:', res);
 
-      const consignmentData = res?.[0]?.ConsignmentPackagesMeasures?.[0]?.Consignments;
+  //     const consignmentData = res?.[0]?.ConsignmentPackagesMeasures?.[0]?.Consignments;
 
-      formData.append(`attributes[57]`, JSON.stringify({ id: 57, value: new Date() }));
+  //     formData.append(`attributes[57]`, JSON.stringify({ id: 57, value: new Date() }));
 
-      if (consignmentData?.TransportContractDocumentTypeCode) {
-        formData.append(`attributes[99]`, JSON.stringify({
-          id: 99,
-          value: consignmentData.TransportContractDocumentTypeCode
-        }));
-      } else {
-        console.warn('TransportContractDocumentTypeCode is missing');
-      }
+  //     if (consignmentData?.TransportContractDocumentTypeCode) {
+  //       formData.append(`attributes[99]`, JSON.stringify({
+  //         id: 99,
+  //         value: consignmentData.TransportContractDocumentTypeCode
+  //       }));
+  //     } else {
+  //       console.warn('TransportContractDocumentTypeCode is missing');
+  //     }
 
-      if (consignmentData?.TransportContractDocumentID) {
-        formData.append(`attributes[100]`, JSON.stringify({
-          id: 100,
-          value: consignmentData.TransportContractDocumentID
-        }));
-      } else {
-        console.warn('TransportContractDocumentID is missing');
-      }
-    }
+  //     if (consignmentData?.TransportContractDocumentID) {
+  //       formData.append(`attributes[100]`, JSON.stringify({
+  //         id: 100,
+  //         value: consignmentData.TransportContractDocumentID
+  //       }));
+  //     } else {
+  //       console.warn('TransportContractDocumentID is missing');
+  //     }
+  //   }
 
 
-    this.loading = true;
+  //   this.loading = true;
 
-    this.documentsService.sendToCustoms$(formData).subscribe(
-      response => {
-        console.log(response);
+  //   this.documentsService.sendToCustoms$(formData).subscribe(
+  //     response => {
+  //       console.log(response);
 
-        this.loading = false;
-        if (response.responseContentHeaderField.exceptionField) {
-          documentObject.CustomsStatus = 0
-          this.msgs1 = [
-            { severity: 'error', summary: 'שליחת מסמך למכס', detail: response.responseContentHeaderField.exceptionField[0].exeptionDescriptionField },
-          ];
-          return
-        }
-        else if (response.responseContentHeaderField.applicationIDField) {
-          this.customsDocumentNumber = response.responseContentHeaderField.applicationIDField
-          documentObject.CustomsStatus = 1
-          documentObject.CustomsId = response.responseContentHeaderField.applicationIDField
-          documentObject.InternalID = response.externalAttachmentIDField
-          this.msgs1 = [
-            { severity: 'success', summary: 'Success', detail: 'המסמך נשלח למכס בהצלחה!' },
-          ];
-        }
-        else {
-          this.msgs1 = [
-            { severity: 'error', summary: 'שליחת מסמך למכס', detail: 'התרחשה שגיאה בעת השליחה למכס' },
-          ];
-          return
-        }
-        console.log(documentId);
-        console.log(this.documentObject);
+  //       this.loading = false;
+  //       if (response.responseContentHeaderField.exceptionField) {
+  //         documentObject.CustomsStatus = 0
+  //         this.msgs1 = [
+  //           { severity: 'error', summary: 'שליחת מסמך למכס', detail: response.responseContentHeaderField.exceptionField[0].exeptionDescriptionField },
+  //         ];
+  //         return
+  //       }
+  //       else if (response.responseContentHeaderField.applicationIDField) {
+  //         this.customsDocumentNumber = response.responseContentHeaderField.applicationIDField
+  //         documentObject.CustomsStatus = 1
+  //         documentObject.CustomsId = response.responseContentHeaderField.applicationIDField
+  //         documentObject.InternalID = response.externalAttachmentIDField
+  //         this.msgs1 = [
+  //           { severity: 'success', summary: 'Success', detail: 'המסמך נשלח למכס בהצלחה!' },
+  //         ];
+  //       }
+  //       else {
+  //         this.msgs1 = [
+  //           { severity: 'error', summary: 'שליחת מסמך למכס', detail: 'התרחשה שגיאה בעת השליחה למכס' },
+  //         ];
+  //         return
+  //       }
+  //       console.log(documentId);
+  //       console.log(this.documentObject);
 
-        this.documentsService.updateDocument$(documentId, documentObject).subscribe(
-          res => {
-            this.loading = false
-            console.log(res)
-            this.getdoc()
-            this.uploadedFilesByType = {}
-          },
-          err => {
-            this.loading = false
-            console.log(err)
-          }
-        )
-      },
-      (error: any) => {
-        this.loading = false;
-        this.documentObject.CustomsStatus = 0,
-          this.documentObject.ErrorDesc = error
-        this.msgs1 = [
-          { severity: 'error', summary: 'Error', detail: 'שליחת המסמך למכס נכשלה!' }
-        ];
-        // this.documentsService.updateDocument$(this.documentId, this.documentObject).subscribe(
-        //   res => {
-        //     this.loading = false
-        //     console.log(res)
-        //     this.getdoc()
-        //   },
-        //   err => {
-        //     this.loading = false
-        //     console.log(err)
-        //   }
-        // )
-      }
-    );
-  }
+  //       this.documentsService.updateDocument$(documentId, documentObject).subscribe(
+  //         res => {
+  //           this.loading = false
+  //           console.log(res)
+  //           this.getdoc()
+  //           this.uploadedFilesByType = {}
+  //         },
+  //         err => {
+  //           this.loading = false
+  //           console.log(err)
+  //         }
+  //       )
+  //     },
+  //     (error: any) => {
+  //       this.loading = false;
+  //       this.documentObject.CustomsStatus = 0,
+  //         this.documentObject.ErrorDesc = error
+  //       this.msgs1 = [
+  //         { severity: 'error', summary: 'Error', detail: 'שליחת המסמך למכס נכשלה!' }
+  //       ];
+  //       // this.documentsService.updateDocument$(this.documentId, this.documentObject).subscribe(
+  //       //   res => {
+  //       //     this.loading = false
+  //       //     console.log(res)
+  //       //     this.getdoc()
+  //       //   },
+  //       //   err => {
+  //       //     this.loading = false
+  //       //     console.log(err)
+  //       //   }
+  //       // )
+  //     }
+  //   );
+  // }
 
   nextStep() {
     this.saveDocuments();

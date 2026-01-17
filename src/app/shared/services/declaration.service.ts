@@ -16,6 +16,7 @@ export class DeclarationService {
   private packageData = new BehaviorSubject<any>(null);
   packageData$ = this.packageData.asObservable();
 
+
   updatePackageData(data: any) {
     this.packageData.next(data);
   }
@@ -23,7 +24,7 @@ export class DeclarationService {
   fillFormAndRedirect(k_asmachta: string, k_importer_num: string): Observable<any> {
     const formData = { Asmachta: k_asmachta, ImporterNum: k_importer_num };
 
-    return this.http.post(`${apiConfig.customsExternalApiUrl}fill-form/` , formData);
+    return this.http.post(`${apiConfig.customsExternalApiUrl}fill-form/`, formData);
   }
 
   // addDeclaration(dec: any): Observable<HttpResponse<any>> {
@@ -53,10 +54,15 @@ export class DeclarationService {
     return this.http.put<any>(url, declaration);
   }
 
+  updateDeclarationTs$(id: any, declaration: any): Observable<any> {
+    const url = `${apiConfig.customsdbApiUrl}dec/PutTs/${id}`;
+    return this.http.put<any>(url, declaration);
+  }
+
   sendUpdateDecToInternalDB$(id: any, declaration: any): Observable<any> {
-    const url = `${this.InternalDecURL}/${id}`;  
-    return this.http.put<any>(url, declaration);  
-  }  
+    const url = `${this.InternalDecURL}/${id}`;
+    return this.http.put<any>(url, declaration);
+  }
 
   updateAndSendDeclaration$(id: any, declaration: any, isSign: any): Observable<any> {
     return this.http.post<any>(`${apiConfig.customsdbApiUrl}dec/PutAndSend/${id}?isSign=${isSign}`, declaration)
@@ -64,10 +70,16 @@ export class DeclarationService {
     // return this.http.post<any>(`${environment.customsExternalApiUrl}dec/GetAndSend/${id}?isSign=${isSign}`, declaration)
   }
 
+  updateAndSendDeclarationTs$(id: any, declaration: any, isSign: any): Observable<any> {
+    return this.http.post<any>(`${apiConfig.customsdbApiUrl}Dec/PutAndSendTr/${id}?isSign=${isSign}`, declaration)
+
+    // return this.http.post<any>(`${environment.customsExternalApiUrl}dec/GetAndSend/${id}?isSign=${isSign}`, declaration)
+  }
+
   getCagroQueryMessage$(params: any) {
     let body = new HttpParams().set('CargoIdentifierType', params.cargoType)
       .set('CargoIdentifierKey1', params.firstCargoID || '')
-      .set('CargoIdentifierKey2', params.secondCargoID || '')    
+      .set('CargoIdentifierKey2', params.secondCargoID || '')
       .set('CargoIdentifierKey3', params.thirdCargoID || '');
 
     return this.http.post(`${apiConfig.customsApiUrl}CargoQuery`,
@@ -85,14 +97,15 @@ export class DeclarationService {
       .set('Date1', Date1)
       .set('Date2', Date2)
       .set('importerId', importerId)
-      .set('eventCode', eventCode);
+      .set('eventCode', eventCode)
+      .set('governmentProcedureType', "");
 
     return this.http.get<any>(`${apiConfig.customsdbApiUrl}DecQuery`, { params });
   }
 
   GetClassificationID$(classification: any) {
     let body = new HttpParams()
-      .set('classification',classification)
+      .set('classification', classification)
 
     return this.http.post(`${apiConfig.customsApiUrl}CustomItemDetails`,
       body.toString(),
@@ -103,5 +116,5 @@ export class DeclarationService {
     );
   }
 
- 
+
 }

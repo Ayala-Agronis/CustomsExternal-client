@@ -29,6 +29,8 @@ export class UserService {
   }
 
   login(user: any): Observable<HttpResponse<any>> {
+    console.log(`${this.userURL}login`);
+    
     return this.http.post<any>(`${this.userURL}login`, user, { observe: 'response' });
   }
 

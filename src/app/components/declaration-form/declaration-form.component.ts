@@ -72,7 +72,7 @@ export class DeclarationFormComponent implements OnInit {
   customStatus: any;
   customsStatuses: any;
 
-  showBtnCustoms = false
+  showBtnCustoms = true
   loading: boolean = false;
   isLocked: boolean = false;
   msgs1: Message[] = [];
@@ -129,12 +129,14 @@ export class DeclarationFormComponent implements OnInit {
         const decId = localStorage.getItem('currentDecId');
         this.paymentService.isDecPaid(decId).subscribe(res => {
           console.log(res)
-          if (!decId) this.showBtnCustoms = false
+          // if (!decId) this.showBtnCustoms = false
           if (res?.isPaid) {
             this.showBtnCustoms = true
           }
-          else
-            this.showBtnCustoms = false
+          else {
+            // this.showBtnCustoms = false
+
+          }
         })
         this.customsDataService.GetSeq$('Customs').pipe(
           tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
@@ -356,16 +358,16 @@ export class DeclarationFormComponent implements OnInit {
       VersionID: this.formBuilder.control(''),
       // DeclarationOfficeID: this.formBuilder.control({ name: 'בית מכס נתב"ג', code: '4' }, Validators.required),
       DeclarationOfficeID: this.formBuilder.control('4'),
-     
+
       //TypeCode: this.formBuilder.control({ name: 'הצהרת יבוא ', code: '1' }),
       TypeCode: this.formBuilder.control('1'),
       //AutonomyRegionType: this.formBuilder.control({ name: '', code: '' }),
       //EntitlementTypeCode: this.formBuilder.control({ name: '', code: '' }),
-    
+
       //AcceptanceDateTime: this.formBuilder.control(''),
       Consignments: this.formBuilder.group({
-       ImporterID: this.formBuilder.control(localStorage.getItem('userId') || '2', Validators.required),
-       GovernmentProcedure: this.formBuilder.control({ name: 'יבוא מסחרי', code: '4000001' }),
+        ImporterID: this.formBuilder.control(localStorage.getItem('userId') || '2', Validators.required),
+        GovernmentProcedure: this.formBuilder.control({ name: 'יבוא מסחרי', code: '4000001' }),
 
         ExportationCountryCode: this.formBuilder.control('', Validators.required),
         LoadingLocation: this.formBuilder.control('', Validators.required),
@@ -385,8 +387,8 @@ export class DeclarationFormComponent implements OnInit {
         PackageMeasureQualifier: this.formBuilder.control('2'),
         //TypeCode: this.formBuilder.control({ name: 'Package, paper wrapped', code: 'PP' }),
         TypeCode: this.formBuilder.control('PP'),
-        TotalPackageQuantity: this.formBuilder.control(''),
-        GrossMassMeasure: this.formBuilder.control(''),
+        TotalPackageQuantity: this.formBuilder.control('', Validators.required),
+        GrossMassMeasure: this.formBuilder.control('', Validators.required),
         //MarksNumbers: this.formBuilder.control(''),
       }),
 
@@ -475,7 +477,6 @@ export class DeclarationFormComponent implements OnInit {
     } if (totalCustomsValueAmount) console.log(totalCustomsValueAmount);
 
     if (invoiceAmount && invoiceAmount !== totalCustomsValueAmount) {
-      debugger
       // return true;
       console.log('סה"כ ערכי טובין לא שווה לסה"כ חשבון');
       invoiceFormGroup.setErrors({ 'invoiceAmountMismatch': true });
@@ -547,7 +548,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   convertToDecObj(dec: any) {
-    dec.GovernmentProcedure = dec.GovernmentProcedure.code ? dec.GovernmentProcedure.code : dec.GovernmentProcedure
+    dec.GovernmentProcedure = dec.GovernmentProcedure?.code ? dec.GovernmentProcedure.code : dec.GovernmentProcedure
     dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID')
     const consignments = dec.Consignments;
 
@@ -577,7 +578,7 @@ export class DeclarationFormComponent implements OnInit {
       invoice.SupplierID = invoice.SupplierID?.code ?? invoice.SupplierID;
       invoice.TradeTermsConditionCode = invoice.TradeTermsConditionCode?.code ?? invoice.TradeTermsConditionCode;
       invoice.CurrencyCode = invoice.CurrencyCode?.code ?? invoice.CurrencyCode;
-
+      
       const customValuation = invoice.CustomsValuation ? invoice.CustomsValuation : null;
       if (customValuation) {
         customValuation.forEach((element: any) => {
@@ -692,7 +693,7 @@ export class DeclarationFormComponent implements OnInit {
     let currentDec: any;
     this.decService.getDeclaration(decId).subscribe(res => {
       console.log(res);
-      currentDec = res[0];
+      currentDec = res;
       if (currentDec) {
         // --general--
         this.generalDeclarationForm.patchValue({ 'AgentFileReferenceID': currentDec?.AgentFileReferenceID })
@@ -896,9 +897,9 @@ export class DeclarationFormComponent implements OnInit {
                   const minValue = control.errors?.['min'];
                   errors.push(`${fieldLabel}: חייב להכיל לפחות ${minValue.min}`);
                   break;
-                case 'minlength':
-                  errors.push(`${fieldLabel}: חייב להכיל לפחות ${control.errors ? control.errors['minlength'].requiredLength : null} תווים`);
-                  break;
+                //case 'minlength':
+                  //errors.push(`${fieldLabel}: חייב להכיל לפחות ${control.errors ? control.errors['minlength'].requiredLength : null} תווים`);
+                //  break;
                 // case 'maxlength':
                 //     errors.push(`${fieldLabel}: לא יכול להכיל יותר מ-${control.errors['maxlength'].requiredLength} תווים`);
                 //     break;

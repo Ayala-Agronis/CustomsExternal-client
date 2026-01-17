@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { StepService } from '../../shared/services/step.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,7 +14,7 @@ import { RouterModule } from '@angular/router';
 export class SidebarComponent {
   showSubmenu = false;
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private stepService: StepService) { }
 
   restart() {
     localStorage.setItem('currentDecId', '');
@@ -28,31 +29,32 @@ export class SidebarComponent {
     this.router.navigate(['/login']);
   }
 
- navigateToNewDeclaration(type: string) {
-  localStorage.setItem('currentDecId', '');
-  localStorage.setItem('CustomsStatus', '');
-  localStorage.setItem('activeIndex', '0');
-  localStorage.setItem('maxIndex', '0');
+  navigateToNewDeclaration(type: string) {
+    localStorage.setItem('currentDecId', '');
+    localStorage.setItem('CustomsStatus', '');
+    localStorage.setItem('activeIndex', '0');
+    localStorage.setItem('maxIndex', '0');
+    this.stepService.updateMaxIndex(0);
+    let path = '';
 
-  let path = '';
+    switch (type) {
+      case 'import':
+        path = 'dec-form';
+        break;
+      case 'transshipment':
+        path = 'dec-form-ts';
+        localStorage.setItem('decType', "tr")
+        break;
+      case 'export':
+        path = 'dec-form-export';
+        break;
+      default:
+        path = 'dec-form-ts';
+    }
 
-  switch (type) {
-    case 'import':
-      path = 'dec-form';
-      break;
-    case 'transshipment':
-      path = 'dec-form-ts';
-      break;
-    case 'export':
-      path = 'dec-form-export'; // אם תבני קומפוננטה כזו בהמשך
-      break;
-    default:
-      path = 'dec-form'; // ברירת מחדל
+    this.router.navigate([`declaration-main/${path}`], {
+      queryParams: { type }
+    });
   }
-
-  this.router.navigate([`declaration-main/${path}`], {
-    queryParams: { type }
-  });
-}
 
 }

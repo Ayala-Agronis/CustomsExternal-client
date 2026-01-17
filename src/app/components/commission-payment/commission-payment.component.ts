@@ -10,7 +10,7 @@ import { MessagesModule } from 'primeng/messages';
 @Component({
   selector: 'app-commission-payment',
   standalone: true,
-  imports: [CommonModule, SafeUrlPipe,MessagesModule],
+  imports: [CommonModule, SafeUrlPipe, MessagesModule],
   providers: [MessageService],
   templateUrl: './commission-payment.component.html',
   styleUrl: './commission-payment.component.scss'
@@ -25,10 +25,13 @@ export class CommissionPaymentComponent implements OnInit {
   confirmationCode: any;
 
   msgs1: Message[] = [];
+  typeDec: string = 'tr';
 
   constructor(private stepService: StepService, private router: Router, private route: ActivatedRoute, private paymentService: PaymentService, private renderer: Renderer2) { }
 
   ngOnInit(): void {
+    this.typeDec = localStorage.getItem('decType') || '';
+
     this.decId = localStorage.getItem('currentDecId');
     this.route.queryParams.subscribe(params => {
       const isFailed = params['fail'];
@@ -71,8 +74,15 @@ export class CommissionPaymentComponent implements OnInit {
 
   nextStep() {
     if (window.top) {
-      this.stepService.emitStepCompleted('dec-form');
-      window.top.location.href = '/declaration-main/dec-form?customsSend=true&Mode=e';
+      if (this.typeDec == 'tr') {
+        this.stepService.emitStepCompleted('dec-form-ts');
+        window.top.location.href = '/declaration-main/dec-form-ts?customsSend=true&Mode=e';
+      }
+      else {
+        this.stepService.emitStepCompleted('dec-form');
+        window.top.location.href = '/declaration-main/dec-form?customsSend=true&Mode=e';
+      }
+
     }
   }
 

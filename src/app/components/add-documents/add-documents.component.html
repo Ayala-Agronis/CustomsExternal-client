@@ -40,7 +40,7 @@
         </div> -->
         <div *ngIf="Object.keys(uploadedFilesByType).length > 0" class="file-list">
             <h4>מסמכים שהועלו</h4>
-    
+
             <div *ngFor="let type of Object.keys(uploadedFilesByType)">
                 <h5>{{ getDocumentTypeName(type) }}</h5>
                 <ul>
@@ -74,7 +74,7 @@
                 </ul>
             </div>
         </div>
-        
+
         <p-dialog header="צפייה במסמך" [(visible)]="displayDialog" [modal]="true"
             [style]="{width: '60vw', height: '70vh'}" [closable]="true">
             <iframe *ngIf="fileToView" [src]="fileToView" width="100%" height="100%"></iframe>
@@ -82,10 +82,14 @@
 
         <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
         <p-confirmDialog></p-confirmDialog>
-       
+
     </p-card>
     <div class="btns">
-        <button class="button-primary" (click)="nextStep()"> המשך</button>
+        <button class="button-primary" (click)="saveDocuments()" >
+            שמור
+        </button>
+        <!-- [pTooltip]="getDocumentsTooltip()" tooltipPosition="top"[disabled]="!canSaveDocuments()" [tooltipDisabled]="canSaveDocuments()" -->
         <button class="button-secondary" (click)="previousStep()"> חזור</button>
+        <button *ngIf="showBtnCustoms"  class="button-secondary" (click)="sendDecToCustoms()"> שלח למכס</button>
     </div>
 </div>

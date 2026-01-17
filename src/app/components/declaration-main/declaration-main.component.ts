@@ -22,7 +22,7 @@ export class DeclarationMainComponent implements OnInit {
     { label: 'הוספת מסמכים', icon: 'assets/steps/2.png', activeIcon: 'assets/steps/6.png' },
     { label: 'תשלום עמלה', icon: 'assets/steps/3.png', activeIcon: 'assets/steps/7.png' },
     { label: 'תשלום מיסים', icon: 'assets/steps/4.png', activeIcon: 'assets/steps/8.png' },
-    { label: 'קבלת התרה + תדפיס הצהרת יבוא', icon: 'assets/steps/5.png', activeIcon: 'assets/steps/9.png' }
+    { label: 'קבלת התרה + תדפיס הצהרה ', icon: 'assets/steps/5.png', activeIcon: 'assets/steps/9.png' }
   ];
 
   activeIndex: number = 0;
@@ -30,10 +30,13 @@ export class DeclarationMainComponent implements OnInit {
 
   currentStep = 0;
   maxIndex: number = 0;
+  typeDec: string = 'tr';
 
   constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef, private stepService: StepService, private userService: UserService, private customsDataService: CustomsDataService) { }
 
+
   ngOnInit(): void {
+    this.typeDec = localStorage.getItem('decType') || '';
     this.route.queryParams.subscribe(params => {
       this.mode = params['Mode'];
     })
@@ -41,21 +44,31 @@ export class DeclarationMainComponent implements OnInit {
     var savedIndex = localStorage.getItem('activeIndex');
     this.maxIndex = +(localStorage.getItem('maxIndex') || 0);
 
+    if (this.typeDec === 'tr') {
+      this.steps.splice(2, 2);
+    }
+
     if (!savedIndex) {
       savedIndex = '0'
-      this.router.navigate(['declaration-main/dec-form']);
+      if (this.typeDec == 'tr') {
+        this.router.navigate(['declaration-main/dec-form-ts']);
+
+      }
+      else {
+        this.router.navigate(['declaration-main/dec-form']);
+      }
     }
     else {
       this.activeIndex = +savedIndex;
       this.navigateBasedOnStep(null);
     }
 
-    this.stepService.maxIndex$.subscribe((index:any)=>{
+    this.stepService.maxIndex$.subscribe((index: any) => {
       this.maxIndex = index;
     })
 
     this.stepService.stepCompleted$.subscribe((data: any) => {
-      if (data.direction == 'dec-form') {
+      if (data.direction == 'dec-form' || data.direction == 'dec-form-ts') {
         this.activeIndex = 0
         localStorage.setItem('activeIndex', '0');
         this.cdRef.detectChanges();
@@ -91,7 +104,10 @@ export class DeclarationMainComponent implements OnInit {
 
             const userJson = JSON.stringify(res.body);
             localStorage.setItem('user', userJson);
-            this.router.navigate(['declaration-main/dec-form']);
+            if (this.typeDec === 'tr')
+              this.router.navigate(['declaration-main/dec-form-ts']);
+            else
+              this.router.navigate(['declaration-main/dec-form']);
           })
         });
 
@@ -116,13 +132,14 @@ export class DeclarationMainComponent implements OnInit {
   }
 
   nextStep(): void {
+    this.activeIndex = +(localStorage.getItem("activeIndex") || 0)
     if (this.activeIndex < this.steps.length - 1) {
 
-      if(this.activeIndex == this.maxIndex){
+      if (this.activeIndex == this.maxIndex) {
         this.maxIndex++;
-        localStorage.setItem('maxIndex',this.maxIndex.toString())
+        localStorage.setItem('maxIndex', this.maxIndex.toString())
       }
-      this.activeIndex++;    
+      this.activeIndex++;
       localStorage.setItem('activeIndex', this.activeIndex.toString());
       this.navigateBasedOnStep(null);
     }
@@ -137,11 +154,12 @@ export class DeclarationMainComponent implements OnInit {
   }
 
   navigateBasedOnStep(i: any): void {
-    if (i) {
+    if (i || i == 0) {
       this.activeIndex = i;
     }
 
     let navigationExtras: any = {};
+    localStorage.setItem("activeIndex", this.activeIndex.toString())
 
     if (this.mode === 'e' || this.activeIndex === 1) {
       navigationExtras.queryParams = { 'Mode': 'e' };
@@ -149,14 +167,19 @@ export class DeclarationMainComponent implements OnInit {
 
     if (this.activeIndex === 1) {
       this.router.navigate(['declaration-main/add-doc'], navigationExtras);
-    } else if (this.activeIndex === 2) {
-      this.router.navigate(['declaration-main/commission-payment'], navigationExtras);
-    } else if (this.activeIndex === 3) {
-      this.router.navigate(['declaration-main/independent-payment'], navigationExtras);
-    } else if (this.activeIndex === 4) {
+    }
+    // else if (this.activeIndex === 2) {
+    //   this.router.navigate(['declaration-main/commission-payment'], navigationExtras);
+    // } else if (this.activeIndex === 3) {
+    //   this.router.navigate(['declaration-main/independent-payment'], navigationExtras);
+    // } 
+    else if (this.activeIndex === 4) {
       this.router.navigate(['declaration-main/dec-print'], navigationExtras);
     } else if (this.activeIndex === 0) {
-      this.router.navigate(['declaration-main/dec-form'], navigationExtras);
+      if (this.typeDec === 'tr')
+        this.router.navigate(['declaration-main/dec-form-ts'], navigationExtras);
+      else
+        this.router.navigate(['declaration-main/dec-form'], navigationExtras);
     }
   }
 

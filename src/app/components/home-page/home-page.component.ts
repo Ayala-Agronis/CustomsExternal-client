@@ -6,6 +6,7 @@ import { MessageService, Message, MenuItem } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { MenuModule } from 'primeng/menu';
 import { MenubarModule } from 'primeng/menubar';
+import { StepService } from '../../shared/services/step.service';
 
 @Component({
   selector: 'app-home-page',
@@ -21,8 +22,9 @@ export class HomePageComponent implements OnInit {
   user: any;
   menuItems: MenuItem[] = [];
   isClientAuthorized = true
+  showButtonMenu: boolean = false;
 
-  constructor(private router: Router, private route: ActivatedRoute, private userService: UserService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private userService: UserService, private stepService: StepService) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
@@ -95,6 +97,39 @@ export class HomePageComponent implements OnInit {
     ];
   }
 
+  toggleButtonMenu() {
+    this.showButtonMenu = !this.showButtonMenu;
+  }
+
+  navigateToNewDeclaration(type: string) {
+    localStorage.setItem('currentDecId', '');
+    localStorage.setItem('CustomsStatus', '');
+    localStorage.setItem('activeIndex', '0');
+    localStorage.setItem('maxIndex', '0');
+    this.stepService.updateMaxIndex(0);
+    let path = '';
+
+    switch (type) {
+      case 'import':
+        path = 'dec-form';
+        break;
+      case 'transshipment':
+        path = 'dec-form-ts';
+        localStorage.setItem('decType', "tr")
+        break;
+      case 'export':
+        path = 'dec-form-export';
+        break;
+      default:
+        path = 'dec-form-ts';
+    }
+    console.log(path);
+
+    this.router.navigate([`declaration-main/${path}`], {
+      queryParams: { type }
+    });
+    // this.router.navigateByUrl(`/declaration-main/${path}?type=${type}`);
+  }
   navigate(destination: string) {
     if (destination == 'declaration-main') {
       localStorage.setItem("currentDecId", '')

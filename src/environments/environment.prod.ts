@@ -9,10 +9,13 @@ export const environment = {
   //azureBlobsUrl:"http://192.168.33.13:81/api/",
 
 
-  customsExternalApiUrl: "https://customsexternal20250624201845.azurewebsites.net/api/",
-  customsdbApiUrl:"https://customsdbapi20250623133149.azurewebsites.net/api/",
-  customsApiUrl:"https://customsapi20250623140858.azurewebsites.net/api/",
+  // customsExternalApiUrl: "https://customsexternal20250624201845.azurewebsites.net/api/",
+  // customsdbApiUrl:"https://customsdbapi20250623133149.azurewebsites.net/api/",
+  // customsApiUrl:"https://customsapi20250623140858.azurewebsites.net/api/",
   //customsWebServiceUrl:"https://localhost:7098/api/",נראה מיותר
+  customsApiUrl:"http://localhost:82/api/",
+  customsExternalApiUrl:"http://localhost:81/api/",
+  customsdbApiUrl:"http://localhost:83/api/",
   azureBlobsUrl:"https://azureblobs20250623143905.azurewebsites.net/api/",
 
 

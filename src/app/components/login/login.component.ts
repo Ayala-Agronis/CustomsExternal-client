@@ -38,6 +38,8 @@ export class LoginComponent implements AfterViewInit {
 
   @ViewChild('emailInput') emailInput!: ElementRef;
   @ViewChild('passwordInput') passwordInput!: ElementRef;
+  typeDec: string = 'tr';
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,
@@ -63,6 +65,8 @@ export class LoginComponent implements AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.typeDec = localStorage.getItem('decType') || '';
+
     const user = history.state.user;
     if (user) {
       this.loginForm.controls["Email"].patchValue(user.Email);
@@ -78,7 +82,6 @@ export class LoginComponent implements AfterViewInit {
       const emailInput = document.getElementById('email') as HTMLInputElement;
       const passInput = document.getElementById('password') as HTMLInputElement;
 
-      // לוודא שהערכים מתעדכנים ב־FormGroup גם כשמולאים אוטומטית
       if (emailInput?.value && emailCtrl) {
         emailCtrl.setValue(emailInput.value);
       }
@@ -87,16 +90,20 @@ export class LoginComponent implements AfterViewInit {
         passCtrl.setValue(passInput.value);
       }
 
-      // 💥 כאן החלק החדש – סגירת ה־Overlay של הסיסמה כדי שלא יחסום את הכפתור
       const overlayPanel = document.querySelector('.p-password-panel');
       if (overlayPanel) {
         (overlayPanel as HTMLElement).style.display = 'none';
       }
 
-      // עדכון הידני ל־Change Detection
       this.cd.detectChanges();
     }, 300);
   }
+
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
 
   loginWithGoogle(): void {
     const googleLoginUrl =
@@ -113,10 +120,10 @@ export class LoginComponent implements AfterViewInit {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.loading = true;
+      console.log("in login");
 
       this.userService.login(this.loginForm.value).subscribe({
         next: res => {
-          console.log('🔐 Token response:', res); // ✅ שורת בדיקה
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token);
             localStorage.setItem('isRegister', "true");
@@ -133,7 +140,7 @@ export class LoginComponent implements AfterViewInit {
             const user = res.body.user;
             this.mixpanel.identify(user.Id);
             this.mixpanel.setUserProperties({
-              $name: `${user.FirstName} ${user.LastName}`,  // שם מלא
+              $name: `${user.FirstName} ${user.LastName}`,
               $email: user.Email,
               customerType: user.CustomerType,
               mobile: user.Mobile
@@ -144,8 +151,12 @@ export class LoginComponent implements AfterViewInit {
             });
 
           }
+            this.router.navigate(['home-page']);
 
-          this.router.navigate(['declaration-main/dec-form']);
+          // if (this.typeDec == 'tr')
+          //   this.router.navigate(['declaration-main/dec-form-ts']);
+          // else
+          //   this.router.navigate(['declaration-main/dec-form']);
         },
 
         error: error => {
@@ -166,7 +177,7 @@ export class LoginComponent implements AfterViewInit {
               { severity: 'error', summary: '', detail: errorMessage },
             ];
 
-            this.loading = false; // 💥 עכשיו זה מתעדכן נכון
+            this.loading = false;
           });
         },
 

@@ -167,7 +167,7 @@ td {
 
 ::ng-deep.p-autocomplete-input,
 input {
-    height: 2.5rem !important;
+    height: 2rem !important;
 }
 
 ::ng-deep .dec-form .p-card .p-card-content {
@@ -245,7 +245,7 @@ input {
 ::ng-deep.p-button.p-button-icon-only {
     width: 1.5rem;
     height: 1.5rem;
-    margin-bottom: -1rem;
+    // margin-bottom: -1rem;
 }
 
 ::ng-deep .pi {
@@ -281,6 +281,7 @@ input {
     padding: 1rem;
     padding-top: 0% !important;
     margin-top: -1rem !important;
+    padding: 0.5rem;
 }
 
 ::ng-deep .p-card {
@@ -323,9 +324,8 @@ input {
 
 .supplierInvoices-container .right-side>.form-group>.form-item {
     flex: 0 0 calc(100% / 8 - 8px);
-    /* 8 עמודות עם ריווח */
-    max-width: 12.5%;
-    min-width: 110px;
+    max-width: 12%;
+    // min-width: 110px;
     box-sizing: border-box;
 }
 
