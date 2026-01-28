@@ -8,12 +8,47 @@ $color-7: #EC8305;
 $color-8: #092857;
 $color-9: #ECA305;
 $color-10: #b9e0ff;
-$color-11:#0066FF;
+$color-11: #0066FF;
 
 // ::ng-deep:root {
 //     --primary-color: $color8; 
 //     --primary-color-text: #ffffff; 
 // }
+
+// body, 
+// input, 
+// textarea, 
+// button, 
+// select, 
+// p, 
+// span, 
+// label {
+//   font-family: 'Rubik', sans-serif;
+// }
+
+// החל פונט רק על טקסטים, לא על אייקונים וכפתורים של ספריות
+body {
+  font-family: 'Rubik', sans-serif;
+}
+
+// טקסטים בלבד
+p, span, label, h1, h2, h3, h4, h5, h6, div {
+  font-family: 'Rubik', sans-serif;
+}
+
+// שדות קלט
+input:not([type="checkbox"]):not([type="radio"]), 
+textarea, 
+select {
+  font-family: 'Rubik', sans-serif;
+}
+
+// כפתורים שאינם של PrimeNG
+button:not(.p-button) {
+  font-family: 'Rubik', sans-serif;
+}
+
+
 
 .progress-spinner {
     position: fixed;
@@ -99,8 +134,8 @@ $color-11:#0066FF;
 
 ::ng-deep.p-column-filter-overlay {
     direction: rtl;
-  }
-  
+}
+
 .p-message.p-message-success .p-message-icon {
     display: none;
 }
