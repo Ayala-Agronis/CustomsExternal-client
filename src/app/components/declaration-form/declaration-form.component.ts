@@ -119,9 +119,18 @@ export class DeclarationFormComponent implements OnInit {
 
 
   ngOnInit(): void {
+
+
     this.route.queryParams.subscribe(params => {
       this.mode = params['Mode'];
       this.declarationType = params['type'] || 'import';
+
+
+      // ✅ הזז את זה לכאן - בתוך ה-subscribe
+      if (this.mode === 'e') {
+        this.loading = true; // ✅ הפעל spinner רק אם זה עריכה
+      }
+
       if (this.mode !== 'e') {
         this.initForm()
         this.customsError = ''
@@ -578,7 +587,7 @@ export class DeclarationFormComponent implements OnInit {
       invoice.SupplierID = invoice.SupplierID?.code ?? invoice.SupplierID;
       invoice.TradeTermsConditionCode = invoice.TradeTermsConditionCode?.code ?? invoice.TradeTermsConditionCode;
       invoice.CurrencyCode = invoice.CurrencyCode?.code ?? invoice.CurrencyCode;
-      
+
       const customValuation = invoice.CustomsValuation ? invoice.CustomsValuation : null;
       if (customValuation) {
         customValuation.forEach((element: any) => {
@@ -632,6 +641,8 @@ export class DeclarationFormComponent implements OnInit {
         console.log(res);
         localStorage.setItem('currentDecId', res.body?.Id)
         localStorage.setItem('currentDec', res.body)
+        this.loading = false; // ✅ הוסף כאן
+
         this.stepService.emitStepCompleted('+');
       })
     }
@@ -639,6 +650,8 @@ export class DeclarationFormComponent implements OnInit {
 
       this.decService.updateDeclaration$(perfectDec.Id, perfectDec).subscribe((res: any) => {
         console.log(res);
+        this.loading = false; // ✅ הוסף כאן
+
         this.stepService.emitStepCompleted('+');
       });
     }
@@ -689,11 +702,20 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   initElements() {
+    debugger;
+        this.loading = true;
+
     const decId = localStorage.getItem('currentDecId');
     let currentDec: any;
     this.decService.getDeclaration(decId).subscribe(res => {
       console.log(res);
       currentDec = res;
+
+      if (!currentDec) {
+        this.loading = false;
+        return;
+      }
+
       if (currentDec) {
         // --general--
         this.generalDeclarationForm.patchValue({ 'AgentFileReferenceID': currentDec?.AgentFileReferenceID })
@@ -834,6 +856,8 @@ export class DeclarationFormComponent implements OnInit {
           }
         });
       }
+
+      this.loading = false; // ✅ כבה את ה-loading בסוף
     });
   }
 
@@ -898,7 +922,7 @@ export class DeclarationFormComponent implements OnInit {
                   errors.push(`${fieldLabel}: חייב להכיל לפחות ${minValue.min}`);
                   break;
                 //case 'minlength':
-                  //errors.push(`${fieldLabel}: חייב להכיל לפחות ${control.errors ? control.errors['minlength'].requiredLength : null} תווים`);
+                //errors.push(`${fieldLabel}: חייב להכיל לפחות ${control.errors ? control.errors['minlength'].requiredLength : null} תווים`);
                 //  break;
                 // case 'maxlength':
                 //     errors.push(`${fieldLabel}: לא יכול להכיל יותר מ-${control.errors['maxlength'].requiredLength} תווים`);
