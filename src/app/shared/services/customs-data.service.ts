@@ -24,12 +24,27 @@ export class CustomsDataService {
     return this.http.get<any>(`${apiConfig.customsdbApiUrl}GetSeq/${type}`);
   }
 
+  // GetClient$(ID: any): Observable<any> {
+  //   let body = new HttpParams()
+  //     .set('Id', ID)
+  //     .set('Passport', '')
+
+  //   return this.http.post(`${apiConfig.customsApiUrl}ImporterDetails`,
+  //     body.toString(),
+  //     {
+  //       headers: new HttpHeaders()
+  //         .set('Content-Type', 'application/x-www-form-urlencoded')
+  //     }
+  //   );
+  // }
+
   GetClient$(ID: any): Observable<any> {
     let body = new HttpParams()
       .set('Id', ID)
       .set('Passport', '')
 
-    return this.http.post(`${apiConfig.customsApiUrl}ImporterDetails`,
+    return this.http.post(
+      `${apiConfig.customsApiUrl}ImporterDetails/ImporterDetailsAsync`,
       body.toString(),
       {
         headers: new HttpHeaders()
