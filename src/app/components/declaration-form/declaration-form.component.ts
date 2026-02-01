@@ -702,7 +702,6 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   initElements() {
-    debugger;
         this.loading = true;
 
     const decId = localStorage.getItem('currentDecId');
