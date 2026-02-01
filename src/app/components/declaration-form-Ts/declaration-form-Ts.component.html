@@ -558,7 +558,7 @@
     <div class="btns">
         <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
         <button [disabled]="generalDeclarationForm.invalid ||suplierErrorExist" class="button-primary"
-            (click)="saveDeclaration()" pTooltip="{{ getFormErrors(false) }}" tooltipPosition="top"
+            (click)="saveDeclaration()" pTooltip="{{ formErrorsMessage }}" tooltipPosition="top"
             [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
 
         <button [disabled]="generalDeclarationForm.invalid"

@@ -111,6 +111,7 @@ export class DeclarationFormTsComponent implements OnInit {
   msgs1: Message[] = [];
   customsErrorsContent: any;
   customsError: any;
+  formErrorsMessage: string = '';
 
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
@@ -253,6 +254,13 @@ export class DeclarationFormTsComponent implements OnInit {
     console.time('initForm (global)');
     this.initForm();
     console.timeEnd('initForm (global)');
+
+    this.deferFormErrorsMessageUpdate();
+    this.generalDeclarationForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.deferFormErrorsMessageUpdate();
+      });
 
     /* =========================
        loadClassificationData
@@ -852,7 +860,7 @@ export class DeclarationFormTsComponent implements OnInit {
 
 
         ExportationCountryCode2: this.formBuilder.control({ name: 'ישראל', code: 'IL' }),
-        LoadingLocation2: this.formBuilder.control('', Validators.required),
+        LoadingLocation2: this.formBuilder.control({ value: '', disabled: true }, Validators.required),
         // LoadingLocation: this.formBuilder.control({value: '', disabled: this.exportationCountryControlError}, Validators.required),
         UnloadingLocationID2: this.formBuilder.control('', Validators.required),
         TransportContractDocumentTypeCode2: this.formBuilder.control({ name: 'שטר מטען אווירי יצוא', code: '16' }, Validators.required),
@@ -886,8 +894,6 @@ export class DeclarationFormTsComponent implements OnInit {
 
   }
   ngAfterViewInit() {
-    this.generalDeclarationForm.get('Consignments.LoadingLocation2')?.disable();
-
     const consignmentGroup = this.generalDeclarationForm.get('Consignments') as FormGroup;
 
     // רשימת השדות שמועתקים כפי שהם (ללא שינוי)
@@ -1686,9 +1692,23 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   getFormErrors(checkInvoice: boolean) {
+    const message = this.buildFormErrors(checkInvoice, true);
+    if (checkInvoice) {
+      this.deferFormErrorsMessageUpdate();
+    }
+    return message;
+  }
+
+  private deferFormErrorsMessageUpdate() {
+    Promise.resolve().then(() => {
+      this.formErrorsMessage = this.buildFormErrors(false, false);
+    });
+  }
+
+  private buildFormErrors(checkInvoice: boolean, updateSupplierState: boolean) {
     let errors: string[] = [];
 
-    if (checkInvoice) {
+    if (checkInvoice && updateSupplierState) {
       const checkSupplierInvoiceConsistency = (invoice: FormGroup, parentKey: string) => {
         const invoiceAmount = invoice.get('InvoiceAmount')?.value;
         const supplierInvoiceItems = invoice.get('SupplierInvoiceItems') as FormArray;
