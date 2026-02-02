@@ -658,6 +658,15 @@ export class DeclarationFormTsComponent implements OnInit {
       this.generalDeclarationForm.disable();
     }
 
+    // ✅ קודם כל - בנה את ה-Maps מהנתונים הקיימים
+    this.declarationChargingCountry?.forEach((item: any) =>
+      this.chargingCountryMap.set(item.code, item)
+    );
+
+    this.declarationCountryOfExport?.forEach((item: any) =>
+      this.countryMap.set(item.code, item)
+    );
+
     // ✅ עדכון כללי - בלוק אחד
     this.generalDeclarationForm.patchValue({
       AgentFileReferenceID: currentDec.AgentFileReferenceID,
@@ -685,6 +694,9 @@ export class DeclarationFormTsComponent implements OnInit {
     const currentConsignment = currentDec.ConsignmentPackagesMeasures?.[0]?.Consignments;
 
     if (currentConsignment) {
+
+      // ✅ סדר חשוב: קודם סט את ה-ExportationCountryCode, אחר כך הפעל פילטר
+
       const consignmentForm = this.generalDeclarationForm.get('Consignments');
 
       // // ✅ בדוק אם למפות יש את הנתונים
@@ -714,9 +726,34 @@ export class DeclarationFormTsComponent implements OnInit {
       //   ThirdCargoID: currentConsignment.ThirdCargoID,
       //   ArrivalDateTime: new Date(currentConsignment.ArrivalDateTime)
       // }, { emitEvent: false });
+      //   consignmentForm?.patchValue({
+      //     ExportationCountryCode: this.countryMap.get(currentConsignment.ExportationCountryCode) ||
+      //       { code: currentConsignment.ExportationCountryCode, name: currentConsignment.ExportationCountryCode },
+      //     LoadingLocation: this.chargingCountryMap.get(currentConsignment.LoadingLocation) ||
+      //       { code: currentConsignment.LoadingLocation, name: currentConsignment.LoadingLocation },
+      //     UnloadingLocationID: this.unpackingSiteMap.get(currentConsignment.UnloadingLocationID) ||
+      //       { code: currentConsignment.UnloadingLocationID, name: currentConsignment.UnloadingLocationID },
+      //     TransportContractDocumentTypeCode: this.cargoTypeMap.get(currentConsignment.TransportContractDocumentTypeCode),
+      //     FacilityType: this.facilityMap.get(
+      //       currentConsignment.ConsignmentRegisteredFacilities?.find((f: any) => f.FacilityType === "004")?.FacilityID
+      //     ),
+      //     CargoDescription: currentConsignment.CargoDescription,
+      //     TransportContractDocumentID: currentConsignment.TransportContractDocumentID,
+      //     SecondCargoID: currentConsignment.SecondCargoID,
+      //     ThirdCargoID: currentConsignment.ThirdCargoID,
+      //     ArrivalDateTime: new Date(currentConsignment.ArrivalDateTime)
+      //   }, { emitEvent: false });
+      // }
       consignmentForm?.patchValue({
         ExportationCountryCode: this.countryMap.get(currentConsignment.ExportationCountryCode) ||
           { code: currentConsignment.ExportationCountryCode, name: currentConsignment.ExportationCountryCode },
+      }, { emitEvent: false });
+
+      // ✅ עכשיו בנה את הפילטר
+      this.filterChargingCountryByExportCode('import');
+
+      // ✅ ואחר כך סט את LoadingLocation
+      consignmentForm?.patchValue({
         LoadingLocation: this.chargingCountryMap.get(currentConsignment.LoadingLocation) ||
           { code: currentConsignment.LoadingLocation, name: currentConsignment.LoadingLocation },
         UnloadingLocationID: this.unpackingSiteMap.get(currentConsignment.UnloadingLocationID) ||
@@ -732,7 +769,6 @@ export class DeclarationFormTsComponent implements OnInit {
         ArrivalDateTime: new Date(currentConsignment.ArrivalDateTime)
       }, { emitEvent: false });
     }
-
 
     // ✅ Export Consignment
     const currentConsignmentExport = currentDec.ConsignmentPackagesMeasures?.[1]?.Consignments;
