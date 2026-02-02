@@ -1398,6 +1398,12 @@ export class DeclarationFormTsComponent implements OnInit {
     supplierInvoicesFormArray.at(0).get("BuyerIssueLocation")?.patchValue({ code: event?.value?.code, name: event?.value?.name })
 
     this.filterUnpackingSiteByDestinationCountry(event?.value?.code || code);
+
+    // ✅ נקה את שדה נמל הפריקה במשגור יצוא!
+    const consignmentForm = this.generalDeclarationForm.get('Consignments');
+    consignmentForm?.patchValue({
+      UnloadingLocationID2: { code: '', name: '' }  // ✅ ניקוי השדה!
+    });
     this.generalDeclarationForm.patchValue({
       RecipientIssueLocation: { code: event?.value?.code, name: event?.value?.name }
     });
