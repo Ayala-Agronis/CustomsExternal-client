@@ -819,6 +819,8 @@ import { CommonModule } from '@angular/common';
 import { Message } from 'primeng/api';
 import { DocumentService } from '../../shared/services/document.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { StepService } from '../../shared/services/step.service';
+
 
 
 @Component({
@@ -869,7 +871,8 @@ export class AddDocumentsComponent {
 
   constructor(
     private documentsService: DocumentService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private stepService: StepService
   ) { }
 
   ngOnInit(): void {
@@ -899,10 +902,30 @@ export class AddDocumentsComponent {
         next: res => {
           this.documents = res;
           this.loading = false;
+          // ✅ בדוק אם אין מסמכים
+          if (!this.documents || this.documents.length === 0) {
+            this.msgs1 = [
+              {
+                severity: 'info',
+                summary: 'מסמכי הצהרה',
+                detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
+
+              }
+            ];
+          }
         },
         error: _ => {
           this.documents = [];
           this.loading = false;
+          // ✅ בודא הודעה בשגיאה
+          this.msgs1 = [
+            {
+              severity: 'error',
+              summary: 'מסמכי הצהרה',
+              detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
+
+            }
+          ];
         }
       });
   }
@@ -1031,6 +1054,14 @@ export class AddDocumentsComponent {
 
   goBack() {
     window.history.back();
+  }
+
+  nextStep() {
+    this.stepService.emitStepCompleted('+');
+  }
+
+  previousStep() {
+    this.stepService.emitStepCompleted('-');
   }
 
 }
