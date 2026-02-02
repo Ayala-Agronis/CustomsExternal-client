@@ -378,10 +378,32 @@ export class DeclarationFormTsComponent implements OnInit {
         code: i.Value1,
         siteType: i.Value7
       })),
+      // ...existing code...
+
       suppliers: this.customsDataService.getVendor$().pipe(
+        tap(res => {
+          console.group('🏪 SUPPLIERS API RESPONSE');
+          console.log('📊 Total suppliers:', res.length);
+          console.log('🔍 First 3 suppliers:', res.slice(0, 3));
+
+          const targetSupplier = res.find((s: any) =>
+            s.VendorID === '2056009' || s.VendorID === 2056009
+          );
+
+          console.log('🎯 Looking for supplier 2056009:', targetSupplier);
+
+          if (res[0]) {
+            console.log('📋 Supplier object structure:', {
+              keys: Object.keys(res[0]),
+              sample: res[0]
+            });
+          }
+
+          console.groupEnd();
+        }),
         map(res => res.map((i: any) => ({
           name: i.VendorName,
-          code: i.VendorID
+          code: String(i.VendorID)  // ✅ המרה ל-string!
         })))
       ),
       // ✅ הוסף טעינת ההצהרה במקביל!
@@ -395,8 +417,46 @@ export class DeclarationFormTsComponent implements OnInit {
 
 
         console.time('assign TABLES');
-
         this.buildMaps(res);
+
+
+        // ✅✅✅ הדפס את כל הנתונים מהשרת:
+        console.group('🔍 SERVER DATA INSPECTION');
+
+        if (res.declaration) {
+          console.log('📦 Declaration from server:', res.declaration);
+          console.log('🏢 SupplierInvoices:', res.declaration.SupplierInvoices);
+          console.log('📍 Consignments:', res.declaration.ConsignmentPackagesMeasures);
+
+          // בדיקת נמל פריקה ייצוא
+          const exportConsignment = res.declaration.ConsignmentPackagesMeasures?.[1]?.Consignments;
+          if (exportConsignment) {
+            console.log('🚢 Export Consignment UnloadingLocationID:', {
+              value: exportConsignment.UnloadingLocationID,
+              exists_in_unpackingSiteMap: this.unpackingSiteMap.has(exportConsignment.UnloadingLocationID),
+              exists_in_chargingCountryMap: this.chargingCountryMap.has(exportConsignment.UnloadingLocationID)
+            });
+          }
+
+          // בדיקת ספקים
+          if (res.declaration.SupplierInvoices?.[0]) {
+            const firstInvoice = res.declaration.SupplierInvoices[0];
+            console.log('👤 First Supplier:', {
+              SupplierID: firstInvoice.SupplierID,
+              exists_in_supplierMap: this.supplierMap.has(firstInvoice.SupplierID),
+              supplier_from_map: this.supplierMap.get(firstInvoice.SupplierID)
+            });
+          }
+        }
+
+        console.log('🗺️ Map sizes:', {
+          supplierMap: this.supplierMap.size,
+          chargingCountryMap: this.chargingCountryMap.size,
+          unpackingSiteMap: this.unpackingSiteMap.size,
+          countryMap: this.countryMap.size
+        });
+
+        console.groupEnd();
 
         console.timeEnd('assign TABLES');
 
@@ -535,9 +595,9 @@ export class DeclarationFormTsComponent implements OnInit {
       this.facilityMap.set(item.code, item)
     );
 
-    // ספקים
+    // ✅ ספקים - המרה ל-string
     data.suppliers?.forEach((item: any) =>
-      this.supplierMap.set(item.code, item)
+      this.supplierMap.set(String(item.code), item)
     );
 
     // תנאי מסחר
@@ -563,6 +623,16 @@ export class DeclarationFormTsComponent implements OnInit {
     // קודי תפקיד
     data.declarationRoleCode?.forEach((item: any) =>
       this.roleCodeMap.set(item.code, item)
+    );
+
+    // אתרי פריקה לייצוא
+    this.declarationUnpackingSite2?.forEach((item: any) =>
+      this.unpackingSiteMap.set(item.code, item)
+    );
+
+    // ✅ הוסף את זה - אתרי פריקה (נוסף גם ל-unpackingSiteMap)
+    data.recipientCountries?.forEach((item: any) =>
+      this.chargingCountryMap.set(item.code, item)
     );
 
     console.timeEnd('🗺️ Building Maps');
@@ -605,30 +675,53 @@ export class DeclarationFormTsComponent implements OnInit {
 
     localStorage.setItem('AgentFileReferenceID', currentDec.AgentFileReferenceID);
 
+
+    // ✅ קודם כל עדכן את declarationUnpackingSite2 (לפני Consignment!)
+    if (currentDec.DestinationCountry) {
+      this.filterUnpackingSiteByDestinationCountry(currentDec.DestinationCountry);
+    }
+
     // ✅ Consignment
     const currentConsignment = currentDec.ConsignmentPackagesMeasures?.[0]?.Consignments;
 
     if (currentConsignment) {
       const consignmentForm = this.generalDeclarationForm.get('Consignments');
 
-      // ✅ בדוק אם למפות יש את הנתונים
-      const exportCountryObj = this.countryMap.get(currentConsignment.ExportationCountryCode) ||
-        { code: currentConsignment.ExportationCountryCode, name: currentConsignment.ExportationCountryCode };
+      // // ✅ בדוק אם למפות יש את הנתונים
+      // const exportCountryObj = this.countryMap.get(currentConsignment.ExportationCountryCode) ||
+      //   { code: currentConsignment.ExportationCountryCode, name: currentConsignment.ExportationCountryCode };
 
-      const chargingCountryObj = this.chargingCountryMap.get(currentConsignment.LoadingLocation) ||
-        { code: currentConsignment.LoadingLocation, name: currentConsignment.LoadingLocation };
+      // const chargingCountryObj = this.chargingCountryMap.get(currentConsignment.LoadingLocation) ||
+      //   { code: currentConsignment.LoadingLocation, name: currentConsignment.LoadingLocation };
 
-      const unpackingSiteObj = this.unpackingSiteMap.get(currentConsignment.UnloadingLocationID) ||
-        { code: currentConsignment.UnloadingLocationID, name: currentConsignment.UnloadingLocationID };
+      // const unpackingSiteObj = this.unpackingSiteMap.get(currentConsignment.UnloadingLocationID) ||
+      //   { code: currentConsignment.UnloadingLocationID, name: currentConsignment.UnloadingLocationID };
 
-      const cargoTypeObj = this.cargoTypeMap.get(currentConsignment.TransportContractDocumentTypeCode) ||
-        { code: currentConsignment.TransportContractDocumentTypeCode, name: currentConsignment.TransportContractDocumentTypeCode };
+      // const cargoTypeObj = this.cargoTypeMap.get(currentConsignment.TransportContractDocumentTypeCode) ||
+      //   { code: currentConsignment.TransportContractDocumentTypeCode, name: currentConsignment.TransportContractDocumentTypeCode };
 
+      // consignmentForm?.patchValue({
+      //   ExportationCountryCode: exportCountryObj,
+      //   LoadingLocation: chargingCountryObj,
+      //   UnloadingLocationID: unpackingSiteObj,
+      //   TransportContractDocumentTypeCode: cargoTypeObj,
+      //   FacilityType: this.facilityMap.get(
+      //     currentConsignment.ConsignmentRegisteredFacilities?.find((f: any) => f.FacilityType === "004")?.FacilityID
+      //   ),
+      //   CargoDescription: currentConsignment.CargoDescription,
+      //   TransportContractDocumentID: currentConsignment.TransportContractDocumentID,
+      //   SecondCargoID: currentConsignment.SecondCargoID,
+      //   ThirdCargoID: currentConsignment.ThirdCargoID,
+      //   ArrivalDateTime: new Date(currentConsignment.ArrivalDateTime)
+      // }, { emitEvent: false });
       consignmentForm?.patchValue({
-        ExportationCountryCode: exportCountryObj,
-        LoadingLocation: chargingCountryObj,
-        UnloadingLocationID: unpackingSiteObj,
-        TransportContractDocumentTypeCode: cargoTypeObj,
+        ExportationCountryCode: this.countryMap.get(currentConsignment.ExportationCountryCode) ||
+          { code: currentConsignment.ExportationCountryCode, name: currentConsignment.ExportationCountryCode },
+        LoadingLocation: this.chargingCountryMap.get(currentConsignment.LoadingLocation) ||
+          { code: currentConsignment.LoadingLocation, name: currentConsignment.LoadingLocation },
+        UnloadingLocationID: this.unpackingSiteMap.get(currentConsignment.UnloadingLocationID) ||
+          { code: currentConsignment.UnloadingLocationID, name: currentConsignment.UnloadingLocationID },
+        TransportContractDocumentTypeCode: this.cargoTypeMap.get(currentConsignment.TransportContractDocumentTypeCode),
         FacilityType: this.facilityMap.get(
           currentConsignment.ConsignmentRegisteredFacilities?.find((f: any) => f.FacilityType === "004")?.FacilityID
         ),
@@ -645,10 +738,18 @@ export class DeclarationFormTsComponent implements OnInit {
     const currentConsignmentExport = currentDec.ConsignmentPackagesMeasures?.[1]?.Consignments;
 
     if (currentConsignmentExport) {
+      // ✅ עדכן את הפילטר גם לייצוא
+      if (currentConsignmentExport.ExportationCountryCode) {
+        this.filterChargingCountryByExportCode('export');
+      }
       this.generalDeclarationForm.get('Consignments')?.patchValue({
         ExportationCountryCode2: this.countryMap.get(currentConsignmentExport.ExportationCountryCode),
         LoadingLocation2: this.chargingCountryMap.get(currentConsignmentExport.LoadingLocation),
-        UnloadingLocationID2: this.unpackingSiteMap.get(currentConsignmentExport.UnloadingLocationID),
+        // ✅ תיקון פה - השתמש ב-chargingCountryMap במקום unpackingSiteMap!
+        UnloadingLocationID2: this.chargingCountryMap.get(currentConsignmentExport.UnloadingLocationID) ||
+          { code: currentConsignmentExport.UnloadingLocationID, name: currentConsignmentExport.UnloadingLocationID },
+
+        // UnloadingLocationID2: this.unpackingSiteMap.get(currentConsignmentExport.UnloadingLocationID),
         TransportContractDocumentTypeCode2: this.cargoTypeMap.get(currentConsignmentExport.TransportContractDocumentTypeCode),
         FacilityType2: this.facilityMap.get(
           currentConsignmentExport.ConsignmentRegisteredFacilities?.find((f: any) => f.FacilityType === "004")?.FacilityID
@@ -679,7 +780,10 @@ export class DeclarationFormTsComponent implements OnInit {
       const invoiceGroup = this.formBuilder.group({
         Id: [invoice.Id],
         InvoiceNumber: [invoice.InvoiceNumber, Validators.required],
-        SupplierID: [this.supplierMap.get(invoice.SupplierID), Validators.required],
+        // SupplierID: [this.supplierMap.get(invoice.SupplierID), Validators.required],
+        // ✅ המרה ל-string גם כאן!
+        SupplierID: [this.supplierMap.get(String(invoice.SupplierID)) ||
+          { code: String(invoice.SupplierID), name: invoice.SupplierID }, Validators.required],
         CurrencyCode: [this.currencyMap.get(invoice.CurrencyCode), Validators.required],
         LocationID: [this.countryMap.get(invoice.LocationID), Validators.required],
         TradeTermsConditionCode: [this.tradeTermsMap.get(invoice.TradeTermsConditionCode), Validators.required],
