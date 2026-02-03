@@ -24,7 +24,7 @@
             <tr>
                 <td *ngFor="let col of columns">
                     <ng-container *ngIf="col.field==='FileName'; else regular">
-                        <a (click)="viewExistingFile(rowData)">{{ rowData[col.field] }}</a>
+                        <a class="file-link" (click)="viewExistingFile(rowData)">{{ rowData[col.field] }}</a>
                     </ng-container>
                     <ng-template #regular>
                         <ng-container *ngIf="col.field==='Code'">
@@ -93,9 +93,11 @@
         <h5>{{ getDocumentTypeName(entry.key) }} (חדש)</h5>
         <ul>
             <li *ngFor="let file of entry.value; let i = index">
-                <span>{{ file.name }}</span>
-                <button (click)="removeFile(entry.key, i)">X</button>
-                <button (click)="viewNewFile(file)">צפה</button>
+                <!-- <span>{{ file.name }}</span> -->
+                <!-- <button (click)="removeFile(entry.key, i)">X</button> -->
+                <!-- <button (click)="viewNewFile(file)">צפה</button> -->
+                <a class="file-link" (click)="viewNewFile(file)">{{ file.name }}</a>
+
             </li>
         </ul>
     </div>
