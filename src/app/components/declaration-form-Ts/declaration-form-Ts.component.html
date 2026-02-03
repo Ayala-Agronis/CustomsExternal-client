@@ -57,7 +57,8 @@
                     <p-autoComplete [forceSelection]="true" formControlName="RecipientIssueLocation"
                         [suggestions]="filteredRecipientCountries" (completeMethod)="filterRecipientCountries($event)"
                         (onDropdownClick)="onRecipientDropdownClick()" field="name" [forceSelection]="true"
-                        [dropdown]="true" placeholder="בחר מדינה" (onSelect)="onRecipientIssueLocationSelect($event)">
+                        [dropdown]="true" placeholder="בחר מדינה" 
+                        >
                     </p-autoComplete>
                 </div>
             </div>
