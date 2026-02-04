@@ -251,6 +251,13 @@ export class DeclarationFormTsComponent implements OnInit {
       this.sendToCustoms = params['Send'];
       this.declarationType = params['type'] || 'import';
 
+      // ✅ טיפול במצב העתקה
+      if (this.mode === 'copy') {
+        this.loading = true;
+        this.loadAndCopyDeclaration();
+        return;
+      }
+
       console.log('mode/send/type', {
         mode: this.mode,
         sendToCustoms: this.sendToCustoms,
@@ -1176,7 +1183,7 @@ export class DeclarationFormTsComponent implements OnInit {
         TypeCode: this.formBuilder.control({ name: 'Package, paper wrapped', code: 'PP' }),
         // TypeCode: this.formBuilder.control('PP'),
         TotalPackageQuantity: this.formBuilder.control('', Validators.required),
-        GrossMassMeasure: this.formBuilder.control('', Validators.required),
+        GrossMassMeasure: this.formBuilder.control(''),
         //MarksNumbers: this.formBuilder.control(''),
       }),
 
@@ -1440,7 +1447,7 @@ export class DeclarationFormTsComponent implements OnInit {
     consignmentForm?.patchValue({
       UnloadingLocationID2: { code: '', name: '' }  // ✅ ניקוי השדה!
     });
-    
+
     this.generalDeclarationForm.patchValue({
       RecipientIssueLocation: { code: event?.value?.code, name: event?.value?.name }
     });
@@ -2354,5 +2361,141 @@ export class DeclarationFormTsComponent implements OnInit {
     else return "לא תקין"
   }
 
+  // copyDeclaration() {
+  //   this.loading = true;
+
+  //   // שמור את הנתונים הנוכחיים
+  //   const currentFormValue = this.generalDeclarationForm.getRawValue();
+
+  //   // נקה את שדות המטען
+  //   const copiedData = {
+  //     ...currentFormValue,
+  //     Consignments: {
+  //       ...currentFormValue.Consignments,
+  //       // משגור יבוא - ניקוי שדות
+  //       TransportContractDocumentID: '',
+  //       SecondCargoID: '',
+  //       ThirdCargoID: '',
+  //       // משגור יצוא - ניקוי שדות
+  //       TransportContractDocumentID2: '',
+  //       SecondCargoID2: '',
+  //       ThirdCargoID2: ''
+  //     }
+  //   };
+
+  //   // המרה לאובייקט מושלם
+  //   const perfectDec = this.convertToDecObj(copiedData);
+
+  //   // הסר את ה-ID כדי ליצור הצהרה חדשה
+  //   delete perfectDec.Id;
+  //   delete perfectDec.DeclarationNumber;
+  //   delete perfectDec.VersionID;
+  //   perfectDec.CustomsStatus = null;
+
+  //   // יצירת הצהרה חדשה
+  //   this.decService.sendDeclarationToInternal(perfectDec).subscribe({
+  //     next: (res: any) => {
+  //       console.log('✅ Declaration copied:', res);
+  //       localStorage.setItem('currentDecId', res.body?.Id);
+
+  //       // ניווט להצהרה החדשה במצב עריכה
+  //       this.router.navigate(['/declaration-main/dec-form-ts'], {
+  //         queryParams: {
+  //           Mode: 'e',
+  //           type: this.declarationType
+  //         }
+  //       }).then(() => {
+  //         this.loading = false;
+  //         this.msgs1 = [{
+  //           severity: 'success',
+  //           summary: 'הצלחה',
+  //           detail: 'ההצהרה הועתקה בהצלחה'
+  //         }];
+  //       });
+  //     },
+  //     error: (err) => {
+  //       console.error('❌ Copy failed:', err);
+  //       this.loading = false;
+  //       this.msgs1 = [{
+  //         severity: 'error',
+  //         summary: 'שגיאה',
+  //         detail: 'העתקת ההצהרה נכשלה'
+  //       }];
+  //     }
+  //   });
+  // }
+
+  copyDeclaration() {
+    const currentFormValue = this.generalDeclarationForm.getRawValue();
+
+    const copiedData = {
+      ...currentFormValue,
+      Consignments: {
+        ...currentFormValue.Consignments,
+        TransportContractDocumentID: '',
+        SecondCargoID: '',
+        ThirdCargoID: '',
+        TransportContractDocumentID2: '',
+        SecondCargoID2: '',
+        ThirdCargoID2: ''
+      }
+    };
+
+    this.generalDeclarationForm.patchValue({
+      Id: null,
+      DeclarationNumber: '',
+      VersionID: '',
+      CustomsStatus: null,
+      AgentFileReferenceID: ''  // ✅ הוסף את זה!
+    });
+
+    this.generalDeclarationForm.patchValue(copiedData);
+
+    localStorage.removeItem('currentDecId');
+    // ✅ הוסף גם את זה:
+    localStorage.removeItem('AgentFileReferenceID');
+
+    this.mode = 'n';
+
+    // ✅ צור מספר תיק חדש מהשרת
+    this.customsDataService.GetSeq$('Customs').subscribe(res => {
+      localStorage.setItem('AgentFileReferenceID', res);
+      this.generalDeclarationForm.patchValue({
+        AgentFileReferenceID: res
+      });
+    });
+
+    this.msgs1 = [{
+      severity: 'success',
+      summary: 'success',
+      detail: 'ההצהרה הועתקה - לחץ "המשך" כדי לשמור'
+    }];
+  }
+
+  // ✅ פונקציה חדשה לטעינה והעתקה אוטומטית
+  private loadAndCopyDeclaration() {
+    const decId = localStorage.getItem('currentDecId');
+
+    if (!decId) {
+      this.loading = false;
+      return;
+    }
+
+    this.decService.getDeclaration(decId).subscribe(res => {
+      if (!res) {
+        this.loading = false;
+        return;
+      }
+
+      // ✅ טען את הנתונים לטופס (השתמש בפונקציה הקיימת)
+      this.initElementsWithData(res);
+
+      // ✅ אחרי הטעינה - הפעל את פונקצ העתקה
+      setTimeout(() => {
+        this.copyDeclaration();
+        localStorage.removeItem('copyMode');
+      }, 500);
+    });
+  }
 
 }

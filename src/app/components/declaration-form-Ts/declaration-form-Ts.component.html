@@ -57,8 +57,7 @@
                     <p-autoComplete [forceSelection]="true" formControlName="RecipientIssueLocation"
                         [suggestions]="filteredRecipientCountries" (completeMethod)="filterRecipientCountries($event)"
                         (onDropdownClick)="onRecipientDropdownClick()" field="name" [forceSelection]="true"
-                        [dropdown]="true" placeholder="בחר מדינה" 
-                        >
+                        [dropdown]="true" placeholder="בחר מדינה">
                     </p-autoComplete>
                 </div>
             </div>
@@ -123,7 +122,8 @@
                             <label> אתר מסירה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="FacilityType"
                                 inputId="autocomplete" [suggestions]="filteredFacilityType"
-                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true" (onSelect)="onFacilityTypeSelect($event,i)">
+                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true"
+                                (onSelect)="onFacilityTypeSelect($event,i)">
                             </p-autoComplete>
                         </div>
                         <!-- <div class="form-item">
@@ -221,7 +221,8 @@
                             <label> אתר מסירה <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="FacilityType2"
                                 inputId="autocomplete" [suggestions]="filteredFacilityType"
-                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true" (onSelect)="onFacilityType2Select($event,i)">
+                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true"
+                                (onSelect)="onFacilityType2Select($event,i)">
                             </p-autoComplete>
                         </div>
 
@@ -557,15 +558,18 @@
     </div>
 
     <div class="btns">
+
+
         <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
         <button [disabled]="generalDeclarationForm.invalid ||suplierErrorExist" class="button-primary"
             (click)="saveDeclaration()" pTooltip="{{ formErrorsMessage }}" tooltipPosition="top"
             [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
-
-        <button [disabled]="generalDeclarationForm.invalid"
-            [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms"
-            class="button-primary" (click)="sendDeclaration()" pTooltip="ניתן לשלוח למכס עד 6 טיוטות "
-            tooltipPosition="top" [tooltipDisabled]="!checkVersion()">שלח
+        <button class="button-primary" (click)="copyDeclaration()" [disabled]="loading">
+            העתק
+        </button>
+        <button [disabled]="generalDeclarationForm.invalid" [ngClass]="{'disabled':generalDeclarationForm.invalid }"
+            *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"
+            pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top" [tooltipDisabled]="!checkVersion()">שלח
             למכס</button>
         <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
     </div>

@@ -80,7 +80,7 @@ export class DeclarationQueryComponent {
 
     window.dispatchEvent(new Event('resize'));
 
-    this.endDate = new Date(); 
+    this.endDate = new Date();
     this.startDate = new Date();
     this.startDate.setDate(this.endDate.getDate() - 10);
 
@@ -120,14 +120,14 @@ export class DeclarationQueryComponent {
 
   search() {
 
-    this.msgs1 = []; 
+    this.msgs1 = [];
 
     if (!this.endDate || !this.startDate) {
       this.msgs1 = [
         { severity: 'error', summary: ' שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
       ];
-      this.noDeclarationsFound = false; 
-      this.noDeclarationsMsg = [];    
+      this.noDeclarationsFound = false;
+      this.noDeclarationsMsg = [];
       return;
     }
 
@@ -157,7 +157,7 @@ export class DeclarationQueryComponent {
 
         this.filteredDeclarations = this.allDeclarations;
         this.filteredDeclarationsCount = this.filteredDeclarations.length;
-        this.noDeclarationsFound = this.filteredDeclarationsCount === 0; 
+        this.noDeclarationsFound = this.filteredDeclarationsCount === 0;
 
         if (this.noDeclarationsFound) {
           this.noDeclarationsMsg = [{
@@ -169,7 +169,7 @@ export class DeclarationQueryComponent {
           this.noDeclarationsMsg = [];
         }
 
-        this.msgs1 = []; 
+        this.msgs1 = [];
         this.isShowFilter = true;
         this.isFiltered = true;
       }),
@@ -258,6 +258,30 @@ export class DeclarationQueryComponent {
     }
 
     // this.router.navigateByUrl('declaration-main/dec-form?Mode=e');
+  }
+  // ✅ פונקציה חדשה להעתקת הצהרה
+  copyDeclaration(declaration: any) {
+    localStorage.setItem('currentDecId', declaration.Id);
+    localStorage.setItem('decType', declaration.Type);
+    localStorage.setItem('copyMode', 'true'); // ✅ סימן שזה מצב העתקה
+
+    if (declaration.Type == 'tr') {
+      this.router.navigate(['declaration-main/dec-form-ts'], {
+        queryParams: {
+          'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
+          'type': 'import'
+        }
+      });
+      this.stepService.emitStepCompleted('dec-form-ts');
+    } else {
+      this.router.navigate(['declaration-main/dec-form'], {
+        queryParams: {
+          'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
+          'type': 'import'
+        }
+      });
+      this.stepService.emitStepCompleted('dec-form');
+    }
   }
 
 }

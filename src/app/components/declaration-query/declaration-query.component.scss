@@ -115,6 +115,10 @@
     border: none;
 }
 
+::ng-deep .queryDec .copy.p-button {
+    border: none;
+}
+
 ::ng-deep .queryDec .p-calendar .p-button {
     border: none;
 }
@@ -178,4 +182,11 @@
   text-align: center;
   margin-top: 1rem;
   font-size: 1.1rem;
+}
+
+/* אפקט עיגול בעת hover */
+::ng-deep .queryDec .edit.p-button:hover,
+::ng-deep .queryDec .copy.p-button:hover {
+    border-radius: 50%;        /* הופך את האזור לעיגול */
+    background-color: rgba(17, 0, 255, 0.05); /* רקע עדין */
 }

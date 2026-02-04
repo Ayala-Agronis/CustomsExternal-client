@@ -126,6 +126,14 @@ export class DeclarationFormComponent implements OnInit {
       this.declarationType = params['type'] || 'import';
 
 
+      // ✅ טיפול במצב העתקה
+      if (this.mode === 'copy') {
+        this.loading = true;
+        // ✅ טען את ההצהרה ואז הפעל העתקה אוטומטית
+        this.loadAndCopyDeclaration();
+        return; // ✅ עצור את המשך הטעינה הרגילה
+      }
+
       // ✅ הזז את זה לכאן - בתוך ה-subscribe
       if (this.mode === 'e') {
         this.loading = true; // ✅ הפעל spinner רק אם זה עריכה
@@ -702,7 +710,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   initElements() {
-        this.loading = true;
+    this.loading = true;
 
     const decId = localStorage.getItem('currentDecId');
     let currentDec: any;
@@ -1279,6 +1287,77 @@ export class DeclarationFormComponent implements OnInit {
       }
     }
     else return "לא תקין"
+  }
+
+  copyDeclaration() {
+    const currentFormValue = this.generalDeclarationForm.getRawValue();
+
+    const copiedData = {
+      ...currentFormValue,
+      Consignments: {
+        ...currentFormValue.Consignments,
+        // ניקוי שדות המטען
+        TransportContractDocumentID: '',
+        SecondCargoID: '',
+        ThirdCargoID: ''
+      }
+    };
+
+    this.generalDeclarationForm.patchValue({
+      Id: null,
+      DeclarationNumber: '',
+      VersionID: '',
+      CustomsStatus: null,
+      AgentFileReferenceID: ''
+    });
+
+    this.generalDeclarationForm.patchValue(copiedData);
+
+    localStorage.removeItem('currentDecId');
+    localStorage.removeItem('AgentFileReferenceID');
+
+    this.mode = 'n';
+
+    // צור מספר תיק חדש מהשרת
+    this.customsDataService.GetSeq$('Customs').subscribe(res => {
+      localStorage.setItem('AgentFileReferenceID', res);
+      this.generalDeclarationForm.patchValue({
+        AgentFileReferenceID: res
+      });
+    });
+
+    this.msgs1 = [{
+      severity: 'success',
+      summary: 'success',
+      detail: 'ההצהרה הועתקה - לחץ "המשך" כדי לשמור'
+    }];
+  }
+
+
+  // ✅ פונקציה חדשה לטעינה והעתקה אוטומטית
+  private loadAndCopyDeclaration() {
+    const decId = localStorage.getItem('currentDecId');
+
+    if (!decId) {
+      this.loading = false;
+      return;
+    }
+
+    this.decService.getDeclaration(decId).subscribe(res => {
+      if (!res) {
+        this.loading = false;
+        return;
+      }
+
+      // ✅ טען את הנתונים לטופס
+      this.initElements();
+
+      // ✅ אחרי הטעינה - הפעל את פונקצ העתקה
+      setTimeout(() => {
+        this.copyDeclaration();
+        localStorage.removeItem('copyMode'); // ✅ נקה את הסימן
+      }, 500);
+    });
   }
 
 
