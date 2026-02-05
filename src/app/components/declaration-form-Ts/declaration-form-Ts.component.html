@@ -564,9 +564,9 @@
         <button [disabled]="generalDeclarationForm.invalid ||suplierErrorExist" class="button-primary"
             (click)="saveDeclaration()" pTooltip="{{ formErrorsMessage }}" tooltipPosition="top"
             [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
-        <button class="button-primary" (click)="copyDeclaration()" [disabled]="loading">
+        <!-- <button class="button-primary" (click)="copyDeclaration()" [disabled]="loading">
             העתק
-        </button>
+        </button> -->
         <button [disabled]="generalDeclarationForm.invalid" [ngClass]="{'disabled':generalDeclarationForm.invalid }"
             *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"
             pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top" [tooltipDisabled]="!checkVersion()">שלח

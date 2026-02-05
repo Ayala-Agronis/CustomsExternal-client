@@ -15,12 +15,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DeclarationService } from '../../shared/services/declaration.service';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { StepService } from '../../shared/services/step.service';
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-declaration-query',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ProgressSpinnerModule, ButtonModule, TableModule, ToastModule, DropdownModule, CalendarModule, MessagesModule,],
-  providers: [MessageService],
+  imports: [CommonModule, FormsModule, CardModule, ProgressSpinnerModule, ButtonModule, TableModule, ToastModule, DropdownModule, CalendarModule, MessagesModule,ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './declaration-query.component.html',
   styleUrl: './declaration-query.component.scss'
 })
@@ -68,6 +70,7 @@ export class DeclarationQueryComponent {
     // private customsClientService: CustomsClientsService,
     private cdRef: ChangeDetectorRef,
     private stepService: StepService,
+    private confirmationService: ConfirmationService, // ✅ הוסף את זה
   ) { }
 
 
@@ -260,28 +263,46 @@ export class DeclarationQueryComponent {
     // this.router.navigateByUrl('declaration-main/dec-form?Mode=e');
   }
   // ✅ פונקציה חדשה להעתקת הצהרה
-  copyDeclaration(declaration: any) {
-    localStorage.setItem('currentDecId', declaration.Id);
-    localStorage.setItem('decType', declaration.Type);
-    localStorage.setItem('copyMode', 'true'); // ✅ סימן שזה מצב העתקה
+  // ✅ פונקציה מעודכנת עם popup אישור
 
-    if (declaration.Type == 'tr') {
-      this.router.navigate(['declaration-main/dec-form-ts'], {
-        queryParams: {
-          'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
-          'type': 'import'
+  copyDeclaration(declaration: any) {
+    this.confirmationService.confirm({
+      message: 'האם אתה בטוח שברצונך להעתיק את ההצהרה?',
+      header: 'אישור העתקה',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'כן',
+      rejectLabel: 'לא',
+      accept: () => {
+        // ✅ רק אם לחץ "כן" - בצע את ההעתקה
+
+        localStorage.setItem('currentDecId', declaration.Id);
+        localStorage.setItem('decType', declaration.Type);
+        localStorage.setItem('copyMode', 'true'); // ✅ סימן שזה מצב העתקה
+
+        if (declaration.Type == 'tr') {
+          this.router.navigate(['declaration-main/dec-form-ts'], {
+            queryParams: {
+              'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
+              'type': 'import'
+            }
+          });
+          this.stepService.emitStepCompleted('dec-form-ts');
+        } else {
+          this.router.navigate(['declaration-main/dec-form'], {
+            queryParams: {
+              'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
+              'type': 'import'
+            }
+          });
+          this.stepService.emitStepCompleted('dec-form');
         }
-      });
-      this.stepService.emitStepCompleted('dec-form-ts');
-    } else {
-      this.router.navigate(['declaration-main/dec-form'], {
-        queryParams: {
-          'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
-          'type': 'import'
-        }
-      });
-      this.stepService.emitStepCompleted('dec-form');
-    }
+      },
+      reject: () => {
+        // ✅ אם לחץ "לא" - אל תעשה כלום
+        console.log('העתקה בוטלה');
+
+      }
+    });
   }
 
 }
