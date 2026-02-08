@@ -905,18 +905,23 @@ export class AddDocumentsComponent {
           // ✅ בדוק אם אין מסמכים
           if (!this.documents || this.documents.length === 0) {
             this.msgs1 = [
-              {
-                severity: 'info',
-                summary: 'מסמכי הצהרה',
-                detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
+              // {
+              //   severity: 'info',
+              //   summary: 'מסמכי הצהרה',
+              //   detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
 
-              }
+              // }
             ];
           }
         },
-        error: _ => {
+        error: (err: any) => {
           this.documents = [];
           this.loading = false;
+          // ✅ אם אין מסמכים (404/204) אל תציג הודעה
+          if (err?.status === 404 || err?.status === 204) {
+            this.msgs1 = [];
+            return;
+          }
           // ✅ בודא הודעה בשגיאה
           this.msgs1 = [
             {
