@@ -107,11 +107,15 @@ export class HomePageComponent implements OnInit {
     localStorage.setItem('activeIndex', '0');
     localStorage.setItem('maxIndex', '0');
     this.stepService.updateMaxIndex(0);
+
+    // נקה/אתחל תמיד כדי למנוע ערך ישן
+    localStorage.setItem('decType', '');
     let path = '';
 
     switch (type) {
       case 'import':
         path = 'dec-form';
+        localStorage.setItem('decType', 'regular');
         break;
       case 'transshipment':
         path = 'dec-form-ts';
@@ -121,7 +125,8 @@ export class HomePageComponent implements OnInit {
         path = 'dec-form-export';
         break;
       default:
-        path = 'dec-form-ts';
+        path = 'dec-form';
+        localStorage.setItem('decType', 'regular');
     }
     console.log(path);
 

@@ -36,6 +36,22 @@ export class DeclarationMainComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      const type = params['type'];
+      if (type === 'transshipment') {
+        this.typeDec = 'tr';
+      } else if (type === 'import') {
+        this.typeDec = 'regular';
+      } else if (type === 'export') {
+        this.typeDec = 'ex';
+      } else {
+        this.typeDec = localStorage.getItem('decType') || '';
+      }
+      if (this.typeDec) {
+        localStorage.setItem('decType', this.typeDec);
+      }
+    });
+
     this.typeDec = localStorage.getItem('decType') || '';
     this.route.queryParams.subscribe(params => {
       this.mode = params['Mode'];
@@ -50,12 +66,15 @@ export class DeclarationMainComponent implements OnInit {
 
     if (!savedIndex) {
       savedIndex = '0'
-      if (this.typeDec == 'tr') {
-        this.router.navigate(['declaration-main/dec-form-ts']);
+      if (!this.route.firstChild) {
 
-      }
-      else {
-        this.router.navigate(['declaration-main/dec-form']);
+        if (this.typeDec == 'tr') {
+          this.router.navigate(['declaration-main/dec-form-ts']);
+
+        }
+        else {
+          this.router.navigate(['declaration-main/dec-form']);
+        }
       }
     }
     else {

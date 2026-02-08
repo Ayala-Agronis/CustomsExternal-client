@@ -283,7 +283,7 @@ export class DeclarationQueryComponent {
           this.router.navigate(['declaration-main/dec-form-ts'], {
             queryParams: {
               'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
-              'type': 'import'
+              'type': 'transshipment'
             }
           });
           this.stepService.emitStepCompleted('dec-form-ts');
