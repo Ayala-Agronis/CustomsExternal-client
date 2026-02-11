@@ -22,15 +22,15 @@ p-calendar {
 
 .form-group {
     display: flex;
-    gap: 3%;
-    margin-bottom: 2%;
+    gap: 1.5%;
+    margin-bottom: 0.5%;
 }
 
 .form-item {
     display: flex;
     flex-direction: column;
     width: 16%;
-    gap: 4px;
+    gap: 2px;
 }
 
 .right-side .form-item {
@@ -42,8 +42,8 @@ p-calendar {
     gap: 1%;
     direction: ltr;
     margin-left: 7.5%;
-    margin-top: 3%;
-    margin-bottom: 3%;
+    margin-top: 1%;
+    margin-bottom: 1%;
 }
 
 td {
@@ -233,7 +233,7 @@ input {
 
 ::ng-deep .p-datatable .p-datatable-tbody>tr>td,
 ::ng-deep .p-datatable .p-datatable-tfoot>tr>td {
-    padding: 0.3rem 1.2rem;
+    padding: 0.2rem 0.5rem;
 }
 
 ::ng-deep .valuations .p-datatable .p-datatable-tbody>tr>td,
@@ -278,10 +278,9 @@ input {
 }
 
 ::ng-deep .p-card .p-card-body {
-    padding: 1rem;
+    padding: 0.3rem;
     padding-top: 0% !important;
-    margin-top: -1rem !important;
-    padding: 0.5rem;
+    margin-top: -0.5rem !important;
 }
 
 ::ng-deep .p-card {
@@ -315,7 +314,7 @@ input {
 }
 
 .form-title {
-    padding: 0.4%;
+    padding: 0.2%;
     margin-right: 0.5%;
     padding-top: 0rem;
 
@@ -345,7 +344,7 @@ input {
 }
 
 .form-subtitle {
-    margin: 4px 0 8px 0;
+    margin: 2px 0 4px 0;
     font-size: 1.2rem;
 }
 
@@ -419,8 +418,8 @@ input {
 :host ::ng-deep div[formGroupName="Consignments"] .p-tabview-panel .form-group {
     display: grid !important;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2.3rem;
-    row-gap: 0.5rem;
+    gap: 1rem;
+    row-gap: 0.3rem;
 
 }
 
