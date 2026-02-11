@@ -911,12 +911,12 @@ export class DeclarationFormTsComponent implements OnInit {
         RecipientIssueLocation: countryObj
       }, { emitEvent: false });
 
-      // // עדכן BuyerIssueLocation בחשבונית הראשונה
-      // const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
-      // supplierInvoicesFormArray.at(0)?.get("BuyerIssueLocation")?.patchValue({
-      //   code: countryObj.code,
-      //   name: countryObj.name
-      // }, { emitEvent: false });
+      // עדכן BuyerIssueLocation בחשבונית הראשונה
+      const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+      supplierInvoicesFormArray.at(0)?.get("BuyerIssueLocation")?.patchValue({
+        code: countryObj.code,
+        name: countryObj.name
+      }, { emitEvent: false });
     }
   }
 
@@ -1159,7 +1159,9 @@ export class DeclarationFormTsComponent implements OnInit {
 
 
         ExportationCountryCode2: this.formBuilder.control({ name: 'ישראל', code: 'IL' }),
-        LoadingLocation2: this.formBuilder.control({ value: '', disabled: true }, Validators.required),
+        // LoadingLocation2: this.formBuilder.control({ value: '', disabled: true }, Validators.required),
+        LoadingLocation2: this.formBuilder.control('', Validators.required),
+
         // LoadingLocation: this.formBuilder.control({value: '', disabled: this.exportationCountryControlError}, Validators.required),
         UnloadingLocationID2: this.formBuilder.control('', Validators.required),
         TransportContractDocumentTypeCode2: this.formBuilder.control({ name: 'שטר מטען אווירי יצוא', code: '16' }, Validators.required),
@@ -1437,8 +1439,8 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   onDestinationCountrySelect(event: any, code: any) {
-    // const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
-    // supplierInvoicesFormArray.at(0).get("BuyerIssueLocation")?.patchValue({ code: event?.value?.code, name: event?.value?.name })
+    const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+    supplierInvoicesFormArray.at(0).get("BuyerIssueLocation")?.patchValue({ code: event?.value?.code, name: event?.value?.name })
 
     this.filterUnpackingSiteByDestinationCountry(event?.value?.code || code);
 
@@ -1973,10 +1975,10 @@ export class DeclarationFormTsComponent implements OnInit {
     });
   }
 
-  // onRecipientIssueLocationSelect(event: any) {
-  //   const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
-  //   supplierInvoicesFormArray.at(0).get("BuyerIssueLocation")?.patchValue({ code: event?.value?.code, name: event?.value?.name })
-  // }
+  onRecipientIssueLocationSelect(event: any) {
+    const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+    supplierInvoicesFormArray.at(0).get("BuyerIssueLocation")?.patchValue({ code: event?.value?.code, name: event?.value?.name })
+  }
 
   onTradeTermsSelect(event: any, i: any) {
     const code = event?.value.code;
