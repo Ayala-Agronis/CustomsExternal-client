@@ -1472,11 +1472,15 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   onFacilityTypeSelect(event: any, code: any) {
-    // const consignmentForm = this.generalDeclarationForm.controls['Consignments']
+    const consignmentForm = this.generalDeclarationForm.controls['Consignments']
 
     // consignmentForm.patchValue({
     //   UnloadingLocationID: { code: event?.value?.code, name: event?.value?.name }
     // });
+    consignmentForm.patchValue({
+      FacilityType2: { code: event?.value?.code, name: event?.value?.name },
+      LoadingLocation2: { code: event?.value?.code, name: event?.value?.name }
+    });
   }
   onFacilityType2Select(event: any, code: any) {
     // const consignmentForm = this.generalDeclarationForm.controls['Consignments']
