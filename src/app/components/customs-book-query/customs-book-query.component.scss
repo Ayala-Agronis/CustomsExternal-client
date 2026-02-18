@@ -1,0 +1,70 @@
+::ng-deep .p-card {
+  width: 85%;
+  margin: auto;
+}
+
+.filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 2%;
+  flex-wrap: wrap;
+  
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 260px;            // dropdown
+}
+
+.wide {
+  flex: 1;
+  min-width: 320px;
+}
+
+.form-group.wide {
+  width: 420px;            // שדה החיפוש
+  flex: 0 0 auto;          // מבטל את המתיחה
+}
+
+.progress-spinner {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.ac-main { font-weight: 600; }
+.ac-sub { font-size: 12px; opacity: 0.85; }
+
+.title { margin: 12px 0; }
+
+.kv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.law-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.law-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.law-buttons button.active {
+  filter: brightness(0.92);
+}
+
+.empty { padding: 10px 0; opacity: 0.8; }
+.empty.big { padding: 18px 0; }
+
+::ng-deep .filters .p-dropdown,
+::ng-deep .filters .p-autocomplete {
+  width: 83%;
+}

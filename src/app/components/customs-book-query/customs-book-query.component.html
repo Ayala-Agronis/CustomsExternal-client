@@ -1,0 +1,145 @@
+<div class="progress-spinner" *ngIf="loading">
+  <p-progressSpinner></p-progressSpinner>
+</div>
+
+<p-card class="ui-rtl" dir="rtl">
+  <div class="header">
+    <h3>שאילתת ספר מכס</h3>
+  </div>
+
+  <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs" [enableService]="false"></p-messages>
+
+  <div class="filters">
+    <div class="form-group">
+      <label>ספר מכס</label>
+      <p-dropdown
+        [options]="bookTypes"
+        [(ngModel)]="bookTypeId"
+        optionLabel="name"
+        optionValue="id"
+        (onChange)="onContextChanged()"
+        placeholder="בחר">
+      </p-dropdown>
+    </div>
+
+    <div class="form-group wide">
+      <label>חפש פרט מכס או ביטוי</label>
+      <p-autoComplete
+        [(ngModel)]="term"
+        [suggestions]="suggestions"
+        (completeMethod)="onSearch($event)"
+        [minLength]="4"
+        field="fullClassification"
+        placeholder="הקלד לפחות 4 תווים..."
+        (onSelect)="onPick($event.value)">
+        <ng-template let-item pTemplate="item">
+          <div class="ac-main">{{ item.fullClassification }}</div>
+          <div class="ac-sub">{{ item.goodsDescription }}</div>
+        </ng-template>
+      </p-autoComplete>
+    </div>
+  </div>
+
+  <ng-container *ngIf="details; else emptyState">
+    <h4 class="title">
+      פרט מכס: {{ details.fullClassification }} – {{ details.goodsDescription }}
+    </h4>
+
+    <div class="kv">
+      <div><b>ספר מכס:</b> {{ details.customsBookTypeName }}</div>
+      <div><b>חלק:</b> {{ details.partDescription }}</div>
+      <div><b>פרק:</b> {{ details.chapterDescription }}</div>
+      <div><b>יחידת מידה:</b> {{ details.measurementUnitName }}</div>
+    </div>
+
+    <hr />
+
+    <div class="law-header">
+      <h4>חוקיות יבוא</h4>
+      <div class="law-buttons" dir="ltr">
+        <button pButton type="button" label="הכל"
+          (click)="setLawFilter('all')" [class.active]="lawFilter==='all'"></button>
+        <button pButton type="button" label="אישי"
+          (click)="setLawFilter('personal')" [class.active]="lawFilter==='personal'"></button>
+        <button pButton type="button" label="מסחרי"
+          (click)="setLawFilter('commercial')" [class.active]="lawFilter==='commercial'"></button>
+      </div>
+    </div>
+
+    <p-table [value]="details.regularities" [paginator]="true" [rows]="8" dir="rtl" class="ui-rtl">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>תחילה</th>
+          <th>סיום</th>
+          <th>מקור</th>
+          <th>תיאור טובין</th>
+          <th>סוג אישור</th>
+          <th>גורם מאשר</th>
+          <th>תנאים</th>
+          <th>תקן</th>
+          <th>פרסום</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-r>
+        <tr>
+          <td>{{ fmtDate(r.startDate) }}</td>
+          <td>{{ fmtDate(r.endDate) }}</td>
+          <td>{{ r.regularitySourceName }}</td>
+          <td>{{ r.requirementGoodsDescription }}</td>
+          <td>{{ r.confirmationTypeName }}</td>
+          <td>{{ r.authorityName }}</td>
+          <td>{{ r.textualCondition }}</td>
+          <td>{{ r.trNumber }}</td>
+          <td>{{ r.regularityPublicationName }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="empty">
+        <div class="empty">לא נמצאו דרישות חוקיות.</div>
+      </ng-template>
+    </p-table>
+
+    <hr />
+
+    <h4>מכס (בהסכמי סחר ומכסות)</h4>
+
+    <p-table [value]="details.tariffs" [paginator]="true" [rows]="8" dir="rtl" class="ui-rtl">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>הסכם</th>
+          <th>מכסה</th>
+          <th>מכס (ללא מכסה)</th>
+          <th>תמ״א (ללא מכסה)</th>
+          <th>מכס (במכסה)</th>
+          <th>תמ״א (במכסה)</th>
+          <th>תחילה</th>
+          <th>סיום</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-t>
+        <tr>
+          <td>{{ t.tradeAgreementTitle }}</td>
+          <td>{{ t.quotaTitle }}</td>
+          <td>{{ t.withoutQuota_CalculationReference }}</td>
+          <td>{{ t.withoutQuota_OptionalTaxAddition }}</td>
+          <td>{{ t.withinQuota_CalculationReference }}</td>
+          <td>{{ t.withinQuota_OptionalTaxAddition }}</td>
+          <td>{{ fmtDate(t.startDate) }}</td>
+          <td>{{ fmtDate(t.endDate) }}</td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="empty">
+        <div class="empty">לא נמצאו תעריפים.</div>
+      </ng-template>
+    </p-table>
+  </ng-container>
+
+  <ng-template #emptyState>
+    <div class="empty big">
+      הקלד לפחות 4 תווים ובחר פרט מכס כדי לראות פרטים.
+    </div>
+  </ng-template>
+</p-card>
