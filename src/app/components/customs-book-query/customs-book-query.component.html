@@ -7,18 +7,40 @@
     <h3>שאילתת ספר מכס</h3>
   </div>
 
-  <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs" [enableService]="false"></p-messages>
+  <p-messages
+    class="ui-ltr"
+    dir="ltr"
+    [(value)]="msgs"
+    [enableService]="false"
+  ></p-messages>
 
   <div class="filters">
     <div class="form-group">
       <label>ספר מכס</label>
+      <!-- <p-dropdown [options]="bookTypes" [(ngModel)]="bookTypeId" optionLabel="name" optionValue="id"
+                (onChange)="onContextChanged()" placeholder="בחר" >
+            </p-dropdown> -->
       <p-dropdown
         [options]="bookTypes"
         [(ngModel)]="bookTypeId"
         optionLabel="name"
         optionValue="id"
-        (onChange)="onContextChanged()"
-        placeholder="בחר">
+        placeholder="בחר"
+        styleClass="book-type-dropdown"
+      >
+        <!-- ✅ מה שמוצג כשהדרופדאון סגור -->
+        <ng-template pTemplate="selectedItem" let-item>
+          <div class="book-row" [ngClass]="item.color">
+            {{ item.name }}
+          </div>
+        </ng-template>
+
+        <!-- ✅ מה שמוצג ברשימה שנפתחת -->
+        <ng-template pTemplate="item" let-item>
+          <div class="book-row" [ngClass]="item.color">
+            {{ item.name }}
+          </div>
+        </ng-template>
       </p-dropdown>
     </div>
 
@@ -29,27 +51,29 @@
         [suggestions]="suggestions"
         (completeMethod)="onSearch($event)"
         [minLength]="4"
-        field="fullClassification"
+        field="FullClassification"
         placeholder="הקלד לפחות 4 תווים..."
-        (onSelect)="onPick($event.value)">
+        (onSelect)="onPick($event.value)"
+      >
         <ng-template let-item pTemplate="item">
-          <div class="ac-main">{{ item.fullClassification }}</div>
-          <div class="ac-sub">{{ item.goodsDescription }}</div>
+          <div class="ac-main">{{ item.FullClassification }}</div>
+          <div class="ac-sub">{{ item.GoodsDescription }}</div>
         </ng-template>
       </p-autoComplete>
     </div>
   </div>
+  <!-- <button pButton type="button" label="הדמיה" (click)="loadMock()"></button> -->
 
   <ng-container *ngIf="details; else emptyState">
     <h4 class="title">
-      פרט מכס: {{ details.fullClassification }} – {{ details.goodsDescription }}
+      פרט מכס: {{ details.FullClassification }} – {{ details.GoodsDescription }}
     </h4>
 
     <div class="kv">
-      <div><b>ספר מכס:</b> {{ details.customsBookTypeName }}</div>
-      <div><b>חלק:</b> {{ details.partDescription }}</div>
-      <div><b>פרק:</b> {{ details.chapterDescription }}</div>
-      <div><b>יחידת מידה:</b> {{ details.measurementUnitName }}</div>
+      <div><b>ספר מכס:</b> {{ details.CustomsBookTypeName }}</div>
+      <div><b>חלק:</b> {{ details.PartDescription }}</div>
+      <div><b>פרק:</b> {{ details.ChapterDescription }}</div>
+      <div><b>יחידת מידה:</b> {{ details.MeasurementUnitName }}</div>
     </div>
 
     <hr />
@@ -57,41 +81,62 @@
     <div class="law-header">
       <h4>חוקיות יבוא</h4>
       <div class="law-buttons" dir="ltr">
-        <button pButton type="button" label="הכל"
-          (click)="setLawFilter('all')" [class.active]="lawFilter==='all'"></button>
-        <button pButton type="button" label="אישי"
-          (click)="setLawFilter('personal')" [class.active]="lawFilter==='personal'"></button>
-        <button pButton type="button" label="מסחרי"
-          (click)="setLawFilter('commercial')" [class.active]="lawFilter==='commercial'"></button>
+        <button
+          pButton
+          type="button"
+          label="הכל"
+          (click)="setLawFilter('all')"
+          [class.active]="lawFilter === 'all'"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="אישי"
+          (click)="setLawFilter('personal')"
+          [class.active]="lawFilter === 'personal'"
+        ></button>
+        <button
+          pButton
+          type="button"
+          label="מסחרי"
+          (click)="setLawFilter('commercial')"
+          [class.active]="lawFilter === 'commercial'"
+        ></button>
       </div>
     </div>
 
-    <p-table [value]="details.regularities" [paginator]="true" [rows]="8" dir="rtl" class="ui-rtl">
+    <p-table
+      [value]="details.Regularities"
+      [paginator]="true"
+      [rows]="8"
+      dir="rtl"
+      class="ui-rtl"
+    >
       <ng-template pTemplate="header">
         <tr>
-          <th>תחילה</th>
-          <th>סיום</th>
-          <th>מקור</th>
-          <th>תיאור טובין</th>
-          <th>סוג אישור</th>
+          <th>תאריך התחלה</th>
+          <th>תאריך סיום</th>
+          <th>מקור דרישת חוקיות</th>
+          <th>תיאור טובין בדרישת חוקיות</th>
+          <th>סוג רישיון/אישור</th>
           <th>גורם מאשר</th>
-          <th>תנאים</th>
-          <th>תקן</th>
+          <th>תיאור תנאים</th>
+          <th>מספר תקן רשמי</th>
           <th>פרסום</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-r>
         <tr>
-          <td>{{ fmtDate(r.startDate) }}</td>
-          <td>{{ fmtDate(r.endDate) }}</td>
-          <td>{{ r.regularitySourceName }}</td>
-          <td>{{ r.requirementGoodsDescription }}</td>
-          <td>{{ r.confirmationTypeName }}</td>
-          <td>{{ r.authorityName }}</td>
-          <td>{{ r.textualCondition }}</td>
-          <td>{{ r.trNumber }}</td>
-          <td>{{ r.regularityPublicationName }}</td>
+          <td>{{ fmtDate(r.StartDate) }}</td>
+          <td>{{ fmtDate(r.EndDate) }}</td>
+          <td>{{ r.RegularitySourceName }}</td>
+          <td>{{ r.RequirementGoodsDescription }}</td>
+          <td>{{ r.ConfirmationTypeName }}</td>
+          <td>{{ r.AuthorityName }}</td>
+          <td>{{ r.TextualCondition }}</td>
+          <td>{{ r.TrNumber }}</td>
+          <td>{{ r.RegularityPublicationName }}</td>
         </tr>
       </ng-template>
 
@@ -100,11 +145,17 @@
       </ng-template>
     </p-table>
 
-    <hr />
+    <!-- <hr />
 
     <h4>מכס (בהסכמי סחר ומכסות)</h4>
 
-    <p-table [value]="details.tariffs" [paginator]="true" [rows]="8" dir="rtl" class="ui-rtl">
+    <p-table
+      [value]="details.Tariffs"
+      [paginator]="true"
+      [rows]="8"
+      dir="rtl"
+      class="ui-rtl"
+    >
       <ng-template pTemplate="header">
         <tr>
           <th>הסכם</th>
@@ -120,21 +171,21 @@
 
       <ng-template pTemplate="body" let-t>
         <tr>
-          <td>{{ t.tradeAgreementTitle }}</td>
-          <td>{{ t.quotaTitle }}</td>
-          <td>{{ t.withoutQuota_CalculationReference }}</td>
-          <td>{{ t.withoutQuota_OptionalTaxAddition }}</td>
-          <td>{{ t.withinQuota_CalculationReference }}</td>
-          <td>{{ t.withinQuota_OptionalTaxAddition }}</td>
-          <td>{{ fmtDate(t.startDate) }}</td>
-          <td>{{ fmtDate(t.endDate) }}</td>
+          <td>{{ t.TradeAgreementTitle }}</td>
+          <td>{{ t.QuotaTitle }}</td>
+          <td>{{ t.WithoutQuota_CalculationReference }}</td>
+          <td>{{ t.WithoutQuota_OptionalTaxAddition }}</td>
+          <td>{{ t.WithinQuota_CalculationReference }}</td>
+          <td>{{ t.WithinQuota_OptionalTaxAddition }}</td>
+          <td>{{ fmtDate(t.StartDate) }}</td>
+          <td>{{ fmtDate(t.EndDate) }}</td>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="empty">
         <div class="empty">לא נמצאו תעריפים.</div>
       </ng-template>
-    </p-table>
+    </p-table> -->
   </ng-container>
 
   <ng-template #emptyState>

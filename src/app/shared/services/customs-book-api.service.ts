@@ -4,16 +4,15 @@ import { Observable } from 'rxjs';
 import { apiConfig } from '../../config/api-endpoints';
 import {
   CustomsBookDetails,
-  CustomsBookSearchResult
+  CustomsBookSearchResult,
 } from '../models/customs-book.models';
 
 export type LawFilter = 'all' | 'personal' | 'commercial';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CustomsBookApiService {
-
   private readonly baseUrl = `${apiConfig.customsdbApiUrl}CustomsBook`;
 
   constructor(private http: HttpClient) {}
@@ -22,29 +21,25 @@ export class CustomsBookApiService {
     term: string,
     bookTypeId: number,
   ): Observable<CustomsBookSearchResult[]> {
-
     const params = new HttpParams()
       .set('term', term)
-      .set('bookTypeId', bookTypeId.toString())
+      .set('bookTypeId', bookTypeId.toString());
 
-    return this.http.get<CustomsBookSearchResult[]>(
-      `${this.baseUrl}/search`,
-      { params }
-    );
+    return this.http.get<CustomsBookSearchResult[]>(`${this.baseUrl}/search`, {
+      params,
+    });
   }
 
   details(
-    customsItemId: number,
-    lawFilter: LawFilter
+    CustomsItemId: number,
+    lawFilter: LawFilter,
   ): Observable<CustomsBookDetails> {
-
     const params = new HttpParams()
-      .set('customsItemId', customsItemId.toString())
+      .set('CustomsItemId', CustomsItemId.toString())
       .set('lawFilter', lawFilter);
 
-    return this.http.get<CustomsBookDetails>(
-      `${this.baseUrl}/details`,
-      { params }
-    );
+    return this.http.get<CustomsBookDetails>(`${this.baseUrl}/details`, {
+      params,
+    });
   }
 }

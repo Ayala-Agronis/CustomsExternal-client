@@ -1,71 +1,71 @@
 export interface CustomsBookSearchResult {
-  customsItemID: number;
-  fullClassification: string;
-  goodsDescription: string;
+  CustomsItemID: number;
+  FullClassification: string;
+  GoodsDescription: string;
 }
 
 export interface TariffLine {
-  tariffID: number;
-  startDate: string;
-  endDate: string;
+  TariffID: number;
+  StartDate: string;
+  EndDate: string;
 
-  tradeAgreementID?: number | null;
-  tradeAgreementTitle?: string | null;
+  TradeAgreementID?: number | null;
+  TradeAgreementTitle?: string | null;
 
-  quotaID?: number | null;
-  quotaTitle?: string | null;
+  QuotaID?: number | null;
+  QuotaTitle?: string | null;
 
-  withoutQuota_ComputationMethodDataID?: number | null;
-  withoutQuota_CalculationReference?: string | null;
-  withoutQuota_OptionalTaxAddition?: number | null;
+  WithoutQuota_ComputationMethodDataID?: number | null;
+  WithoutQuota_CalculationReference?: string | null;
+  WithoutQuota_OptionalTaxAddition?: number | null;
 
-  withinQuota_ComputationMethodDataID?: number | null;
-  withinQuota_CalculationReference?: string | null;
-  withinQuota_OptionalTaxAddition?: number | null;
+  WithinQuota_ComputationMethodDataID?: number | null;
+  WithinQuota_CalculationReference?: string | null;
+  WithinQuota_OptionalTaxAddition?: number | null;
 }
 
 export interface RegularityLine {
-  regularityRequirementID: number;
-  startDate: string;
-  endDate: string;
+  RegularityRequirementID: number;
+  StartDate: string;
+  EndDate: string;
 
-  regularitySourceCodeID: number;
-  regularitySourceName?: string | null;
+  RegularitySourceCodeID: number;
+  RegularitySourceName?: string | null;
 
-  regularityPublicationCodeID: number;
-  regularityPublicationName?: string | null;
+  RegularityPublicationCodeID: number;
+  RegularityPublicationName?: string | null;
 
-  importType?: 'personal' | 'commercial' | string;
+  ImportType?: 'personal' | 'commercial' | string;
 
-  requirementGoodsDescription?: string | null;
+  RequirementGoodsDescription?: string | null;
 
-  confirmationTypeID: number;
-  confirmationTypeName?: string | null;
+  ConfirmationTypeID: number;
+  ConfirmationTypeName?: string | null;
 
-  authorityID: number;
-  authorityName?: string | null;
+  AuthorityID: number;
+  AuthorityName?: string | null;
 
-  textualCondition?: string | null;
-  trNumber?: number | null;
+  TextualCondition?: string | null;
+  TrNumber?: number | null;
 }
 
 export interface CustomsBookDetails {
-  customsItemID: number;
-  fullClassification: string;
-  goodsDescription: string;
+  CustomsItemID: number;
+  FullClassification: string;
+  GoodsDescription: string;
 
-  customsBookTypeIDNum?: number | null;
-  customsBookTypeName?: string | null;
+  CustomsBookTypeIDNum?: number | null;
+  CustomsBookTypeName?: string | null;
 
-  partCustomsItemID?: number | null;
-  partDescription?: string | null;
+  PartCustomsItemID?: number | null;
+  PartDescription?: string | null;
 
-  chapterCustomsItemID?: number | null;
-  chapterDescription?: string | null;
+  ChapterCustomsItemID?: number | null;
+  ChapterDescription?: string | null;
 
-  measurementUnitID?: number | null;
-  measurementUnitName?: string | null;
+  MeasurementUnitID?: number | null;
+  MeasurementUnitName?: string | null;
 
-  tariffs: TariffLine[];
-  regularities: RegularityLine[];
+  Tariffs: TariffLine[];
+  Regularities: RegularityLine[];
 }

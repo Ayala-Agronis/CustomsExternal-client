@@ -68,3 +68,37 @@
 ::ng-deep .filters .p-autocomplete {
   width: 83%;
 }
+/* השורה עצמה תופסת את כל הרוחב */
+::ng-deep .book-type-dropdown .book-row {
+  width: 100%;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* ✅ צבעים */
+::ng-deep .book-type-dropdown .book-row.import {
+  background-color: #fdecea;
+  color: #c0392b;
+}
+
+::ng-deep .book-type-dropdown .book-row.export {
+  background-color: #fff4e5;
+  color: #d68910;
+}
+
+::ng-deep .book-type-dropdown .book-row.autonomy {
+  background-color: #eafaf1;
+  color: #1e8449;
+}
+
+/* ✅ שהרקע יישב יפה גם בתוך תפריט הבחירה */
+::ng-deep .book-type-dropdown .p-dropdown-item-content {
+  padding: 0;               /* חשוב: שלא יחתוך את הרקע של book-row */
+}
+
+/* (אופציונלי) hover */
+::ng-deep .p-dropdown-item:hover .book-row.import { background: #f9d6d2; }
+::ng-deep .p-dropdown-item:hover .book-row.export { background: #ffe8c2; }
+::ng-deep .p-dropdown-item:hover .book-row.autonomy { background: #d9f2e3; }

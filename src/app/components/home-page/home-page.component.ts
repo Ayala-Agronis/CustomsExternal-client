@@ -14,34 +14,43 @@ import { StepService } from '../../shared/services/step.service';
   imports: [CommonModule, MessagesModule, MenuModule, MenubarModule],
   providers: [MessageService],
   templateUrl: './home-page.component.html',
-  styleUrl: './home-page.component.scss'
+  styleUrl: './home-page.component.scss',
 })
 export class HomePageComponent implements OnInit {
   isRegister: any = false;
   msg: Message[] = [];
   user: any;
   menuItems: MenuItem[] = [];
-  isClientAuthorized = true
+  isClientAuthorized = true;
   showButtonMenu: boolean = false;
 
-  constructor(private router: Router, private route: ActivatedRoute, private userService: UserService, private stepService: StepService) { }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private userService: UserService,
+    private stepService: StepService,
+  ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       const code = params['code'];
       console.log(code);
 
       if (code)
-        this.userService.getDetails(code).subscribe(res => {
+        this.userService.getDetails(code).subscribe((res) => {
           console.log(res);
           this.userService.loginByGoogle(res).subscribe((res: any) => {
-            console.log(res)
-            console.log(res.body)
+            console.log(res);
+            console.log(res.body);
             this.msg = [
-              { severity: 'success', summary: '', detail: 'hi' + res.body.FirstName },
+              {
+                severity: 'success',
+                summary: '',
+                detail: 'hi' + res.body.FirstName,
+              },
             ];
-          })
-        })
+          });
+        });
     });
 
     const userData = localStorage.getItem('user');
@@ -49,10 +58,11 @@ export class HomePageComponent implements OnInit {
       this.user = JSON.parse(userData);
     }
 
-    this.isClientAuthorized = localStorage.getItem('isClientAuthorized') === 'true' || true;
+    this.isClientAuthorized =
+      localStorage.getItem('isClientAuthorized') === 'true' || true;
 
-    const isRegisterValue = localStorage.getItem("isRegister");
-    this.isRegister = isRegisterValue === "true";
+    const isRegisterValue = localStorage.getItem('isRegister');
+    this.isRegister = isRegisterValue === 'true';
     this.menuItems = [
       {
         label: 'מי אנחנו',
@@ -65,7 +75,6 @@ export class HomePageComponent implements OnInit {
         label: 'שירות לעסקים',
         icon: 'pi pi-briefcase',
         command: () => this.navigate('business-service'),
-
       },
       {
         label: 'שירות ומחירים',
@@ -73,27 +82,33 @@ export class HomePageComponent implements OnInit {
         command: () => this.navigate('pricing'),
       },
       {
-        label: 'דברו איתנו',
-        icon: 'pi pi-comments',
-        command: () => this.navigate('contact')
+        label: 'ספר מכס',
+        icon: 'pi pi-book',
+        command: () => this.navigate('customs-book-query'),
       },
-      ...(this.isRegister ? [
-        {
-          label: 'משתמש ',
-          icon: 'pi pi-user',
-          items: [
+      ...(this.isRegister
+        ? [
             {
-              label: 'פרטים אישיים',
+              label: 'משתמש ',
               icon: 'pi pi-user',
-              command: () => this.router.navigate(['personal-details'], { queryParams: { personalDetails: true } })
+              items: [
+                {
+                  label: 'פרטים אישיים',
+                  icon: 'pi pi-user',
+                  command: () =>
+                    this.router.navigate(['personal-details'], {
+                      queryParams: { personalDetails: true },
+                    }),
+                },
+                {
+                  label: 'התנתקות',
+                  icon: 'pi pi-sign-out',
+                  command: () => this.logout(),
+                },
+              ],
             },
-            {
-              label: 'התנתקות',
-              icon: 'pi pi-sign-out',
-              command: () => this.logout()
-            }
           ]
-        }] : []),
+        : []),
     ];
   }
 
@@ -119,7 +134,7 @@ export class HomePageComponent implements OnInit {
         break;
       case 'transshipment':
         path = 'dec-form-ts';
-        localStorage.setItem('decType', "tr")
+        localStorage.setItem('decType', 'tr');
         break;
       case 'export':
         path = 'dec-form-export';
@@ -131,16 +146,16 @@ export class HomePageComponent implements OnInit {
     console.log(path);
 
     this.router.navigate([`declaration-main/${path}`], {
-      queryParams: { type }
+      queryParams: { type },
     });
     // this.router.navigateByUrl(`/declaration-main/${path}?type=${type}`);
   }
   navigate(destination: string) {
     if (destination == 'declaration-main') {
-      localStorage.setItem("currentDecId", '')
-      localStorage.setItem("maxIndex", '0')
+      localStorage.setItem('currentDecId', '');
+      localStorage.setItem('maxIndex', '0');
     }
-    this.router.navigateByUrl(destination)
+    this.router.navigateByUrl(destination);
   }
 
   logout() {
@@ -148,5 +163,4 @@ export class HomePageComponent implements OnInit {
     this.isRegister = false;
     this.router.navigate(['/login']);
   }
-
 }
