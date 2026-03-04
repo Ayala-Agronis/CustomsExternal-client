@@ -820,8 +820,11 @@ import { Message } from 'primeng/api';
 import { DocumentService } from '../../shared/services/document.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { StepService } from '../../shared/services/step.service';
-
-
+import { Router } from '@angular/router';
+import { TooltipModule } from 'primeng/tooltip';
+import { switchMap } from 'rxjs';
+import { DeclarationService } from '../../shared/services/declaration.service';
+import { CargoKey } from '../../shared/models/cargo-context.model';
 
 @Component({
   selector: 'app-add-documents',
@@ -959,17 +962,31 @@ export class AddDocumentsComponent {
   // =========================
   // שמירה של כל הקבצים החדשים
   // =========================
+
   saveDocument() {
     if (!this.canUpload()) return;
 
     this.loading = true;
+    this.msgs1 = [];
 
     const types = Object.keys(this.uploadedFilesByType);
     let pending = 0;
 
-    types.forEach(type => {
+    const finalizeIfDone = () => {
+      if (pending === 0) {
+        this.uploadedFilesByType = {};
+        this.loadDocuments();
+        this.msgs1 = [
+          { severity: 'success', summary: 'הצלחה', detail: 'המסמכים נשמרו' },
+        ];
+        this.loading = false;
+      }
+    };
+
+    for (const type of types) {
       const files = this.uploadedFilesByType[type];
-      files.forEach(file => {
+
+      for (const file of files) {
         pending++;
 
         const formData = new FormData();
@@ -989,35 +1006,118 @@ export class AddDocumentsComponent {
               CustomsId: 0,
               CustomsStatus: 0,
               RelatedEntity: 1055,
-              RelatedID: this.currentDecId
+              RelatedID: this.currentDecId,
             };
 
-            this.documentsService.postDocuments$(doc).subscribe(() => {
+            this.documentsService.postDocuments$(doc).subscribe({
+              next: (createdDoc: any) => {
+                const attrsBase = this.buildAttributesForDoc(type);
+
+                // אין אטריביוטים לסוג הזה -> מסיימים מסמך
+                if (!attrsBase.length) {
               pending--;
-              if (pending === 0) {
-                this.uploadedFilesByType = {};
-                this.loadDocuments();
-                this.msgs1 = [{ severity: 'success', summary: 'הצלחה', detail: 'המסמכים נשמרו' }];
-                this.loading = false;
-              }
+                  finalizeIfDone();
+                  return;
+                }
+
+                const attrsToSave = attrsBase.map((a) => ({
+                  DocID: createdDoc.Id,
+                  PointerID: this.currentDecId,
+                  Attribute: a.Attribute,
+                  Attribute_Vlaue: a.Attribute_Vlaue,
+                }));
+
+                this.documentsService
+                  .addDocumentAttributes$(attrsToSave)
+                  .subscribe({
+                    next: () => {
+                      pending--;
+                      finalizeIfDone();
+                    },
+                    error: () => {
+                      // המסמך נשמר, אבל האטריביוטים נכשלו
+                      pending--;
+                      this.msgs1 = [
+                        {
+                          severity: 'error',
+                          summary: 'שגיאה',
+                          detail: 'המסמך נשמר אבל שמירת האטריביוט נכשלה',
+                        },
+                      ];
+                      finalizeIfDone();
+                    },
             });
           },
-          error: _ => {
+              error: () => {
             pending--;
             this.loading = false;
-            this.msgs1 = [{ severity: 'error', summary: 'שגיאה', detail: 'שמירת מסמך נכשלה' }];
-          }
+                this.msgs1 = [
+                  {
+                    severity: 'error',
+                    summary: 'שגיאה',
+                    detail: 'שמירת מסמך נכשלה',
+                  },
+                ];
+              },
         });
-      });
+          },
+          error: () => {
+            pending--;
+            this.loading = false;
+            this.msgs1 = [
+              {
+                severity: 'error',
+                summary: 'שגיאה',
+                detail: 'העלאת המסמך נכשלה',
+              },
+            ];
+          },
     });
+      }
+    }
+
+    // אם לא היו בכלל קבצים (רק ליתר ביטחון)
+    finalizeIfDone();
   }
 
   // =========================
   // פעולות על טבלה
   // =========================
+  // deleteDocument(id: string) {
+  //   this.documentsService.deleteDocument$(id).subscribe(() => {
+  //     this.loadDocuments();
+  //   });
+  // }
+
   deleteDocument(id: string) {
-    this.documentsService.deleteDocument$(id).subscribe(() => {
+    this.loading = true;
+    this.msgs1 = [];
+
+    this.documentsService
+      .deleteDocumetAttributes$(id)
+      .pipe(switchMap(() => this.documentsService.deleteDocument$(id)))
+      .subscribe({
+        next: () => {
+          this.msgs1 = [
+            {
+              severity: 'success',
+              summary: 'הצלחה',
+              detail: 'המסמך נמחק',
+            },
+          ];
       this.loadDocuments();
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+          this.msgs1 = [
+            {
+              severity: 'error',
+              summary: 'שגיאה',
+              detail: 'מחיקה נכשלה',
+            },
+          ];
+        },
     });
   }
 
@@ -1069,4 +1169,195 @@ export class AddDocumentsComponent {
     this.stepService.emitStepCompleted('-');
   }
 
+  // private buildAttributesForDoc(type: string) {
+  //   const year = new Date().getFullYear().toString();
+  //   const today = new Date().toISOString();
+
+  //   if (type === '380') {
+  //     return [{ Attribute: 87, Attribute_Vlaue: 'false' }]; // בכוונה
+  //   }
+
+  //   if (type === '714') {
+  //     return [
+  //       { Attribute: 57, Attribute_Vlaue: today },
+  //       { Attribute: 99, Attribute_Vlaue: '1' },
+  //       { Attribute: 100, Attribute_Vlaue: year },
+  //     ];
+  //   }
+
+  //   return [];
+  // }
+
+  private buildAttributesForDoc(type: string) {
+    const year = new Date().getFullYear().toString();
+    const todayIso = new Date().toISOString();
+
+    const cargoDateIso = this.getCargoCreateDateIsoSafe();
+    const finalDate = cargoDateIso ?? todayIso;
+
+    if (type === '380') {
+      return [{ Attribute: 87, Attribute_Vlaue: 'false' }];
+    }
+
+    if (type === '714') {
+      return [
+        { Attribute: 57, Attribute_Vlaue: finalDate }, // ✅ התאריך מגיע מה-CargoQuery אם אפשר
+        { Attribute: 99, Attribute_Vlaue: '1' },
+        { Attribute: 100, Attribute_Vlaue: year },
+      ];
+    }
+
+    return [];
+  }
+
+  // private getCargoCreateDateIsoSafe(): string | null {
+  //   if (!this.currentDecId) return null;
+
+  //   const ctx = this.decService.getCargoContextSnapshot();
+  //   if (!ctx) return null;
+
+  //   // ✅ שייכות להצהרה
+  //   if (ctx.decId !== this.currentDecId) return null;
+
+  //   // // ✅ טריות (30 דקות) - אפשר לשנות
+  //   // if (!this.isFresh(ctx.receivedAtIso, 30)) return null;
+
+  //   // ✅ תאריך תקין
+  //   if (!ctx.createDate || !this.isValidDateString(ctx.createDate)) return null;
+
+  //   return new Date(ctx.createDate).toISOString();
+  // }
+
+  private getCargoCreateDateIsoSafe(): string | null {
+    console.log('[getCargoCreateDateIsoSafe] start');
+
+    if (!this.currentDecId) {
+      console.log('no currentDecId');
+      return null;
+    }
+
+    const ctx = this.decService.getCargoContextSnapshot();
+    console.log('ctx snapshot:', ctx);
+
+    if (!ctx) {
+      console.log('ctx is null');
+      return null;
+    }
+
+    if (ctx.decId !== this.currentDecId) {
+      console.log('decId mismatch', {
+        ctxDecId: ctx.decId,
+        currentDecId: this.currentDecId,
+      });
+      return null;
+    }
+
+    const currentKey = this.getCurrentCargoKeyFromLocalDec();
+    console.log('currentKey:', currentKey);
+
+    if (!currentKey) {
+      console.log('currentKey is null');
+      return null;
+    }
+
+    if (!this.cargoKeyEquals(ctx.key, currentKey)) {
+      console.log('cargo key mismatch', { ctxKey: ctx.key, currentKey });
+      return null;
+    }
+
+    if (!ctx.createDate || !this.isValidDateString(ctx.createDate)) {
+      console.log('invalid createDate', { createDate: ctx.createDate });
+      return null;
+    }
+
+    console.log('✅ using cargo createDate (as-is):', ctx.createDate);
+    return ctx.createDate; // ✅ בלי להוריד שעות
+  }
+
+  private isValidDateString(s: string): boolean {
+    const d = new Date(s);
+    return !isNaN(d.getTime());
+  }
+
+  private isFresh(receivedAtIso: string, maxMinutes: number): boolean {
+    const ageMs = Date.now() - new Date(receivedAtIso).getTime();
+    return ageMs <= maxMinutes * 60 * 1000;
+  }
+
+  private getCurrentCargoKeyFromLocalDec(): CargoKey | null {
+    const raw = localStorage.getItem('currentDec');
+    if (!raw) return null;
+
+    let dec: any;
+    try {
+      dec = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+
+    // 1) קודם כל: לקחת מתוך ConsignmentPackagesMeasures (שם יש אובייקטים מלאים)
+    const fullConsignments: any[] = [];
+    if (Array.isArray(dec?.ConsignmentPackagesMeasures)) {
+      for (const m of dec.ConsignmentPackagesMeasures) {
+        if (m?.Consignments && typeof m.Consignments === 'object') {
+          // מסנן הפניות $ref בלבד
+          if (!m.Consignments.$ref) fullConsignments.push(m.Consignments);
+        }
+      }
+    }
+
+    // אם לא מצאנו כלום (נדיר) - ננסה מכל מקור אחר אבל נסנן $ref
+    if (fullConsignments.length === 0 && Array.isArray(dec?.Consignments)) {
+      for (const c of dec.Consignments) {
+        if (c && typeof c === 'object' && !c.$ref) fullConsignments.push(c);
+      }
+    }
+
+    if (fullConsignments.length === 0) return null;
+
+    // בוחרים את הראשון (אפשר לשפר בחירה לפי I/E אם תרצי)
+    const cons = fullConsignments[0];
+
+    const cargoType = (cons.TransportContractDocumentTypeCode ?? '')
+      .toString()
+      .trim();
+    const firstCargoID = (cons.TransportContractDocumentID ?? '')
+      .toString()
+      .trim();
+
+    // נירמול יצוא: ThirdCargoID + SecondCargoID -> "XXX-YYYYYYY"
+    const rawSecond = (cons.SecondCargoID ?? '').toString().trim();
+    const rawThird = (cons.ThirdCargoID ?? '').toString().trim();
+
+    const secondCargoID =
+      rawThird && rawSecond && !rawSecond.includes('-')
+        ? `${rawThird}-${rawSecond}`
+        : rawSecond;
+
+    if (!cargoType || !firstCargoID || !secondCargoID) return null;
+
+    return {
+      cargoType,
+      firstCargoID,
+      secondCargoID,
+      thirdCargoID: '', // אחרי הנרמול אין צורך לשמור אותו
+    };
+  }
+
+  // private cargoKeyEquals(a: CargoKey, b: CargoKey): boolean {
+  //   return (
+  //     a.cargoType === b.cargoType &&
+  //     a.firstCargoID === b.firstCargoID &&
+  //     a.secondCargoID === b.secondCargoID &&
+  //     (a.thirdCargoID ?? '') === (b.thirdCargoID ?? '')
+  //   );
+  // }
+
+  private cargoKeyEquals(a: CargoKey, b: CargoKey): boolean {
+    return (
+      (a.cargoType ?? '') === (b.cargoType ?? '') &&
+      (a.firstCargoID ?? '') === (b.firstCargoID ?? '') &&
+      (a.secondCargoID ?? '') === (b.secondCargoID ?? '')
+    );
+  }
 }

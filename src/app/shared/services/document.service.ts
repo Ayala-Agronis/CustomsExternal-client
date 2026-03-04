@@ -4,14 +4,15 @@ import { Observable } from 'rxjs';
 import { apiConfig } from '../../config/api-endpoints';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DocumentService {
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getDocumentsByEntityId$(id: string): Observable<any> {
-    return this.http.get<any>(`${apiConfig.customsdbApiUrl}Documents/entity/${id}`);
+    return this.http.get<any>(
+      `${apiConfig.customsdbApiUrl}Documents/entity/${id}`,
+    );
     // return this.http.get<any>(`${environment.customsExternalApiUrl}Document/entity/${id}`);
   }
 
@@ -21,7 +22,10 @@ export class DocumentService {
   }
 
   postDocuments$(document: any): Observable<any> {
-    return this.http.post<any>(`${apiConfig.customsdbApiUrl}Documents`, document);
+    return this.http.post<any>(
+      `${apiConfig.customsdbApiUrl}Documents`,
+      document,
+    );
     // return this.http.post<any>(`${environment.customsExternalApiUrl}Document`, document);
   }
 
@@ -33,7 +37,10 @@ export class DocumentService {
   //   return this.http.post(`${apiConfig.customsApiUrl}AddDocuments_2715`, formData);
   // }
   sendToCustoms$(formData: FormData): Observable<any> {
-    return this.http.post(`${apiConfig.customsdocSendApiUrl}AddDocument`, formData);
+    return this.http.post(
+      `${apiConfig.customsdocSendApiUrl}AddDocument`,
+      formData,
+    );
   }
 
   // deleteDocumetAttributes$(docId: string): Observable<any> {
@@ -45,7 +52,22 @@ export class DocumentService {
   }
 
   deleteDocument$(documentId: string): Observable<any> {
-    return this.http.delete<any>(`${apiConfig.customsdbApiUrl}Documents/${documentId}`);
+    return this.http.delete<any>(
+      `${apiConfig.customsdbApiUrl}Documents/${documentId}`,
+    );
+  }
+
+  addDocumentAttributes$(attrs: any[]): Observable<any> {
+    return this.http.post<any>(
+      `${apiConfig.customsdbApiUrl}DocumentAttribute`,
+      attrs,
+    );
+  }
+
+  deleteDocumetAttributes$(docId: string): Observable<any> {
+    return this.http.delete(
+      `${apiConfig.customsdbApiUrl}DocumentAttribute/${docId}`,
+    );
   }
 
   // deleteDocument$(documentId: string): Observable<any> {
