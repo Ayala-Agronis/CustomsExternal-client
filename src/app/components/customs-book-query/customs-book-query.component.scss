@@ -1,43 +1,172 @@
-::ng-deep .p-card {
+/* =========================
+   Card
+   ========================= */
+:host ::ng-deep .p-card {
   width: 85%;
   margin: auto;
 }
 
+/* =========================
+   Layout: Filters row
+   ========================= */
 .filters {
   display: flex;
   align-items: flex-end;
-  gap: 2%;
+  gap: 16px;
   flex-wrap: wrap;
-  
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  width: 260px;            // dropdown
-}
-
-.wide {
-  flex: 1;
-  min-width: 320px;
+  gap: 6px;
+  width: 260px; /* dropdown column */
 }
 
 .form-group.wide {
-  width: 420px;            // שדה החיפוש
-  flex: 0 0 auto;          // מבטל את המתיחה
+  flex: 1 1 520px; /* search column grows */
+  min-width: 320px;
+  width: auto;
 }
 
-.progress-spinner {
+/* =========================
+   Loading
+   ========================= */
+.loading-overlay {
+  position: fixed;
+  inset: 0; /* top:0 right:0 bottom:0 left:0 */
   display: flex;
-  justify-content: center;
+  align-items: center; /* מרכז אנכית */
+  justify-content: center; /* מרכז אופקית */
+  background: rgba(255, 255, 255, 0.6); /* שקיפות עדינה */
+  z-index: 1000;
+}
+
+/* =========================
+   Dropdown (book types) styling
+   ========================= */
+:host ::ng-deep .filters .p-dropdown {
+  width: 100%;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row {
+  width: 100%;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row.import {
+  background-color: #fdecea;
+  color: #c0392b;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row.export {
+  background-color: #fff4e5;
+  color: #d68910;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row.autonomy {
+  background-color: #eafaf1;
+  color: #1e8449;
+}
+
+:host ::ng-deep .book-type-dropdown .p-dropdown-item-content {
+  padding: 0; /* keep background full */
+}
+
+:host ::ng-deep .p-dropdown-item:hover .book-row.import {
+  background: #f9d6d2;
+}
+:host ::ng-deep .p-dropdown-item:hover .book-row.export {
+  background: #ffe8c2;
+}
+:host ::ng-deep .p-dropdown-item:hover .book-row.autonomy {
+  background: #d9f2e3;
+}
+
+/* =========================
+   Search input
+   ========================= */
+.search-input {
+  width: 100%;
+  height: 37px; /* nice match with dropdown */
+  display: block;
+}
+
+/* =========================
+   Results panel - FULL WIDTH under filters
+   ========================= */
+.results-panel.full {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.results-title {
+  padding: 10px 12px;
+  font-weight: 700;
+  border-bottom: 1px solid #eee;
+  opacity: 0.9;
+}
+
+.results-empty {
+  padding: 12px;
+  opacity: 0.7;
+}
+
+.results-list {
+  display: block;
+}
+
+.result-row {
+  width: 100%;
+  display: block;
+  text-align: right;
+  padding: 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.result-row:hover {
+  background: #fafafa;
+}
+
+.result-top {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-sub {
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+/* highlight term */
+:host ::ng-deep mark.hit {
+  background: #fff176;
+  padding: 0;
+  border-radius: 3px;
+  margin: 0;
+  display: inline;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+/* =========================
+   Details section (existing)
+   ========================= */
+.title {
   margin: 12px 0;
 }
-
-.ac-main { font-weight: 600; }
-.ac-sub { font-size: 12px; opacity: 0.85; }
-
-.title { margin: 12px 0; }
 
 .kv {
   display: grid;
@@ -58,47 +187,38 @@
 }
 
 .law-buttons button.active {
-  filter: brightness(0.92);
+  // filter: brightness(1.2);
+  background-color: #ff7a00;
+  border: 2px solid #ff7a00;
 }
 
-.empty { padding: 10px 0; opacity: 0.8; }
-.empty.big { padding: 18px 0; }
-
-::ng-deep .filters .p-dropdown,
-::ng-deep .filters .p-autocomplete {
-  width: 83%;
-}
-/* השורה עצמה תופסת את כל הרוחב */
-::ng-deep .book-type-dropdown .book-row {
-  width: 100%;
-  display: block;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-weight: 600;
+.empty {
+  padding: 10px 0;
+  opacity: 0.8;
 }
 
-/* ✅ צבעים */
-::ng-deep .book-type-dropdown .book-row.import {
-  background-color: #fdecea;
-  color: #c0392b;
+.empty.big {
+  padding: 18px 0;
 }
 
-::ng-deep .book-type-dropdown .book-row.export {
-  background-color: #fff4e5;
-  color: #d68910;
+/* יישור RTL מלא לטבלאות */
+/* טבלת PrimeNG – RTL + יישור לימין */
+:host ::ng-deep .ui-rtl,
+:host ::ng-deep .ui-rtl .p-datatable-wrapper {
+  direction: rtl;
 }
 
-::ng-deep .book-type-dropdown .book-row.autonomy {
-  background-color: #eafaf1;
-  color: #1e8449;
+:host ::ng-deep .ui-rtl .p-datatable-thead > tr > th,
+:host ::ng-deep .ui-rtl .p-datatable-tbody > tr > td,
+:host ::ng-deep .ui-rtl .p-datatable-tfoot > tr > td {
+  direction: rtl;
+  text-align: right !important;
+  unicode-bidi: plaintext;
 }
 
-/* ✅ שהרקע יישב יפה גם בתוך תפריט הבחירה */
-::ng-deep .book-type-dropdown .p-dropdown-item-content {
-  padding: 0;               /* חשוב: שלא יחתוך את הרקע של book-row */
+/* אם יש עמודת תאריכים/מספרים ואת רוצה שהם יישארו LTR בתוך תא RTL */
+:host ::ng-deep .ui-rtl .num-ltr {
+  direction: ltr;
+  text-align: left !important;
+  unicode-bidi: plaintext;
 }
-
-/* (אופציונלי) hover */
-::ng-deep .p-dropdown-item:hover .book-row.import { background: #f9d6d2; }
-::ng-deep .p-dropdown-item:hover .book-row.export { background: #ffe8c2; }
-::ng-deep .p-dropdown-item:hover .book-row.autonomy { background: #d9f2e3; }

@@ -18,6 +18,7 @@ import { TableModule } from 'primeng/table';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessagesModule } from 'primeng/messages';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 
 import {
   CustomsBookApiService,
@@ -43,6 +44,7 @@ import {
     ProgressSpinnerModule,
     MessagesModule,
     ButtonModule,
+    InputTextModule,
   ],
 })
 export class CustomsBookQueryComponent {
@@ -76,7 +78,7 @@ export class CustomsBookQueryComponent {
         distinctUntilChanged(),
         switchMap((q) => {
           const t = (q || '').trim();
-          if (t.length < 4) {
+          if (t.length < 3) {
             this.suggestions = [];
             return of([]);
           }
@@ -95,15 +97,25 @@ export class CustomsBookQueryComponent {
       .subscribe((res) => (this.suggestions = res || []));
   }
 
-  // PrimeNG AutoComplete completeMethod
-  onSearch(event: any) {
-    this.term$.next(event?.query ?? '');
+  // // PrimeNG AutoComplete completeMethod
+  // onSearch(event: any) {
+  //   this.term$.next(event?.query ?? '');
+  // }
+
+  onTermChange(value: string) {
+    this.term = value ?? '';
+    this.details = null;
+    this.selectedItem = null;
+    this.term$.next(value ?? '');
   }
 
   // PrimeNG onSelect - item הוא האובייקט שנבחר
   onPick(item: CustomsBookSearchResult) {
     this.selectedItem = item;
     this.lawFilter = 'all';
+    this.suggestions = [];
+    this.term = item.FullClassification;
+    // this.term='';
     this.loadDetails();
   }
 
@@ -120,6 +132,7 @@ export class CustomsBookQueryComponent {
     this.selectedItem = null;
     this.details = null;
     this.msgs = [];
+    this.loading = false; // מומלץ
   }
 
   private loadDetails() {
@@ -154,6 +167,79 @@ export class CustomsBookQueryComponent {
     if (!value) return '';
     if (value instanceof Date) return value.toISOString().substring(0, 10);
     return String(value).substring(0, 10);
+  }
+
+  private escapeHtml(s: string): string {
+    return (s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  private escapeRegExp(s: string): string {
+    return (s ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  /** מדגיש את מילת החיפוש בתוך טקסט (למשל GoodsDescription) */
+  highlight(
+    text: string | null | undefined,
+    term: string | null | undefined,
+  ): string {
+    const t = (term ?? '').trim();
+    const src = this.escapeHtml(text ?? '');
+    if (!t || t.length < 2) return src;
+
+    const re = new RegExp(this.escapeRegExp(this.escapeHtml(t)), 'gi');
+    return src.replace(re, (m) => `<mark class="hit">${m}</mark>`);
+  }
+
+  /** צובע את ה־FullClassification לפי קבוצות (כמו באפיון) */
+  // formatClassification(full: string | null | undefined): string {
+  //   const s = (full ?? '').trim();
+  //   if (!s) return '';
+
+  //   // אם מגיע עם "/" או בלי רווחים - עדיין נעבוד:
+  //   const parts = s.split(/\s+/).filter(Boolean);
+
+  //   // מחלק צבעים במחזוריות
+  //   return parts
+  //     .map(
+  //       (p, i) =>
+  //         `<span class="fc-part fc-${(i % 4) + 1}">${this.escapeHtml(p)}</span>`,
+  //     )
+  //     .join(' ');
+  // }
+
+  formatClassification(full: string | null | undefined): string {
+    const raw = (full ?? '').trim();
+    if (!raw) return '';
+
+    // בודקים אם יש מינוס בהתחלה
+    const isNegative = raw.startsWith('-');
+    // מפרידים את חלק המספר מה-suffix
+    const [mainWithMinus, suffix] = raw.split('/');
+    const main = isNegative ? mainWithMinus.substring(1) : mainWithMinus;
+
+    // משאירים רק ספרות
+    const digits = main.replace(/\D/g, '');
+
+    // חלוקה כל 2 תווים
+    const parts = digits.match(/.{1,2}/g) || [];
+
+    // צבעים מחזוריים
+    const colored = parts
+      .map(
+        (p, i) =>
+          `<span class="fc-part fc-${(i % 4) + 1}">${this.escapeHtml(p)}</span>`,
+      )
+      .join(' ');
+
+    // מחזירים מינוס אם צריך + סיומת אם קיימת
+    return `${isNegative ? '-' : ''}${colored}${
+      suffix ? `<span class="fc-part">/${this.escapeHtml(suffix)}</span>` : ''
+    }`;
   }
 
   loadMock() {

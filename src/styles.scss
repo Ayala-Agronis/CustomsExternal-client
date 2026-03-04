@@ -144,3 +144,30 @@ button:not(.p-button) {
 //     color: black;
 //     background-color: white;
 // }
+
+
+/* classification colored parts */
+.fc {
+  font-weight: 800;
+  direction: ltr;
+  unicode-bidi: plaintext;
+}
+
+.fc-part {
+  display: inline-block;
+  padding: 0 2px;
+  border-radius: 4px;
+}
+
+.fc-1 {
+  color: #7b1fa2;
+}
+.fc-2 {
+  color: #1976d2;
+}
+.fc-3 {
+  color: #d32f2f;
+}
+.fc-4 {
+  color: #f57c00;
+}
