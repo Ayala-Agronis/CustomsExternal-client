@@ -430,7 +430,6 @@
 //     return docType ? docType.name : code;
 //   }
 
-
 //   updateDocumentType(code: string) {
 //     const foundCode = this.documentCodes.find(doc => doc.code === code);
 //     if (foundCode) {
@@ -453,7 +452,6 @@
 //     if (input?.files?.length) {
 
 //       const file = input.files[0];
-
 
 //       const documentTypeCode = this.selectedDocumentCode.code;
 
@@ -540,7 +538,6 @@
 //   //   }
 //   //   return '';
 //   // }
-
 
 //   async saveDocuments() {
 //     const hasCode714 = Object.keys(this.uploadedFilesByType).includes('714')
@@ -688,7 +685,6 @@
 //   //     }
 //   //   }
 
-
 //   //   this.loading = true;
 
 //   //   this.documentsService.sendToCustoms$(formData).subscribe(
@@ -793,7 +789,6 @@
 //     }
 //   }
 
-
 //   translateHebrewToEnglish(fileName: string): string {
 //     const hebrewToEnglishMap: { [key: string]: string } = {
 //       'א': 'A', 'ב': 'B', 'ג': 'G', 'ד': 'D', 'ה': 'H', 'ו': 'V', 'ז': 'Z', 'ח': 'H',
@@ -840,11 +835,11 @@ import { CargoKey } from '../../shared/models/cargo-context.model';
     MessagesModule,
     DialogModule,
     ProgressSpinnerModule,
-    FormsModule
-  ]
+    FormsModule,
+    TooltipModule,
+  ],
 })
 export class AddDocumentsComponent {
-
   loading = false;
   msgs1: Message[] = [];
   documents: any[] = [];
@@ -875,8 +870,10 @@ export class AddDocumentsComponent {
   constructor(
     private documentsService: DocumentService,
     private sanitizer: DomSanitizer,
-    private stepService: StepService
-  ) { }
+    private stepService: StepService,
+    private router: Router,
+    private decService: DeclarationService, // ✅ חדש
+  ) {}
 
   ngOnInit(): void {
     this.cols = [
@@ -887,6 +884,10 @@ export class AddDocumentsComponent {
     ];
 
     this.loadDocuments();
+
+    if (this.currentDecId) {
+      this.decService.loadCargoContextFromStorage(this.currentDecId);
+    }
 
     // בחר את סוג המסמך הראשון
     if (this.documentCodes && this.documentCodes.length > 0) {
@@ -900,42 +901,107 @@ export class AddDocumentsComponent {
   loadDocuments() {
     if (!this.currentDecId) return;
     this.loading = true;
-    this.documentsService.getDocumentsByEntityId$(this.currentDecId)
-      .subscribe({
-        next: res => {
-          this.documents = res;
-          this.loading = false;
-          // ✅ בדוק אם אין מסמכים
-          if (!this.documents || this.documents.length === 0) {
-            this.msgs1 = [
-              // {
-              //   severity: 'info',
-              //   summary: 'מסמכי הצהרה',
-              //   detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
-
-              // }
-            ];
-          }
-        },
-        error: (err: any) => {
-          this.documents = [];
-          this.loading = false;
-          // ✅ אם אין מסמכים (404/204) אל תציג הודעה
-          if (err?.status === 404 || err?.status === 204) {
-            this.msgs1 = [];
-            return;
-          }
-          // ✅ בודא הודעה בשגיאה
+    this.documentsService.getDocumentsByEntityId$(this.currentDecId).subscribe({
+      next: (res) => {
+        this.documents = res;
+        this.loading = false;
+        // ✅ בדוק אם אין מסמכים
+        if (!this.documents || this.documents.length === 0) {
           this.msgs1 = [
-            {
-              severity: 'error',
-              summary: 'מסמכי הצהרה',
-              detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
-
-            }
+            // {
+            //   severity: 'info',
+            //   summary: 'מסמכי הצהרה',
+            //   detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
+            // }
           ];
         }
-      });
+      },
+      error: (err: any) => {
+        this.documents = [];
+        this.loading = false;
+        // ✅ אם אין מסמכים (404/204) אל תציג הודעה
+        if (err?.status === 404 || err?.status === 204) {
+          this.msgs1 = [];
+          return;
+        }
+        // ✅ בודא הודעה בשגיאה
+        this.msgs1 = [
+          {
+            severity: 'error',
+            summary: 'מסמכי הצהרה',
+            detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`,
+          },
+        ];
+      },
+    });
+  }
+
+  hasDocument(type: string): boolean {
+    return (
+      Array.isArray(this.documents) &&
+      this.documents.some((d: any) => d.DocumentType === type)
+    );
+  }
+
+  // האם יש קבצים חדשים שעוד לא נשמרו
+  hasPendingUploads(): boolean {
+    return Object.keys(this.uploadedFilesByType).length > 0;
+  }
+
+  // תנאי האם אפשר לשלוח למכס (כמו שהיה לך: 714 + 380)
+  canSendToCustoms(): boolean {
+    return (
+      this.hasDocument('714') &&
+      this.hasDocument('380') &&
+      !this.loading &&
+      !this.hasPendingUploads()
+    );
+  }
+
+  sendDecToCustoms() {
+    // אם את רוצה להיות בטוחה – אל תשלחי אם התנאים לא מתקיימים
+    if (!this.canSendToCustoms()) {
+      this.msgs1 = [
+        {
+          severity: 'warn',
+          summary: 'לא ניתן לשלוח',
+          detail: this.getSendToCustomsTooltip(),
+        },
+      ];
+      return;
+    }
+
+    // const navigationExtras: any = {
+    //   queryParams: { Mode: 'e', Send: 'T' },
+    // };
+
+    // this.router.navigate(['declaration-main/dec-form-ts'], navigationExtras);
+
+    const decType = (
+      localStorage.getItem('decType') ?? 'regular'
+    ).toLowerCase();
+
+    const target =
+      decType === 'tr' || decType === 'ts'
+        ? 'declaration-main/dec-form-ts'
+        : 'declaration-main/dec-form';
+
+    // הכי בטוח כשיש '/' בנתיב:
+    this.router.navigateByUrl(
+      `${target}?Mode=e&Send=T&type=${encodeURIComponent(decType)}`,
+    );
+  }
+
+  getSendToCustomsTooltip(): string {
+    if (this.hasPendingUploads())
+      return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמרי קודם ואז שלחי למכס.';
+    const has714 = this.hasDocument('714');
+    const has380 = this.hasDocument('380');
+
+    if (!has714 && !has380) return 'חסר שטר מטען (714) וחסר חשבונית ספק (380)';
+    if (!has714) return 'חסר שטר מטען (714)';
+    if (!has380) return 'חסר חשבונית ספק (380)';
+    return '';
   }
 
   // =========================
@@ -956,7 +1022,6 @@ export class AddDocumentsComponent {
   canUpload(): boolean {
     // return !!this.selectedFile || Object.keys(this.uploadedFilesByType).length > 0;
     return Object.keys(this.uploadedFilesByType).length > 0;
-
   }
 
   // =========================
@@ -1015,7 +1080,7 @@ export class AddDocumentsComponent {
 
                 // אין אטריביוטים לסוג הזה -> מסיימים מסמך
                 if (!attrsBase.length) {
-              pending--;
+                  pending--;
                   finalizeIfDone();
                   return;
                 }
@@ -1046,11 +1111,11 @@ export class AddDocumentsComponent {
                       ];
                       finalizeIfDone();
                     },
-            });
-          },
+                  });
+              },
               error: () => {
-            pending--;
-            this.loading = false;
+                pending--;
+                this.loading = false;
                 this.msgs1 = [
                   {
                     severity: 'error',
@@ -1059,7 +1124,7 @@ export class AddDocumentsComponent {
                   },
                 ];
               },
-        });
+            });
           },
           error: () => {
             pending--;
@@ -1072,7 +1137,7 @@ export class AddDocumentsComponent {
               },
             ];
           },
-    });
+        });
       }
     }
 
@@ -1105,7 +1170,7 @@ export class AddDocumentsComponent {
               detail: 'המסמך נמחק',
             },
           ];
-      this.loadDocuments();
+          this.loadDocuments();
           this.loading = false;
         },
         error: () => {
@@ -1118,7 +1183,7 @@ export class AddDocumentsComponent {
             },
           ];
         },
-    });
+      });
   }
 
   // editDocument(row: any) {
@@ -1132,14 +1197,22 @@ export class AddDocumentsComponent {
     if (row.URL) {
       this.fileToView = this.sanitizer.bypassSecurityTrustResourceUrl(row.URL);
     } else {
-      this.msgs1 = [{ severity: 'error', summary: 'שגיאה', detail: 'לא ניתן לטעון את המסמך' }];
+      this.msgs1 = [
+        {
+          severity: 'error',
+          summary: 'שגיאה',
+          detail: 'לא ניתן לטעון את המסמך',
+        },
+      ];
     }
   }
 
   viewNewFile(file: File) {
     const reader = new FileReader();
     reader.onload = () => {
-      this.fileToView = this.sanitizer.bypassSecurityTrustResourceUrl(reader.result as string);
+      this.fileToView = this.sanitizer.bypassSecurityTrustResourceUrl(
+        reader.result as string,
+      );
       this.displayDialog = true;
     };
     reader.readAsDataURL(file);
@@ -1153,7 +1226,7 @@ export class AddDocumentsComponent {
   }
 
   getDocumentTypeName(code: string): string {
-    const found = this.documentCodes.find(d => d.code === code);
+    const found = this.documentCodes.find((d) => d.code === code);
     return found ? found.name : code;
   }
 
