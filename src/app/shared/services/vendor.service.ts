@@ -1,6 +1,6 @@
 import { HttpParams, HttpHeaders, HttpClient } from "@angular/common/http";
 import { catchError, Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
+import { apiConfig } from '../../config/api-endpoints';
 import { Injectable } from "@angular/core";
 
 
@@ -15,7 +15,7 @@ export class VendorService{
       .set('englishPostalCode', vendor.EnglishPostalCode)
       .set('licensedDealerNumber', vendor.LicensedDealerNumber)
       .set('vendorID', vendor.VendorID)
-      return this.http.post( `${environment.customsApiUrl}Vendor`,
+      return this.http.post( `${apiConfig.customsApiUrl}Vendor`,
         body.toString(),
         {
           headers: new HttpHeaders()
@@ -26,7 +26,7 @@ export class VendorService{
 
   postVendor$(vendor: any): Observable<any> { 
     console.log(vendor);
-    return this.http.post<any>(`${environment.customsdbApiUrl}vendors/PostVendors`, vendor).pipe(
+    return this.http.post<any>(`${apiConfig.customsdbApiUrl}vendors/PostVendors`, vendor).pipe(
       catchError(error => {
         console.error('Error in postVendor$', error);
         throw error; 
@@ -35,7 +35,7 @@ export class VendorService{
   }
 
   updateVendor$(vendor: any): Observable<any> {
-    return this.http.put<any>(`${environment.customsdbApiUrl}/Vendors/${vendor.vendorIDField}`, vendor);
+    return this.http.put<any>(`${apiConfig.customsdbApiUrl}/Vendors/${vendor.vendorIDField}`, vendor);
   }
   
   

@@ -2,6 +2,8 @@
     <p-progressSpinner></p-progressSpinner>
 </div>
 
+<!-- ✅ הוסף את זה למעלה בתחילת הקובץ -->
+<p-confirmDialog></p-confirmDialog>
 
 <p-toast></p-toast>
 <p-card class="queryDec">
@@ -50,11 +52,19 @@
                                 <p-columnFilter type="text" field="Id" display="menu"></p-columnFilter>
                             </div>
                         </th>
-                        <th [pSortableColumn]="'DeclarationNumber'">
+                        <!-- <th [pSortableColumn]="'DeclarationNumber'">
                             <div class="flex align-items-center">
                                 <p-sortIcon field="DeclarationNumber"></p-sortIcon>
                                 הצהרה
                                 <p-columnFilter type="text" field="DeclarationNumber" display="menu"></p-columnFilter>
+                            </div>
+                        </th> -->
+                        <th [pSortableColumn]="'AgentFileReferenceID'">
+                            <div class="flex align-items-center">
+                                <p-sortIcon field="DeclarationNumber"></p-sortIcon>
+                                הצהרה
+                                <p-columnFilter type="text" field="AgentFileReferenceID"
+                                    display="menu"></p-columnFilter>
                             </div>
                         </th>
                         <th [pSortableColumn]="'ImporterID'">
@@ -136,8 +146,15 @@
                 <ng-template style="text-align: right;" pTemplate="body" let-declartion>
                     <tr>
 
-                        <td> <button class="edit" pButton icon="pi pi-pencil"
+                        <!-- <td> <button class="edit" pButton icon="pi pi-pencil"
                                 (click)="editDeclaration(declartion)"></button>
+                        </td> -->
+                        <!-- ✅ עמודת כפתורים - עריכה והעתק -->
+                        <td style="display: flex; gap: 5px; align-items: center;">
+                            <button class="edit" pButton icon="pi pi-pencil" (click)="editDeclaration(declartion)"
+                                pTooltip="עריכה" tooltipPosition="top"></button>
+                            <button class="copy" pButton icon="pi pi-copy" (click)="copyDeclaration(declartion)"
+                                pTooltip="העתק" tooltipPosition="top"></button>
                         </td>
                         <td>{{declartion.Id}}</td>
                         <td>{{declartion.DeclarationNumber}}</td>

@@ -15,19 +15,22 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DeclarationService } from '../../shared/services/declaration.service';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { StepService } from '../../shared/services/step.service';
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-declaration-query',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ProgressSpinnerModule, ButtonModule, TableModule, ToastModule, DropdownModule, CalendarModule, MessagesModule,],
-  providers: [MessageService],
+  imports: [CommonModule, FormsModule, CardModule, ProgressSpinnerModule, ButtonModule, TableModule, ToastModule, DropdownModule, CalendarModule, MessagesModule,ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './declaration-query.component.html',
   styleUrl: './declaration-query.component.scss'
 })
 export class DeclarationQueryComponent {
   msgs1: Message[] = [];
 
-  declartions: any
+  declartions: any;
+  decType = 'tr'
   allDeclarations: any;
   // declartion!: Declaration;
   initialDeclarationsCount: number = 0;
@@ -67,6 +70,7 @@ export class DeclarationQueryComponent {
     // private customsClientService: CustomsClientsService,
     private cdRef: ChangeDetectorRef,
     private stepService: StepService,
+    private confirmationService: ConfirmationService, // ✅ הוסף את זה
   ) { }
 
 
@@ -74,31 +78,26 @@ export class DeclarationQueryComponent {
     this.cdRef.detectChanges();
   }
 
- ngOnInit(): void {
-  // קבלת מזהה המשתמש
-  this.importerId = localStorage.getItem('userId');
+  ngOnInit(): void {
+    this.importerId = localStorage.getItem('userId');
 
-  // עדכון גודל רכיבים אם יש כאלה תלוים ברזולוציה
-  window.dispatchEvent(new Event('resize'));
+    window.dispatchEvent(new Event('resize'));
 
-  // קביעת טווח תאריכים של 7 ימים אחורה כברירת מחדל
-  this.endDate = new Date(); // להבטיח שהוא עדכני
-  this.startDate = new Date();
-  this.startDate.setDate(this.endDate.getDate() - 7);
+    this.endDate = new Date();
+    this.startDate = new Date();
+    this.startDate.setDate(this.endDate.getDate() - 10);
 
-  // שליפה ראשונית של הצהרות לטווח ברירת מחדל
-  this.search();
+    this.search();
 
-  // טעינת ערכי סטטוסי מכס
-  this.customsDataService.getCustomsTableValues$('1981').pipe(
-    map(res => {
-      this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
-        name: item.Value2,
-        code: item.Value1
-      }));
-    })
-  ).subscribe();
-}
+    this.customsDataService.getCustomsTableValues$('1981').pipe(
+      map(res => {
+        this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
+          name: item.Value2,
+          code: item.Value1
+        }));
+      })
+    ).subscribe();
+  }
 
   updateEndDateMinDate() {
     if (this.startDate) {
@@ -112,24 +111,26 @@ export class DeclarationQueryComponent {
     this.isFiltered = false
   }
 
- noDeclarationsFound: boolean = false; // ✅ חדש
+  noDeclarationsFound: boolean = false;
 
- noDeclarationsMsg: Message[] = [
-  {
-    severity: 'info',
-    summary: 'תוצאה',
-    detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.'
-  }
-];
+  noDeclarationsMsg: Message[] = [
+    {
+      severity: 'info ',
+      summary: ' תוצאה',
+      detail: ' לא נמצאו הצהרות בטווח התאריכים שבחרת.'
+    }
+  ];
 
-
-
- 
   search() {
+
+    this.msgs1 = [];
+
     if (!this.endDate || !this.startDate) {
       this.msgs1 = [
-        { severity: 'error', summary: 'שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
+        { severity: 'error', summary: ' שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
       ];
+      this.noDeclarationsFound = false;
+      this.noDeclarationsMsg = [];
       return;
     }
 
@@ -159,7 +160,19 @@ export class DeclarationQueryComponent {
 
         this.filteredDeclarations = this.allDeclarations;
         this.filteredDeclarationsCount = this.filteredDeclarations.length;
-        this.noDeclarationsFound = this.filteredDeclarationsCount === 0; // ✅ חדש
+        this.noDeclarationsFound = this.filteredDeclarationsCount === 0;
+
+        if (this.noDeclarationsFound) {
+          this.noDeclarationsMsg = [{
+            severity: 'info',
+            summary: 'תוצאה',
+            detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.'
+          }];
+        } else {
+          this.noDeclarationsMsg = [];
+        }
+
+        this.msgs1 = [];
         this.isShowFilter = true;
         this.isFiltered = true;
       }),
@@ -213,7 +226,7 @@ export class DeclarationQueryComponent {
   }
 
   customStatusName(code: any) {
-    for (let i = 0; i < this.customsStatuses.length; i++) {
+    for (let i = 0; i < this.customsStatuses?.length; i++) {
       let a = this.customsStatuses[i];
       if (a.code == code) {
         return a.name
@@ -234,9 +247,62 @@ export class DeclarationQueryComponent {
     // localStorage.setItem('declarationId', declaration.AgentFileReferenceID)
     // this.router.navigateByUrl('app-declaration/new-declaration?Mode=e');
     localStorage.setItem('currentDecId', declaration.Id)
-    this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e' } })
-    this.stepService.emitStepCompleted('dec-form');
+    this.decType = declaration.Type;
+    localStorage.setItem('decType', declaration.Type);
+
+    if (this.decType == 'tr') {
+      this.router.navigate(['declaration-main/dec-form-ts'], { queryParams: { 'Mode': 'e', } })
+      this.stepService.emitStepCompleted('dec-form-ts');
+
+    }
+    else {
+      this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e', } })
+      this.stepService.emitStepCompleted('dec-form');
+    }
+
     // this.router.navigateByUrl('declaration-main/dec-form?Mode=e');
+  }
+  // ✅ פונקציה חדשה להעתקת הצהרה
+  // ✅ פונקציה מעודכנת עם popup אישור
+
+  copyDeclaration(declaration: any) {
+    this.confirmationService.confirm({
+      message: 'האם אתה בטוח שברצונך להעתיק את ההצהרה?',
+      header: 'אישור העתקה',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'כן',
+      rejectLabel: 'לא',
+      accept: () => {
+        // ✅ רק אם לחץ "כן" - בצע את ההעתקה
+
+        localStorage.setItem('currentDecId', declaration.Id);
+        localStorage.setItem('decType', declaration.Type);
+        localStorage.setItem('copyMode', 'true'); // ✅ סימן שזה מצב העתקה
+
+        if (declaration.Type == 'tr') {
+          this.router.navigate(['declaration-main/dec-form-ts'], {
+            queryParams: {
+              'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
+              'type': 'transshipment'
+            }
+          });
+          this.stepService.emitStepCompleted('dec-form-ts');
+        } else {
+          this.router.navigate(['declaration-main/dec-form'], {
+            queryParams: {
+              'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
+              'type': 'import'
+            }
+          });
+          this.stepService.emitStepCompleted('dec-form');
+        }
+      },
+      reject: () => {
+        // ✅ אם לחץ "לא" - אל תעשה כלום
+        console.log('העתקה בוטלה');
+
+      }
+    });
   }
 
 }

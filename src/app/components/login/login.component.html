@@ -1,4 +1,3 @@
-<!-- ✅ שכבת טעינה -->
 <div class="overlay-spinner" *ngIf="loading">
   <p-progressSpinner></p-progressSpinner>
 </div>
@@ -14,17 +13,17 @@
           <label for="email">אימייל </label>
           <input #emailInput id="email" type="email" pInputText autocomplete="username" formControlName="Email" />
         </div>
-        <div class="form-item">
-          <label for="password">סיסמה </label>
-          <input
-            #passwordInput
-            id="password"
-            type="password"
-            pPassword
-            [feedback]="false"
-            autocomplete="current-password"
-            formControlName="Password"
-          />
+        <div class="form-item password-wrapper">
+          <label for="password">סיסמא
+
+
+          </label>
+          <div class="password-container">
+            <input #passwordInput id="password" [type]="showPassword ? 'text' : 'password'" pPassword [feedback]="false"
+              autocomplete="current-password" formControlName="Password" />
+
+            <i class="pi" [ngClass]="showPassword ? 'pi-eye' : 'pi-eye-slash'" (click)="togglePassword()"></i>
+          </div>
         </div>
       </div>
 

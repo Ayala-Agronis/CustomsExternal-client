@@ -1,0 +1,224 @@
+/* =========================
+   Card
+   ========================= */
+:host ::ng-deep .p-card {
+  width: 85%;
+  margin: auto;
+}
+
+/* =========================
+   Layout: Filters row
+   ========================= */
+.filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 260px; /* dropdown column */
+}
+
+.form-group.wide {
+  flex: 1 1 520px; /* search column grows */
+  min-width: 320px;
+  width: auto;
+}
+
+/* =========================
+   Loading
+   ========================= */
+.loading-overlay {
+  position: fixed;
+  inset: 0; /* top:0 right:0 bottom:0 left:0 */
+  display: flex;
+  align-items: center; /* מרכז אנכית */
+  justify-content: center; /* מרכז אופקית */
+  background: rgba(255, 255, 255, 0.6); /* שקיפות עדינה */
+  z-index: 1000;
+}
+
+/* =========================
+   Dropdown (book types) styling
+   ========================= */
+:host ::ng-deep .filters .p-dropdown {
+  width: 100%;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row {
+  width: 100%;
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row.import {
+  background-color: #fdecea;
+  color: #c0392b;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row.export {
+  background-color: #fff4e5;
+  color: #d68910;
+}
+
+:host ::ng-deep .book-type-dropdown .book-row.autonomy {
+  background-color: #eafaf1;
+  color: #1e8449;
+}
+
+:host ::ng-deep .book-type-dropdown .p-dropdown-item-content {
+  padding: 0; /* keep background full */
+}
+
+:host ::ng-deep .p-dropdown-item:hover .book-row.import {
+  background: #f9d6d2;
+}
+:host ::ng-deep .p-dropdown-item:hover .book-row.export {
+  background: #ffe8c2;
+}
+:host ::ng-deep .p-dropdown-item:hover .book-row.autonomy {
+  background: #d9f2e3;
+}
+
+/* =========================
+   Search input
+   ========================= */
+.search-input {
+  width: 100%;
+  height: 37px; /* nice match with dropdown */
+  display: block;
+}
+
+/* =========================
+   Results panel - FULL WIDTH under filters
+   ========================= */
+.results-panel.full {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.results-title {
+  padding: 10px 12px;
+  font-weight: 700;
+  border-bottom: 1px solid #eee;
+  opacity: 0.9;
+}
+
+.results-empty {
+  padding: 12px;
+  opacity: 0.7;
+}
+
+.results-list {
+  display: block;
+}
+
+.result-row {
+  width: 100%;
+  display: block;
+  text-align: right;
+  padding: 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.result-row:hover {
+  background: #fafafa;
+}
+
+.result-top {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-sub {
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+/* highlight term */
+:host ::ng-deep mark.hit {
+  background: #fff176;
+  padding: 0;
+  border-radius: 3px;
+  margin: 0;
+  display: inline;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+/* =========================
+   Details section (existing)
+   ========================= */
+.title {
+  margin: 12px 0;
+}
+
+.kv {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+
+.law-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.law-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.law-buttons button.active {
+  // filter: brightness(1.2);
+  background-color: #ff7a00;
+  border: 2px solid #ff7a00;
+}
+
+.empty {
+  padding: 10px 0;
+  opacity: 0.8;
+}
+
+.empty.big {
+  padding: 18px 0;
+}
+
+/* יישור RTL מלא לטבלאות */
+/* טבלת PrimeNG – RTL + יישור לימין */
+:host ::ng-deep .ui-rtl,
+:host ::ng-deep .ui-rtl .p-datatable-wrapper {
+  direction: rtl;
+}
+
+:host ::ng-deep .ui-rtl .p-datatable-thead > tr > th,
+:host ::ng-deep .ui-rtl .p-datatable-tbody > tr > td,
+:host ::ng-deep .ui-rtl .p-datatable-tfoot > tr > td {
+  direction: rtl;
+  text-align: right !important;
+  unicode-bidi: plaintext;
+}
+
+/* אם יש עמודת תאריכים/מספרים ואת רוצה שהם יישארו LTR בתוך תא RTL */
+:host ::ng-deep .ui-rtl .num-ltr {
+  direction: ltr;
+  text-align: left !important;
+  unicode-bidi: plaintext;
+}

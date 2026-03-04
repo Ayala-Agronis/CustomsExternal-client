@@ -104,3 +104,28 @@ header {
 .power-of-attorney-link:hover {
     color: #003366;
 }
+
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.submenu {
+  position: absolute;
+  background: white;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ccc;
+  width: 160px;
+  z-index: 10;
+}
+
+.submenu li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.submenu li:hover {
+  background: #eee;
+}

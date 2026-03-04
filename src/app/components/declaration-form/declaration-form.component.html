@@ -4,39 +4,40 @@
     </div>
     <div class="title-container">
         <h2 class="form-title title">תהליך הזנת הצהרה</h2>
-        <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value"> מספר הצהרה :{{generalDeclarationForm.get("DeclarationNumber")?.value }}</label>
-        <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value">סטטוס הצהרה :{{customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }} </label>
+        <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value"> מספר הצהרה
+            :{{generalDeclarationForm.get("DeclarationNumber")?.value }}</label>
+        <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value">סטטוס הצהרה
+            :{{customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }} </label>
     </div>
-  
+
     <p-confirmDialog></p-confirmDialog>
     <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
 
     <!-- General Information -->
     <p-card>
-        <div class="form-group">
-            <div class="form-item">
-                <label>מזהה יבואן </label>
-                <input pInputText formControlName="ImporterID" readonly class="readonly-field">
-            </div>
-            <!-- <div class="form-item">
-                <label>מספר טלפון</label>
-                <input pInputText>
-            </div> -->
-            <div class="form-item">
-                <label for="customsProcess">תהליך מכס <span class="required">*</span></label>
-                <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
-                    inputId="autocomplete" [suggestions]="filteredCustomsProcess"
-                    (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
-                </p-autoComplete>
-
-            </div>
-
-        </div>
 
         <!-- Consignment Details -->
 
         <div formGroupName="Consignments">
             <div class="form-group">
+
+                <div class="form-item">
+                    <label>מזהה יבואן </label>
+                    <input pInputText formControlName="ImporterID" readonly class="readonly-field">
+                </div>
+                <!-- <div class="form-item">
+                <label>מספר טלפון</label>
+                <input pInputText>
+            </div> -->
+                <div class="form-item">
+                    <label for="customsProcess">תהליך מכס<span class="required">*</span></label>
+                    <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
+                        inputId="autocomplete" [suggestions]="filteredCustomsProcess"
+                        (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
+                    </p-autoComplete>
+
+                </div>
+
                 <div class="form-item">
                     <label> שנה <span class="required">*</span></label>
                     <input pInputText formControlName="TransportContractDocumentID" (blur)="onCargoIDBlur(1)">
@@ -54,7 +55,8 @@
                     <input pInputText formControlName="ThirdCargoID" (blur)="onCargoIDBlur(3)">
                 </div>
             </div>
-            <h3>פרטי משלוח</h3>
+
+            <h3 class="form-subtitle">פרטי משלוח</h3>
             <div class="form-group">
                 <div class="form-item">
                     <label>ארץ יצוא <span class="required">*</span></label>
@@ -82,8 +84,6 @@
                     <label> תאריך הגעת טובין <span class="required">*</span> </label>
                     <p-calendar formControlName="ArrivalDateTime" [showIcon]="true" dateFormat="dd/mm/yy"></p-calendar>
                 </div>
-            </div>
-            <div class="form-group">
                 <div class="form-item">
                     <label> סוג מזהה מטען <span class="required">*</span></label>
                     <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
@@ -104,20 +104,19 @@
                     </p-autoComplete>
                 </div>
             </div>
-
         </div>
     </p-card>
     <br />
     <!-- Package Details -->
     <p-card>
-        <h3>פירוט חבילות</h3>
+        <h3 class="form-subtitle">פירוט חבילות</h3>
         <div class="form-group" formGroupName="ConsignmentPackagesMeasures">
             <div class="form-item">
-                <label> כמות</label>
+                <label>* כמות</label>
                 <input pInputText type="number" formControlName="TotalPackageQuantity">
             </div>
             <div class="form-item">
-                <label> משקל </label>
+                <label>* משקל </label>
                 <input pInputText type="number" formControlName="GrossMassMeasure">
             </div>
         </div>
@@ -139,7 +138,7 @@
                     <div class="supplierInvoices-container">
                         <div class="right-side">
                             <div class="header">
-                                <h3>חשבוניות וסחורות</h3>
+                                <h3 class="form-subtitle">חשבוניות וסחורות</h3>
 
                             </div>
                             <div class="form-group">
@@ -169,8 +168,7 @@
                                     <p-calendar formControlName="IssueDateTime" [showIcon]="true"
                                         dateFormat="dd/mm/yy"></p-calendar>
                                 </div>
-                            </div>
-                            <div class="form-group">
+
                                 <div class="form-item">
                                     <label> ארץ יצוא <span class="required">*</span></label>
                                     <p-autoComplete [forceSelection]="true" formControlName="LocationID"
@@ -329,11 +327,14 @@
     </div>
 
     <div class="btns">
+
         <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
         <button [disabled]="generalDeclarationForm.invalid ||suplierErrorExist" class="button-primary"
             (click)="saveDeclaration()" pTooltip="{{ getFormErrors(false) }}" tooltipPosition="top"
             [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
-
+        <!-- <button class="button-primary" (click)="copyDeclaration()" [disabled]="loading">
+            העתק
+        </button> -->
         <button [ngClass]="{'disabled':generalDeclarationForm.invalid }" *ngIf="showBtnCustoms" class="button-primary"
             (click)="sendDeclaration()" pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top"
             [tooltipDisabled]="!checkVersion()">שלח למכס</button>

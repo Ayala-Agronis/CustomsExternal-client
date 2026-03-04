@@ -12,12 +12,22 @@ export const routes: Routes = [
   { path: 'independent-payment', loadComponent: () => import('./components/independent-payment/independent-payment.component').then(c => c.IndependentPaymentComponent), data: { title: ' תשלום מיסים באופן עצמאי' } },
   { path: 'dec-query', loadComponent: () => import('./components/declaration-query/declaration-query.component').then(c => c.DeclarationQueryComponent), data: { title: ' הצהרות ' } },
   { path: 'search-vendor', loadComponent: () => import('./components/search-vendor/search-vendor.component').then(c => c.SearchVendorComponent), data: { title: ' חיפוש ספק ' } },
+{
+  path: 'customs-book-query',
+  loadComponent: () =>
+    import('./components/customs-book-query/customs-book-query.component')
+      .then(c => c.CustomsBookQueryComponent),
+  data: { title: 'שאילתת ספר מכס' }
+},
+
+
 
   // { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },
   {
-    path: 'declaration-main', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), canActivate: [AuthGuard] , children: [
-      { path: '', redirectTo: 'home-page', pathMatch: 'full' },
+    path: 'declaration-main', loadComponent: () => import('./components/declaration-main/declaration-main.component').then(c => c.DeclarationMainComponent), canActivate: [AuthGuard], children: [
+      // { path: '', redirectTo: '/home-page', pathMatch: 'full' },
       { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },
+      { path: 'dec-form-ts', loadComponent: () => import('./components/declaration-form-Ts/declaration-form-Ts.component').then(c => c.DeclarationFormTsComponent), data: { title: 'טופס שטעון' } },
       { path: 'add-doc', loadComponent: () => import('./components/add-documents/add-documents.component').then(c => c.AddDocumentsComponent), data: { title: 'הוספת מסמכים' } },
       { path: 'commission-payment', loadComponent: () => import('./components/commission-payment/commission-payment.component').then(c => c.CommissionPaymentComponent), data: { title: ' תשלום עמלה' } },
       { path: 'independent-payment', loadComponent: () => import('./components/independent-payment/independent-payment.component').then(c => c.IndependentPaymentComponent), data: { title: ' תשלום מיסים באופן עצמאי' } },

@@ -1,6 +1,21 @@
 import { CommonModule, FormatWidth, JsonPipe } from '@angular/common';
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  OnInit,
+  Output,
+} from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CalendarModule } from 'primeng/calendar';
@@ -9,7 +24,16 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
-import { BehaviorSubject, forkJoin, map, min, of, Subject, takeUntil, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  forkJoin,
+  map,
+  min,
+  of,
+  Subject,
+  takeUntil,
+  tap,
+} from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
 import { StepService } from '../../shared/services/step.service';
@@ -24,14 +48,28 @@ import { PaymentService } from '../../shared/services/payment.service';
 @Component({
   selector: 'app-declaration-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TabViewModule, TooltipModule, CardModule, ProgressSpinnerModule, MessagesModule, ButtonModule, InputTextModule, CalendarModule, InputTextareaModule, AutoCompleteModule, TableModule, ConfirmDialogModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TabViewModule,
+    TooltipModule,
+    CardModule,
+    ProgressSpinnerModule,
+    MessagesModule,
+    ButtonModule,
+    InputTextModule,
+    CalendarModule,
+    InputTextareaModule,
+    AutoCompleteModule,
+    TableModule,
+    ConfirmDialogModule,
+  ],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss',
   providers: [ConfirmationService, MessageService],
 })
 export class DeclarationFormComponent implements OnInit {
-
-  generalDeclarationForm!: FormGroup
+  generalDeclarationForm!: FormGroup;
   filteredCustomsProcess: any[] = [];
   filteredCountryOfExport: any[] = [];
   filteredChargingCountry: any[] = [];
@@ -44,7 +82,6 @@ export class DeclarationFormComponent implements OnInit {
   filteredSupplierID: any[] = [];
   filteredFacilityType: any[] = [];
 
-
   declarationCountryOfExport: any;
   declarationCustomsProcess: any;
   declarationChargingCountry: any;
@@ -52,7 +89,7 @@ export class DeclarationFormComponent implements OnInit {
   declarationCurrencyCode: any;
   declarationTradeTermsConditionCode: any;
   declarationSupplierID: any;
-  declarationInvoiceTypeCode: any
+  declarationInvoiceTypeCode: any;
   declarationFacilityID: any;
 
   ExportationCountrySelect: any;
@@ -67,10 +104,11 @@ export class DeclarationFormComponent implements OnInit {
   exportationCountryControlError: any = true;
   perfectDecalartion: any;
   mode: any;
+  declarationType: string = 'import';
   customStatus: any;
   customsStatuses: any;
 
-  showBtnCustoms = false
+  showBtnCustoms = true;
   loading: boolean = false;
   isLocked: boolean = false;
   msgs1: Message[] = [];
@@ -108,110 +146,213 @@ export class DeclarationFormComponent implements OnInit {
     ClassificationID: 'מזהה סיווג',
     AmountType: 'כמות ',
     CustomsValueAmount: 'ערך טובין',
-    OriginCountryCode: 'ארץ מקור'
+    OriginCountryCode: 'ארץ מקור',
   };
   suplierErrorExist: boolean = false;
   suplierError: string = '';
 
-  constructor(private formBuilder: FormBuilder, private route: ActivatedRoute, private router: Router, private cd: ChangeDetectorRef, private confirmationService: ConfirmationService, private customsDataService: CustomsDataService, private decService: DeclarationService, private stepService: StepService, private paymentService: PaymentService) { }
+  constructor(
+    private formBuilder: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private cd: ChangeDetectorRef,
+    private confirmationService: ConfirmationService,
+    private customsDataService: CustomsDataService,
+    private decService: DeclarationService,
+    private stepService: StepService,
+    private paymentService: PaymentService,
+  ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       this.mode = params['Mode'];
-      if (this.mode !== 'e') {
-        this.initForm()
-        this.customsError = ''
-        this.customsErrorsContent = ''
-        const decId = localStorage.getItem('currentDecId');
-        this.paymentService.isDecPaid(decId).subscribe(res => {
-          console.log(res)
-          if (!decId) this.showBtnCustoms = false
-          if (res?.isPaid) {
-            this.showBtnCustoms = true
-          }
-          else
-            this.showBtnCustoms = false
-        })
-        this.customsDataService.GetSeq$('Customs').pipe(
-          tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
+      this.declarationType = params['type'] || 'import';
+
+      // ✅ טיפול במצב העתקה
+      if (this.mode === 'copy') {
+        this.loading = true;
+        // ✅ טען את ההצהרה ואז הפעל העתקה אוטומטית
+        this.loadAndCopyDeclaration();
+        return; // ✅ עצור את המשך הטעינה הרגילה
       }
 
-      if (params['customsSend'] === "true") {
-        this.msgs1 = [{ severity: 'success', summary: 'תשלום עמלה בוצע בהצלחה ', detail: "ניתן לשלוח טיוטה למכס" }]
+      // ✅ הזז את זה לכאן - בתוך ה-subscribe
+      if (this.mode === 'e') {
+        this.loading = true; // ✅ הפעל spinner רק אם זה עריכה
+      }
+
+      if (this.mode !== 'e') {
+        this.initForm();
+        this.customsError = '';
+        this.customsErrorsContent = '';
+        const decId = localStorage.getItem('currentDecId');
+        this.paymentService.isDecPaid(decId).subscribe((res) => {
+          console.log(res);
+          // if (!decId) this.showBtnCustoms = false
+          if (res?.isPaid) {
+            this.showBtnCustoms = true;
+          } else {
+            // this.showBtnCustoms = false
+          }
+        });
+        this.customsDataService
+          .GetSeq$('Customs')
+          .pipe(
+            tap((res) => {
+              localStorage.setItem('AgentFileReferenceID', res);
+            }),
+          )
+          .subscribe();
+      }
+
+      if (params['customsSend'] === 'true') {
+        this.msgs1 = [
+          {
+            severity: 'success',
+            summary: 'תשלום עמלה בוצע בהצלחה ',
+            detail: 'ניתן לשלוח טיוטה למכס',
+          },
+        ];
       }
       // if (params['fromDocs'] === "true") {
       //   this.msgs1 = [{ severity: 'error', summary: '  טיוטה שגויה', detail: "יש להגיע לטיוטה תקינה קודם תשלום עמלה" }]
       // }
-    })
+    });
 
     this.initForm();
 
     //data from cargo query
-    this.decService.packageData$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
-      if (data) {
-        (this.generalDeclarationForm.controls["ConsignmentPackagesMeasures"] as FormGroup).patchValue({
-          TotalPackageQuantity: data.totalNumberOfPackeges,
-          GrossMassMeasure: data.totalWeight,
-        });
-        (this.generalDeclarationForm.controls["Consignments"] as FormGroup).patchValue({
-          UnloadingLocationID: data.unloadingLocation
-        });
-      }
-    });
+    this.decService.packageData$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((data) => {
+        if (data) {
+          (
+            this.generalDeclarationForm.controls[
+              'ConsignmentPackagesMeasures'
+            ] as FormGroup
+          ).patchValue({
+            TotalPackageQuantity: data.totalNumberOfPackeges,
+            GrossMassMeasure: data.totalWeight,
+          });
+          (
+            this.generalDeclarationForm.controls['Consignments'] as FormGroup
+          ).patchValue({
+            UnloadingLocationID: data.unloadingLocation,
+          });
+        }
+      });
 
     forkJoin([
       this.customsDataService.getCustomsTableValues$('1354').pipe(
-        map(res => this.declarationCustomsProcess = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))),
+        map(
+          (res) =>
+            (this.declarationCustomsProcess = res.map(
+              (item: { Value2: any; Value1: any }) => ({
+                name: item.Value2,
+                code: item.Value1,
+              }),
+            )),
+        ),
+      ),
       this.customsDataService.getCustomsTableValues$('1981').pipe(
-        map(res => this.customsStatuses = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))),
+        map(
+          (res) =>
+            (this.customsStatuses = res.map(
+              (item: { Value2: any; Value1: any }) => ({
+                name: item.Value2,
+                code: item.Value1,
+              }),
+            )),
+        ),
+      ),
       // this.customsDataService.getCustomsTableValues$('2192').pipe(
       //   map(res => this.declarationUnpackingSite = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       // ),
 
       this.customsDataService.getCustomsTableValues$('1259').pipe(
-        map(res => this.declarationCargoIDType = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+        map(
+          (res) =>
+            (this.declarationCargoIDType = res.map(
+              (item: { Value2: any; Value1: any }) => ({
+                name: item.Value2,
+                code: item.Value1,
+              }),
+            )),
+        ),
       ),
       this.customsDataService.getCustomsTableValues$('1144').pipe(
-        map(res => this.declarationCurrencyCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+        map(
+          (res) =>
+            (this.declarationCurrencyCode = res.map(
+              (item: { Value2: any; Value1: any }) => ({
+                name: item.Value2,
+                code: item.Value1,
+              }),
+            )),
+        ),
       ),
       this.customsDataService.getCustomsTableValues$('1426').pipe(
-        map(res => this.declarationTradeTermsConditionCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+        map(
+          (res) =>
+            (this.declarationTradeTermsConditionCode = res.map(
+              (item: { Value2: any; Value1: any }) => ({
+                name: item.Value2,
+                code: item.Value1,
+              }),
+            )),
+        ),
       ),
       this.customsDataService.getCustomsTableValues$('1404').pipe(
-        map(res => this.declarationInvoiceTypeCode = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
+        map(
+          (res) =>
+            (this.declarationInvoiceTypeCode = res.map(
+              (item: { Value2: any; Value1: any }) => ({
+                name: item.Value2,
+                code: item.Value1,
+              }),
+            )),
+        ),
       ),
       this.customsDataService.getVendor$().pipe(
-        map(res => this.declarationSupplierID = res.map((item: { VendorName: any; VendorID: any }) => ({ name: item.VendorName, code: item.VendorID })))
+        map(
+          (res) =>
+            (this.declarationSupplierID = res.map(
+              (item: { VendorName: any; VendorID: any }) => ({
+                name: item.VendorName,
+                code: item.VendorID,
+              }),
+            )),
+        ),
       ),
       // this.customsDataService.getCustomsTableValues$('1426').pipe(
       //   map(res => res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       // ),
-
-
-    ]).subscribe(_ => {
+    ]).subscribe((_) => {
       //init data of consignment
       this.consignmentInit();
       if (this.mode == 'e') {
-        localStorage.setItem("maxIndex", "2");
+        localStorage.setItem('maxIndex', '2');
         this.customStatus = localStorage.getItem('CustomsStatus');
         this.initElements();
         //check if declaration is paid
         const decId = localStorage.getItem('currentDecId');
-        this.paymentService.isDecPaid(decId).subscribe(res => {
-          console.log(res)
+        this.paymentService.isDecPaid(decId).subscribe((res) => {
+          console.log(res);
           if (res?.isPaid) {
-            this.showBtnCustoms = true
+            this.showBtnCustoms = true;
           }
-        })
+        });
       }
-    }
+    });
+
+    const exportationCountryControl = this.generalDeclarationForm.get(
+      'Consignments.ExportationCountryCode',
     );
 
-    const exportationCountryControl = this.generalDeclarationForm.get('Consignments.ExportationCountryCode');
-
-    this.setChargingCountryControlStatus()
-    exportationCountryControl?.valueChanges.subscribe(value => {
-      this.exportationCountryControlError = this.getExportationCountryControlError(exportationCountryControl);
+    this.setChargingCountryControlStatus();
+    exportationCountryControl?.valueChanges.subscribe((value) => {
+      this.exportationCountryControlError =
+        this.getExportationCountryControlError(exportationCountryControl);
       this.setChargingCountryControlStatus();
     });
 
@@ -219,15 +360,20 @@ export class DeclarationFormComponent implements OnInit {
       this.setChargingCountryControlStatus();
     });
 
-    this.columns = ["מוצר מיובא ", "כמות", "ערך טובין", "ארץ מקור"];
+    this.columns = ['מוצר מיובא ', 'כמות', 'ערך טובין', 'ארץ מקור'];
 
     if (this.mode != 'e') {
-      this.customsError = ''
-      this.customsErrorsContent = ''
-      this.customsDataService.GetSeq$('Customs').pipe(
-        tap(res => { localStorage.setItem('AgentFileReferenceID', res) })).subscribe()
+      this.customsError = '';
+      this.customsErrorsContent = '';
+      this.customsDataService
+        .GetSeq$('Customs')
+        .pipe(
+          tap((res) => {
+            localStorage.setItem('AgentFileReferenceID', res);
+          }),
+        )
+        .subscribe();
     }
-
   }
 
   ngOnDestroy(): void {
@@ -236,19 +382,23 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   consignmentInit() {
-    this.loading = true
+    this.loading = true;
     // get data from Local Storage or fetch it if not available
-    const getCustomsData = (key: string, tableId: string, mappingFn: (item: any) => any) => {
+    const getCustomsData = (
+      key: string,
+      tableId: string,
+      mappingFn: (item: any) => any,
+    ) => {
       const localStorageData = localStorage.getItem(key);
       if (localStorageData) {
-        return of(JSON.parse(localStorageData));  // Return stored data as an observable
+        return of(JSON.parse(localStorageData)); // Return stored data as an observable
       } else {
         return this.customsDataService.getCustomsTableValues$(tableId).pipe(
-          map(res => {
+          map((res) => {
             const mappedData = res.map(mappingFn);
-            localStorage.setItem(key, JSON.stringify(mappedData));  // Save data to Local Storage
+            localStorage.setItem(key, JSON.stringify(mappedData)); // Save data to Local Storage
             return mappedData;
-          })
+          }),
         );
       }
     };
@@ -256,17 +406,22 @@ export class DeclarationFormComponent implements OnInit {
     const customsCountryExport$ = getCustomsData(
       'customsCountryExport',
       '1136',
-      (item: { Value2: any; Value1: any }) => ({ fullName: item.Value2, name: `${item.Value2.substring(0, 23)} (${item.Value1})`, code: item.Value1 })
-    ).pipe(
-      map(res => this.declarationCountryOfExport = res)
-    );
+      (item: { Value2: any; Value1: any }) => ({
+        fullName: item.Value2,
+        name: `${item.Value2.substring(0, 23)} (${item.Value1})`,
+        code: item.Value1,
+      }),
+    ).pipe(map((res) => (this.declarationCountryOfExport = res)));
 
     const customsChargingCountry$ = getCustomsData(
       'customsChargingCountry',
       '1344',
-      (item: { Value2: any; Value1: any }) => ({ name: item.Value1, code: item.Value1 })
+      (item: { Value2: any; Value1: any }) => ({
+        name: item.Value1,
+        code: item.Value1,
+      }),
     ).pipe(
-      map(res => {
+      map((res) => {
         this.declarationChargingCountry = res;
         this.loadingChargingCountrySubject.next(false);
       }),
@@ -274,45 +429,53 @@ export class DeclarationFormComponent implements OnInit {
         // if (this.UpdateMode === 'e' || this.UpdateMode === 'p') {
         //   this.filterChargingCountryByExportCode();
         // }
-      })
+      }),
     );
 
     const customsUnpackingSite$ = getCustomsData(
       'customsUnpackingSite',
       '2192',
-      (item: { Value2: any; Value1: any; Value7: any }) => ({ name: `${item.Value2.substring(0, 12)} (${item.Value1})`, code: item.Value1, siteType: item.Value7 })
-    ).pipe(
-      map(res => this.declarationUnpackingSite = res)
-    );
+      (item: { Value2: any; Value1: any; Value7: any }) => ({
+        name: `${item.Value2.substring(0, 12)} (${item.Value1})`,
+        code: item.Value1,
+        siteType: item.Value7,
+      }),
+    ).pipe(map((res) => (this.declarationUnpackingSite = res)));
 
     const customsFacilityID$ = getCustomsData(
       'customsFacilityID',
       '2012',
-      (item: { Value2: any; Value1: any; Value7: any }) => ({ name: `${item.Value2.substring(0, 7)} (${item.Value1})`, code: item.Value1, siteType: item.Value7 })
-    ).pipe(
-      map(res => this.declarationFacilityID = res)
-    );
+      (item: { Value2: any; Value1: any; Value7: any }) => ({
+        name: `${item.Value2.substring(0, 7)} (${item.Value1})`,
+        code: item.Value1,
+        siteType: item.Value7,
+      }),
+    ).pipe(map((res) => (this.declarationFacilityID = res)));
 
     const customsCargoIDType$ = getCustomsData(
       'customsCargoIDType',
       '1259',
-      (item: { Value2: any; Value1: any }) => ({ name: item.Value2, code: item.Value1 })
-    ).pipe(
-      map(res => this.declarationCargoIDType = res)
-    );
+      (item: { Value2: any; Value1: any }) => ({
+        name: item.Value2,
+        code: item.Value1,
+      }),
+    ).pipe(map((res) => (this.declarationCargoIDType = res)));
     // Use forkJoin to execute all requests or use cached data from Local Storage
     forkJoin([
       customsCountryExport$,
       customsChargingCountry$,
       customsUnpackingSite$,
       customsCargoIDType$,
-      customsFacilityID$
+      customsFacilityID$,
     ]).subscribe(() => {
-      this.loading = false
-      const exportationCountryControl = this.generalDeclarationForm.controls["Consignments"].get('ExportationCountryCode');
+      this.loading = false;
+      const exportationCountryControl = this.generalDeclarationForm.controls[
+        'Consignments'
+      ].get('ExportationCountryCode');
 
-      exportationCountryControl?.valueChanges.subscribe(value => {
-        this.exportationCountryControlError = this.getExportationCountryControlError(exportationCountryControl);
+      exportationCountryControl?.valueChanges.subscribe((value) => {
+        this.exportationCountryControlError =
+          this.getExportationCountryControlError(exportationCountryControl);
         this.setChargingCountryControlStatus();
       });
       if (this.mode == 'e') {
@@ -322,8 +485,13 @@ export class DeclarationFormComponent implements OnInit {
     });
   }
 
-  getOtherChargeDeductionAmountControl(suplierInvoiceIndex: any, index: number): FormControl {
-    const control = this.getValuationValue(suplierInvoiceIndex).at(index).get('OtherChargeDeductionAmount');
+  getOtherChargeDeductionAmountControl(
+    suplierInvoiceIndex: any,
+    index: number,
+  ): FormControl {
+    const control = this.getValuationValue(suplierInvoiceIndex)
+      .at(index)
+      .get('OtherChargeDeductionAmount');
     return control as FormControl;
   }
 
@@ -335,9 +503,14 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   setChargingCountryControlStatus() {
-    const chargingCountryControl = this.generalDeclarationForm.get('Consignments.LoadingLocation');
+    const chargingCountryControl = this.generalDeclarationForm.get(
+      'Consignments.LoadingLocation',
+    );
 
-    if (this.exportationCountryControlError || this.loadingChargingCountrySubject.value) {
+    if (
+      this.exportationCountryControlError ||
+      this.loadingChargingCountrySubject.value
+    ) {
       chargingCountryControl?.disable();
     } else {
       chargingCountryControl?.enable();
@@ -352,72 +525,122 @@ export class DeclarationFormComponent implements OnInit {
       VersionID: this.formBuilder.control(''),
       // DeclarationOfficeID: this.formBuilder.control({ name: 'בית מכס נתב"ג', code: '4' }, Validators.required),
       DeclarationOfficeID: this.formBuilder.control('4'),
-      GovernmentProcedure: this.formBuilder.control({ name: 'יבוא מסחרי', code: '4000001' }),
+
       //TypeCode: this.formBuilder.control({ name: 'הצהרת יבוא ', code: '1' }),
       TypeCode: this.formBuilder.control('1'),
       //AutonomyRegionType: this.formBuilder.control({ name: '', code: '' }),
       //EntitlementTypeCode: this.formBuilder.control({ name: '', code: '' }),
-      ImporterID: this.formBuilder.control(localStorage.getItem('userId') || '2', Validators.required),
+
       //AcceptanceDateTime: this.formBuilder.control(''),
       Consignments: this.formBuilder.group({
-        ExportationCountryCode: this.formBuilder.control('', Validators.required),
+        ImporterID: this.formBuilder.control(
+          localStorage.getItem('userId') || '2',
+          Validators.required,
+        ),
+        GovernmentProcedure: this.formBuilder.control({
+          name: 'יבוא מסחרי',
+          code: '4000001',
+        }),
+
+        ExportationCountryCode: this.formBuilder.control(
+          '',
+          Validators.required,
+        ),
         LoadingLocation: this.formBuilder.control('', Validators.required),
         // LoadingLocation: this.formBuilder.control({value: '', disabled: this.exportationCountryControlError}, Validators.required),
         UnloadingLocationID: this.formBuilder.control('', Validators.required),
-        TransportContractDocumentTypeCode: this.formBuilder.control({ name: 'שטר מטען אווירי  ', code: '1' }, Validators.required),
-        ArrivalDateTime: this.formBuilder.control(new Date(), Validators.required),
-        TransportContractDocumentID: this.formBuilder.control(new Date().getFullYear().toString(), Validators.required),
+        TransportContractDocumentTypeCode: this.formBuilder.control(
+          { name: 'שטר מטען אווירי  ', code: '1' },
+          Validators.required,
+        ),
+        ArrivalDateTime: this.formBuilder.control(
+          new Date(),
+          Validators.required,
+        ),
+        TransportContractDocumentID: this.formBuilder.control(
+          new Date().getFullYear().toString(),
+          Validators.required,
+        ),
         SecondCargoID: this.formBuilder.control('', Validators.required),
-        ThirdCargoID: this.formBuilder.control('',),
+        ThirdCargoID: this.formBuilder.control(''),
         CargoDescription: this.formBuilder.control('', Validators.required),
         //FacilityID: this.formBuilder.control({ name: '', code: '' }),
-        FacilityType: this.formBuilder.control({ name: '', code: '' }, Validators.required)
+        FacilityType: this.formBuilder.control(
+          { name: '', code: '' },
+          Validators.required,
+        ),
       }),
       ConsignmentPackagesMeasures: this.formBuilder.group({
         //PackageMeasureQualifier: this.formBuilder.control({ name: 'כמות אריזות באתר אחסון', code: '2' }),
         PackageMeasureQualifier: this.formBuilder.control('2'),
         //TypeCode: this.formBuilder.control({ name: 'Package, paper wrapped', code: 'PP' }),
         TypeCode: this.formBuilder.control('PP'),
-        TotalPackageQuantity: this.formBuilder.control(''),
-        GrossMassMeasure: this.formBuilder.control(''),
+        TotalPackageQuantity: this.formBuilder.control('', Validators.required),
+        GrossMassMeasure: this.formBuilder.control('', Validators.required),
         //MarksNumbers: this.formBuilder.control(''),
       }),
 
-      SupplierInvoices: this.formBuilder.array([this.createSupplierInvoice()],
-        { validators: this.invoiceAmountValidator })
+      SupplierInvoices: this.formBuilder.array([this.createSupplierInvoice()], {
+        validators: this.invoiceAmountValidator,
+      }),
     });
-
   }
 
   createSupplierInvoice(): FormGroup {
     return this.formBuilder.group({
       InvoiceNumber: this.formBuilder.control('', Validators.required),
-      SupplierID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      SupplierID: this.formBuilder.control(
+        { name: '', code: '' },
+        Validators.required,
+      ),
       IssueDateTime: this.formBuilder.control(new Date(), Validators.required),
       InvoiceAmount: this.formBuilder.control('', Validators.required),
-      InvoiceTypeCode: this.formBuilder.control({ name: 'חשבון מכר', code: '380' }, Validators.required),
-      CurrencyCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-      LocationID: this.formBuilder.control({ name: '', code: '' }, Validators.required),
-      TradeTermsConditionCode: this.formBuilder.control({ name: '', code: '' }, Validators.required),
+      InvoiceTypeCode: this.formBuilder.control(
+        { name: 'חשבון מכר', code: '380' },
+        Validators.required,
+      ),
+      CurrencyCode: this.formBuilder.control(
+        { name: '', code: '' },
+        Validators.required,
+      ),
+      LocationID: this.formBuilder.control(
+        { name: '', code: '' },
+        Validators.required,
+      ),
+      TradeTermsConditionCode: this.formBuilder.control(
+        { name: '', code: '' },
+        Validators.required,
+      ),
       Id: this.formBuilder.control(null),
       CustomsValuation: this.formBuilder.array([
         this.formBuilder.group({
           ID: this.formBuilder.control(null),
-          ChargesTypeCode: this.formBuilder.control({ name: 'ביטוח', code: '67' }),
+          ChargesTypeCode: this.formBuilder.control({
+            name: 'ביטוח',
+            code: '67',
+          }),
           CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
-          OtherChargeDeductionAmount: this.formBuilder.control(0, Validators.min(0))
+          OtherChargeDeductionAmount: this.formBuilder.control(
+            0,
+            Validators.min(0),
+          ),
         }),
         this.formBuilder.group({
           ID: this.formBuilder.control(null),
-          ChargesTypeCode: this.formBuilder.control({ name: 'הובלה', code: '144' }),
+          ChargesTypeCode: this.formBuilder.control({
+            name: 'הובלה',
+            code: '144',
+          }),
           CurrencyCode: this.formBuilder.control({ name: 'USD', code: 'USD' }),
-          OtherChargeDeductionAmount: this.formBuilder.control(0,)
+          OtherChargeDeductionAmount: this.formBuilder.control(0),
           // OtherChargeDeductionAmount: this.formBuilder.control(1, [Validators.required, Validators.min(1)])
-        })
+        }),
       ]),
-      SupplierInvoiceItems: this.formBuilder.array([this.createSupplierInvoiceItem()]),
+      SupplierInvoiceItems: this.formBuilder.array([
+        this.createSupplierInvoiceItem(),
+      ]),
       //   SupplierInvoiceItems: this.formBuilder.array([this.createSupplierInvoiceItem()]),
-      // }, { validators: this.invoiceAmountValidator 
+      // }, { validators: this.invoiceAmountValidator
     });
   }
 
@@ -435,17 +658,18 @@ export class DeclarationFormComponent implements OnInit {
         message: 'האם אתה בטוח שברצונך למחוק?',
         accept: () => {
           rowData.patchValue({ Id: -rowData.controls.Id.value });
-        }
+        },
       });
-    }
-    else {
+    } else {
       this.supplierInvoices.removeAt(index);
     }
     this.cd.detectChanges();
   }
 
   GetSupplierInvoiceItems(index: any): FormArray {
-    return (this.generalDeclarationForm.get(`SupplierInvoices`) as FormArray).controls[index].get("SupplierInvoiceItems") as FormArray
+    return (
+      this.generalDeclarationForm.get(`SupplierInvoices`) as FormArray
+    ).controls[index].get('SupplierInvoiceItems') as FormArray;
   }
 
   addNewInvoiceItem(i: any): void {
@@ -455,26 +679,28 @@ export class DeclarationFormComponent implements OnInit {
 
   invoiceAmountValidator(control: AbstractControl): any {
     const invoiceFormGroup = control as FormGroup;
-    const supplierInvoiceItems = invoiceFormGroup.get('SupplierInvoiceItems')?.value || [];
+    const supplierInvoiceItems =
+      invoiceFormGroup.get('SupplierInvoiceItems')?.value || [];
 
-    const totalCustomsValueAmount = supplierInvoiceItems.reduce((sum: any, item: any) => {
-      return sum + (item.CustomsValueAmount || 0);
-    }, 0);
+    const totalCustomsValueAmount = supplierInvoiceItems.reduce(
+      (sum: any, item: any) => {
+        return sum + (item.CustomsValueAmount || 0);
+      },
+      0,
+    );
 
     const invoiceAmount = invoiceFormGroup.get('InvoiceAmount')?.value;
     if (invoiceAmount) {
       console.log(invoiceAmount);
-
-    } if (totalCustomsValueAmount) console.log(totalCustomsValueAmount);
+    }
+    if (totalCustomsValueAmount) console.log(totalCustomsValueAmount);
 
     if (invoiceAmount && invoiceAmount !== totalCustomsValueAmount) {
-      debugger
       // return true;
       console.log('סה"כ ערכי טובין לא שווה לסה"כ חשבון');
-      invoiceFormGroup.setErrors({ 'invoiceAmountMismatch': true });
+      invoiceFormGroup.setErrors({ invoiceAmountMismatch: true });
 
-      return { 'invoiceAmountMismatch': 'סה"כ ערכי טובין לא שווה לסה"כ חשבון' };
-
+      return { invoiceAmountMismatch: 'סה"כ ערכי טובין לא שווה לסה"כ חשבון' };
     }
 
     return null;
@@ -486,7 +712,7 @@ export class DeclarationFormComponent implements OnInit {
       MeasureQualifier: this.formBuilder.control(null),
       CustomsValueAmount: this.formBuilder.control(null, Validators.required),
       AmountType: this.formBuilder.control('', Validators.required),
-      OriginCountryCode: this.formBuilder.control(null, Validators.required)
+      OriginCountryCode: this.formBuilder.control(null, Validators.required),
     });
   }
 
@@ -496,66 +722,78 @@ export class DeclarationFormComponent implements OnInit {
         message: 'האם אתה בטוח שברצונך למחוק?',
         accept: () => {
           rowData.patchValue({ Id: -rowData.controls.Id.value });
-        }
+        },
       });
-    }
-    else {
-      const supplierInvoiceItems = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
+    } else {
+      const supplierInvoiceItems =
+        this.GetSupplierInvoiceItems(suplierInvoiceIndex);
 
       supplierInvoiceItems.removeAt(index);
-
     }
   }
 
   onClassificationIDBlur(index: any, suplierInvoiceIndex: any) {
     const tableRowArray = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
     // const tableRowArray = this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray;
-    const classificationID = tableRowArray.controls[index].get('ClassificationID');
-    const MeasureQualifier = tableRowArray.controls[index].get('MeasureQualifier');
+    const classificationID =
+      tableRowArray.controls[index].get('ClassificationID');
+    const MeasureQualifier =
+      tableRowArray.controls[index].get('MeasureQualifier');
 
     if (classificationID && classificationID.value) {
-
       this.decService.GetClassificationID$(classificationID.value).subscribe({
         next: (responseData: any) => {
           if (responseData.customsItemField) {
             console.log(responseData);
-            MeasureQualifier?.patchValue(responseData.customsItemField[0].statisticMeasurementUnitExternalIDField)
+            MeasureQualifier?.patchValue(
+              responseData.customsItemField[0]
+                .statisticMeasurementUnitExternalIDField,
+            );
             MeasureQualifier?.setErrors(null);
           }
-          // else {        
+          // else {
           // }
         },
         error: (err) => {
           console.error('Error fetching client data:', err);
-        }
+        },
       });
     }
   }
 
-
   getValuationValue(index: any): FormArray {
-
-    return (this.generalDeclarationForm.get(`SupplierInvoices`) as FormArray).controls[index].get("CustomsValuation") as FormArray
+    return (
+      this.generalDeclarationForm.get(`SupplierInvoices`) as FormArray
+    ).controls[index].get('CustomsValuation') as FormArray;
     // return this.generalDeclarationForm.get('SupplierInvoices.CustomsValuation') as FormArray;
   }
 
   convertToDecObj(dec: any) {
-    dec.GovernmentProcedure = dec.GovernmentProcedure.code ? dec.GovernmentProcedure.code : dec.GovernmentProcedure
-    dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID')
+    dec.GovernmentProcedure = dec.GovernmentProcedure?.code
+      ? dec.GovernmentProcedure.code
+      : dec.GovernmentProcedure;
+    dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID');
     const consignments = dec.Consignments;
 
-    consignments.ExportationCountryCode = consignments.ExportationCountryCode?.code ?? consignments.ExportationCountryCode;
-    consignments.LoadingLocation = consignments.LoadingLocation?.code ?? consignments.LoadingLocation;
-    consignments.UnloadingLocationID = consignments.UnloadingLocationID?.code ?? consignments.UnloadingLocationID;
-    consignments.TransportContractDocumentTypeCode = consignments.TransportContractDocumentTypeCode?.code ?? consignments.TransportContractDocumentTypeCode;
+    consignments.ExportationCountryCode =
+      consignments.ExportationCountryCode?.code ??
+      consignments.ExportationCountryCode;
+    consignments.LoadingLocation =
+      consignments.LoadingLocation?.code ?? consignments.LoadingLocation;
+    consignments.UnloadingLocationID =
+      consignments.UnloadingLocationID?.code ??
+      consignments.UnloadingLocationID;
+    consignments.TransportContractDocumentTypeCode =
+      consignments.TransportContractDocumentTypeCode?.code ??
+      consignments.TransportContractDocumentTypeCode;
 
     const ConsignmentRegisteredFacilitiesList = [];
 
     const facility1 = {
       Id: consignments.FacilityType?.id,
       FacilityID: consignments.FacilityType?.code,
-      FacilityType: "004",
-      FacilitySequenceNumeric: 2
+      FacilityType: '004',
+      FacilitySequenceNumeric: 2,
     };
 
     ConsignmentRegisteredFacilitiesList.push(facility1);
@@ -565,17 +803,24 @@ export class DeclarationFormComponent implements OnInit {
 
     supplierInvoices.forEach((invoice: any) => {
       // invoice.InvoicesAndGoods ? invoice.InvoicesAndGoods = invoice.InvoicesAndGoods?.code : '';
-      invoice.InvoiceTypeCode = invoice.InvoiceTypeCode?.code ?? invoice.InvoiceTypeCode;
+      invoice.InvoiceTypeCode =
+        invoice.InvoiceTypeCode?.code ?? invoice.InvoiceTypeCode;
       invoice.LocationID = invoice.LocationID?.code ?? invoice.LocationID;
       invoice.SupplierID = invoice.SupplierID?.code ?? invoice.SupplierID;
-      invoice.TradeTermsConditionCode = invoice.TradeTermsConditionCode?.code ?? invoice.TradeTermsConditionCode;
+      invoice.TradeTermsConditionCode =
+        invoice.TradeTermsConditionCode?.code ??
+        invoice.TradeTermsConditionCode;
       invoice.CurrencyCode = invoice.CurrencyCode?.code ?? invoice.CurrencyCode;
 
-      const customValuation = invoice.CustomsValuation ? invoice.CustomsValuation : null;
+      const customValuation = invoice.CustomsValuation
+        ? invoice.CustomsValuation
+        : null;
       if (customValuation) {
         customValuation.forEach((element: any) => {
-          element.ChargesTypeCode = element.ChargesTypeCode?.code ?? element.ChargesTypeCode;
-          element.CurrencyCode = element.CurrencyCode?.code ?? element.CurrencyCode;
+          element.ChargesTypeCode =
+            element.ChargesTypeCode?.code ?? element.ChargesTypeCode;
+          element.CurrencyCode =
+            element.CurrencyCode?.code ?? element.CurrencyCode;
         });
       }
 
@@ -583,237 +828,358 @@ export class DeclarationFormComponent implements OnInit {
 
       if (SupplierInvoiceItems) {
         SupplierInvoiceItems?.forEach((element: any) => {
-          element.Id == "" ? element.Id = null : element.Id = element.Id;
+          element.Id == '' ? (element.Id = null) : (element.Id = element.Id);
           // if (element.DutyRegimeCode?.code == '')
           //   element.DutyRegimeCode = null
           // element.DutyRegimeCode = element.DutyRegimeCode?.code ? element.DutyRegimeCode?.code : element.DutyRegimeCode;
-          element.OriginCountryCode = element.OriginCountryCode?.code ?? element.OriginCountryCode;
+          element.OriginCountryCode =
+            element.OriginCountryCode?.code ?? element.OriginCountryCode;
         });
       }
 
       // invoice.SupplierInvoiceItems = invoice.SupplierInvoiceItems?.tableRowArray
     });
 
-    dec.Id = localStorage.getItem('currentDecId')
-    dec.RoleCode = '1'
-    dec.TaxationDateTime = new Date()
-    dec.CreateDateTime = new Date()
+    dec.Id = localStorage.getItem('currentDecId');
+    dec.RoleCode = '1';
+    dec.TaxationDateTime = new Date();
+    dec.CreateDateTime = new Date();
 
     this.perfectDecalartion = JSON.parse(JSON.stringify(dec));
 
-    this.perfectDecalartion.Consignments = [dec.Consignments]
-    this.perfectDecalartion.ConsignmentPackagesMeasures = [dec.ConsignmentPackagesMeasures]
+    this.perfectDecalartion.Consignments = [dec.Consignments];
+    this.perfectDecalartion.ConsignmentPackagesMeasures = [
+      dec.ConsignmentPackagesMeasures,
+    ];
     this.perfectDecalartion.SupplierInvoices = dec.SupplierInvoices;
     return this.perfectDecalartion;
   }
 
   saveDeclaration() {
     if (this.generalDeclarationForm.invalid) {
-      const invoiceAmountError = this.generalDeclarationForm.get('SupplierInvoices')?.errors?.['invoiceAmountMismatch'];
+      const invoiceAmountError =
+        this.generalDeclarationForm.get('SupplierInvoices')?.errors?.[
+          'invoiceAmountMismatch'
+        ];
       if (invoiceAmountError) {
         console.log('הסכום הכולל לא תואם לערך ב-"InvoiceAmount"');
       }
     }
 
-    this.loading = true
+    this.loading = true;
     const dec = this.generalDeclarationForm.value;
     const perfectDec = this.convertToDecObj(dec);
 
     if (this.mode != 'e') {
-      this.decService.sendDeclarationToInternal(perfectDec).subscribe((res: any) => {
-        console.log(res);
-        localStorage.setItem('currentDecId', res.body?.Id)
-        localStorage.setItem('currentDec', res.body)
-        this.stepService.emitStepCompleted('+');
-      })
-    }
-    else {
+      this.decService
+        .sendDeclarationToInternal(perfectDec)
+        .subscribe((res: any) => {
+          console.log(res);
+          // localStorage.setItem('currentDecId', res.body?.Id);
+          // localStorage.setItem('currentDec', res.body);
+          localStorage.setItem('currentDecId', String(res.body?.Id ?? ''));
+          localStorage.setItem('currentDec', JSON.stringify(res.body ?? {}));
+          this.loading = false; // ✅ הוסף כאן
 
-      this.decService.updateDeclaration$(perfectDec.Id, perfectDec).subscribe((res: any) => {
-        console.log(res);
-        this.stepService.emitStepCompleted('+');
-      });
+          this.stepService.emitStepCompleted('+');
+        });
+    } else {
+      this.decService
+        .updateDeclaration$(perfectDec.Id, perfectDec)
+        .subscribe((res: any) => {
+          console.log(res);
+          this.loading = false; // ✅ הוסף כאן
+
+          this.stepService.emitStepCompleted('+');
+        });
     }
   }
 
   sendDeclaration() {
-    this.loading = true
-    const id = localStorage.getItem('currentDecId')
+    this.loading = true;
+    const id = localStorage.getItem('currentDecId');
     const dec = this.generalDeclarationForm.value;
     const perfectDec = this.convertToDecObj(dec);
     console.log(perfectDec);
 
-    this.decService.updateAndSendDeclaration$(id, perfectDec, false).subscribe((res: any) => {
-      this.loading = false
-      res = JSON.parse(res)
-      console.log(res);
-      if (res.responseField) {
-        if (res.responseField.statusField.nameCodeField.valueField == 13) {
-          //תשלום קופה
+    this.decService
+      .updateAndSendDeclaration$(id, perfectDec, false)
+      .subscribe((res: any) => {
+        this.loading = false;
+        res = JSON.parse(res);
+        console.log(res);
+        if (res.responseField) {
+          if (res.responseField.statusField.nameCodeField.valueField == 13) {
+            //תשלום קופה
+          }
+
+          this.generalDeclarationForm
+            .get('DeclarationNumber')
+            ?.setValue(res.responseField.declarationField.idField.valueField);
+          this.generalDeclarationForm
+            .get('VersionID')
+            ?.setValue(
+              res.responseField.declarationField.dMExtensionsField
+                .versionIDField.valueField,
+            );
+
+          dec.DeclarationNumber =
+            res.responseField.declarationField.idField.valueField;
+          dec.VersionID =
+            res.responseField.declarationField.dMExtensionsField.versionIDField.valueField;
+          dec.CustomsStatus =
+            res.responseField.statusField.nameCodeField.valueField;
+          this.customStatus = dec.CustomsStatus;
+          localStorage.setItem('decVersion', dec.VersionID);
+          localStorage.setItem('CustomsStatus', dec.CustomsStatus);
+
+          if (+dec.VersionID > 0.5) {
+            this.msgs1 = [
+              {
+                severity: 'error',
+                summary: 'נשלחו 6 טיוטות שגויות',
+                detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ',
+              },
+            ];
+          }
+          if (res.responseField.errorField) {
+            this.customsErrorsContent = res.responseField.errorField;
+            // res.responseField.errorField[0].validationCodeField.nameField
+            // res.responseField.errorField[1].validationCodeField.valueField
+          }
+        } else if (res.responseContentHeaderField) {
+          this.customsError = res.responseContentHeaderField.exceptionField;
         }
-
-        this.generalDeclarationForm.get("DeclarationNumber")?.setValue(res.responseField.declarationField.idField.valueField)
-        this.generalDeclarationForm.get("VersionID")?.setValue(res.responseField.declarationField.dMExtensionsField.versionIDField.valueField)
-
-        dec.DeclarationNumber = res.responseField.declarationField.idField.valueField
-        dec.VersionID = res.responseField.declarationField.dMExtensionsField.versionIDField.valueField
-        dec.CustomsStatus = res.responseField.statusField.nameCodeField.valueField
-        this.customStatus = dec.CustomsStatus;
-        localStorage.setItem('decVersion', dec.VersionID);
-        localStorage.setItem('CustomsStatus', dec.CustomsStatus);
-
-        if (+dec.VersionID > 0.5) {
-          this.msgs1 = [{ severity: 'error', summary: 'נשלחו 6 טיוטות שגויות', detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ' }]
-        }
-        if (res.responseField.errorField) {
-          this.customsErrorsContent = res.responseField.errorField
-          // res.responseField.errorField[0].validationCodeField.nameField
-          // res.responseField.errorField[1].validationCodeField.valueField
-        }
-
-
-      }
-      else if (res.responseContentHeaderField) {
-        this.customsError = res.responseContentHeaderField.exceptionField;
-      }
-    })
-
+      });
   }
 
   initElements() {
+    this.loading = true;
+
     const decId = localStorage.getItem('currentDecId');
     let currentDec: any;
-    this.decService.getDeclaration(decId).subscribe(res => {
+    this.decService.getDeclaration(decId).subscribe((res) => {
       console.log(res);
-      currentDec = res[0];
+      currentDec = res;
+
+      localStorage.setItem(
+        'currentDecId',
+        String(currentDec?.Id ?? decId ?? ''),
+      );
+      localStorage.setItem('currentDec', JSON.stringify(currentDec ?? {}));
+
+      if (!currentDec) {
+        this.loading = false;
+        return;
+      }
+
       if (currentDec) {
         // --general--
-        this.generalDeclarationForm.patchValue({ 'AgentFileReferenceID': currentDec?.AgentFileReferenceID })
+        this.generalDeclarationForm.patchValue({
+          AgentFileReferenceID: currentDec?.AgentFileReferenceID,
+        });
 
-        localStorage.setItem('AgentFileReferenceID', currentDec?.AgentFileReferenceID)
+        localStorage.setItem(
+          'AgentFileReferenceID',
+          currentDec?.AgentFileReferenceID,
+        );
 
         this.generalDeclarationForm.patchValue({
-          'DeclarationNumber': currentDec?.DeclarationNumber
-        })
+          DeclarationNumber: currentDec?.DeclarationNumber,
+        });
         this.generalDeclarationForm.patchValue({
-          'VersionID': currentDec?.VersionID
-        })
+          VersionID: currentDec?.VersionID,
+        });
         this.generalDeclarationForm.patchValue({
-          'ImporterID': currentDec?.ImporterID
-        })
+          ImporterID: currentDec?.ImporterID,
+        });
         this.generalDeclarationForm.patchValue({
-          'CustomsStatus': currentDec?.CustomsStatus
-        })
+          CustomsStatus: currentDec?.CustomsStatus,
+        });
         //this.onImporterIdBlur();
         //this.VersionID = currentDec?.VersionID
 
-        const matchingElement1 = this.declarationCustomsProcess.find((element: any) => element.code == currentDec?.GovernmentProcedure);
+        const matchingElement1 = this.declarationCustomsProcess.find(
+          (element: any) => element.code == currentDec?.GovernmentProcedure,
+        );
         if (matchingElement1) {
           this.generalDeclarationForm.patchValue({
-            'GovernmentProcedure': matchingElement1
+            GovernmentProcedure: matchingElement1,
           });
         }
 
         // --consignment--
-        const consignmentForm = this.generalDeclarationForm.controls['Consignments']
+        const consignmentForm =
+          this.generalDeclarationForm.controls['Consignments'];
 
-        const currentConsignment = currentDec?.ConsignmentPackagesMeasures[0].Consignments;
+        const currentConsignment =
+          currentDec?.ConsignmentPackagesMeasures[0].Consignments;
         // const matchingExportationCountry = this.declarationCountryOfExport.find((element: any) => element.code == currentConsignment?.ExportationCountryCode);
-        const matchingExportationCountry = this.declarationCountryOfExport.find((element: any) => element.code == currentConsignment?.ExportationCountryCode);
-        this.ExportationCountrySelect = matchingExportationCountry.name
+        const matchingExportationCountry = this.declarationCountryOfExport.find(
+          (element: any) =>
+            element.code == currentConsignment?.ExportationCountryCode,
+        );
+        this.ExportationCountrySelect = matchingExportationCountry.name;
         if (matchingExportationCountry) {
-          consignmentForm.patchValue({ 'ExportationCountryCode': matchingExportationCountry });
+          consignmentForm.patchValue({
+            ExportationCountryCode: matchingExportationCountry,
+          });
         }
 
         this.filterChargingCountryByExportCode();
 
-        const matchingChargingCountry = this.declarationChargingCountry.find((element: { code: any }) => element.code == currentConsignment?.LoadingLocation);
+        const matchingChargingCountry = this.declarationChargingCountry.find(
+          (element: { code: any }) =>
+            element.code == currentConsignment?.LoadingLocation,
+        );
         if (matchingChargingCountry) {
-          consignmentForm.patchValue({ 'LoadingLocation': matchingChargingCountry });
+          consignmentForm.patchValue({
+            LoadingLocation: matchingChargingCountry,
+          });
         }
 
-        const matchingUnpackingSite = this.declarationUnpackingSite.find((element: { code: any }) => element.code == currentConsignment?.UnloadingLocationID);
+        const matchingUnpackingSite = this.declarationUnpackingSite.find(
+          (element: { code: any }) =>
+            element.code == currentConsignment?.UnloadingLocationID,
+        );
         if (matchingUnpackingSite) {
-          consignmentForm.patchValue({ 'UnloadingLocationID': matchingUnpackingSite });
+          consignmentForm.patchValue({
+            UnloadingLocationID: matchingUnpackingSite,
+          });
         }
 
-
-        const matchingCargoIDType = this.declarationCargoIDType.find((element: { code: any }) => element.code == currentConsignment?.TransportContractDocumentTypeCode);
+        const matchingCargoIDType = this.declarationCargoIDType.find(
+          (element: { code: any }) =>
+            element.code ==
+            currentConsignment?.TransportContractDocumentTypeCode,
+        );
         if (matchingCargoIDType) {
-          consignmentForm.patchValue({ 'TransportContractDocumentTypeCode': matchingCargoIDType });
+          consignmentForm.patchValue({
+            TransportContractDocumentTypeCode: matchingCargoIDType,
+          });
         }
 
-        const item = currentConsignment.ConsignmentRegisteredFacilities[0]?.FacilityType == "004" ? currentConsignment.ConsignmentRegisteredFacilities[0] : currentConsignment.ConsignmentRegisteredFacilities[1]
-        const matchingFacilityID = this.declarationFacilityID.find((element: { code: any }) => element.code == item?.FacilityID);
+        const item =
+          currentConsignment.ConsignmentRegisteredFacilities[0]?.FacilityType ==
+          '004'
+            ? currentConsignment.ConsignmentRegisteredFacilities[0]
+            : currentConsignment.ConsignmentRegisteredFacilities[1];
+        const matchingFacilityID = this.declarationFacilityID.find(
+          (element: { code: any }) => element.code == item?.FacilityID,
+        );
         if (matchingFacilityID) {
-          consignmentForm.patchValue({ 'FacilityType': matchingFacilityID });
+          consignmentForm.patchValue({ FacilityType: matchingFacilityID });
         }
-
 
         consignmentForm.patchValue({
-          'CargoDescription': currentConsignment?.CargoDescription,
-          'TransportContractDocumentID': currentConsignment?.TransportContractDocumentID,
-          'SecondCargoID': currentConsignment?.SecondCargoID,
-          'ThirdCargoID': currentConsignment?.ThirdCargoID,
-          'ArrivalDateTime': new Date(currentConsignment?.ArrivalDateTime)
+          CargoDescription: currentConsignment?.CargoDescription,
+          TransportContractDocumentID:
+            currentConsignment?.TransportContractDocumentID,
+          SecondCargoID: currentConsignment?.SecondCargoID,
+          ThirdCargoID: currentConsignment?.ThirdCargoID,
+          ArrivalDateTime: new Date(currentConsignment?.ArrivalDateTime),
         });
 
         // --ConsignmentPackagesMeasures--
-        const consignmentPackagesMeasuresForm = this.generalDeclarationForm.controls['ConsignmentPackagesMeasures']
+        const consignmentPackagesMeasuresForm =
+          this.generalDeclarationForm.controls['ConsignmentPackagesMeasures'];
 
         consignmentPackagesMeasuresForm.patchValue({
-          'TotalPackageQuantity': currentDec?.ConsignmentPackagesMeasures[0]?.TotalPackageQuantity,
-          'GrossMassMeasure': currentDec?.ConsignmentPackagesMeasures[0]?.GrossMassMeasure,
-        })
+          TotalPackageQuantity:
+            currentDec?.ConsignmentPackagesMeasures[0]?.TotalPackageQuantity,
+          GrossMassMeasure:
+            currentDec?.ConsignmentPackagesMeasures[0]?.GrossMassMeasure,
+        });
 
         // --SupplierInvoices--
-        const supplierInvoicesFormArray = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+        const supplierInvoicesFormArray = this.generalDeclarationForm.get(
+          'SupplierInvoices',
+        ) as FormArray;
 
         supplierInvoicesFormArray.clear();
 
         currentDec.SupplierInvoices.forEach((invoice: any, i: number) => {
-          const matchingSupplierID = this.declarationSupplierID.find((element: { code: any }) => element.code == invoice.SupplierID);
-          const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == invoice.CurrencyCode);
-          const matchingLocationID = this.declarationCountryOfExport.find((element: { code: any }) => element.code == invoice.LocationID);
-          const matchingInvoiceTypeCode = this.declarationInvoiceTypeCode.find((element: { code: any }) => element.code == invoice.InvoiceTypeCode);
-          const matchingTradeTermsConditionCode = this.declarationTradeTermsConditionCode.find((element: { code: any }) => element.code == invoice.TradeTermsConditionCode);
+          const matchingSupplierID = this.declarationSupplierID.find(
+            (element: { code: any }) => element.code == invoice.SupplierID,
+          );
+          const matchingCurrencyCode = this.declarationCurrencyCode.find(
+            (element: { code: any }) => element.code == invoice.CurrencyCode,
+          );
+          const matchingLocationID = this.declarationCountryOfExport.find(
+            (element: { code: any }) => element.code == invoice.LocationID,
+          );
+          const matchingInvoiceTypeCode = this.declarationInvoiceTypeCode.find(
+            (element: { code: any }) => element.code == invoice.InvoiceTypeCode,
+          );
+          const matchingTradeTermsConditionCode =
+            this.declarationTradeTermsConditionCode.find(
+              (element: { code: any }) =>
+                element.code == invoice.TradeTermsConditionCode,
+            );
 
           const invoiceGroup = this.formBuilder.group({
-            'SupplierID': [matchingSupplierID, Validators.required],
-            'CurrencyCode': [matchingCurrencyCode, Validators.required],
-            'LocationID': [matchingLocationID, Validators.required],
-            'TradeTermsConditionCode': [matchingTradeTermsConditionCode, Validators.required],
-            'InvoiceNumber': [invoice.InvoiceNumber, Validators.required],
-            'IssueDateTime': [new Date(invoice.IssueDateTime), Validators.required],
-            'InvoiceAmount': [invoice.InvoiceAmount, Validators.required],
-            'InvoiceTypeCode': [matchingInvoiceTypeCode, Validators.required],
-            'Id': [invoice.Id],
+            SupplierID: [matchingSupplierID, Validators.required],
+            CurrencyCode: [matchingCurrencyCode, Validators.required],
+            LocationID: [matchingLocationID, Validators.required],
+            TradeTermsConditionCode: [
+              matchingTradeTermsConditionCode,
+              Validators.required,
+            ],
+            InvoiceNumber: [invoice.InvoiceNumber, Validators.required],
+            IssueDateTime: [
+              new Date(invoice.IssueDateTime),
+              Validators.required,
+            ],
+            InvoiceAmount: [invoice.InvoiceAmount, Validators.required],
+            InvoiceTypeCode: [matchingInvoiceTypeCode, Validators.required],
+            Id: [invoice.Id],
 
             // --CustomsValuation--
-            'CustomsValuation': this.formBuilder.array(invoice.CustomsValuation.map((item: any, index: any) => {
-              const matchingCurrencyCode = this.declarationCurrencyCode.find((element: { code: any }) => element.code == item.CurrencyCode);
-              return this.formBuilder.group({
-                'ChargesTypeCode': !index ? { name: 'ביטוח', code: '67' } : { name: 'הובלה', code: '144' },
-                'CurrencyCode': [matchingCurrencyCode, Validators.required],
-                'OtherChargeDeductionAmount': [item.OtherChargeDeductionAmount,],
-                // 'OtherChargeDeductionAmount': [item.OtherChargeDeductionAmount, [Validators.required, index ? Validators.min(1) : Validators.min(0)]],
-                'ID': [item.ID],
-              });
-            })),
+            CustomsValuation: this.formBuilder.array(
+              invoice.CustomsValuation.map((item: any, index: any) => {
+                const matchingCurrencyCode = this.declarationCurrencyCode.find(
+                  (element: { code: any }) => element.code == item.CurrencyCode,
+                );
+                return this.formBuilder.group({
+                  ChargesTypeCode: !index
+                    ? { name: 'ביטוח', code: '67' }
+                    : { name: 'הובלה', code: '144' },
+                  CurrencyCode: [matchingCurrencyCode, Validators.required],
+                  OtherChargeDeductionAmount: [item.OtherChargeDeductionAmount],
+                  // 'OtherChargeDeductionAmount': [item.OtherChargeDeductionAmount, [Validators.required, index ? Validators.min(1) : Validators.min(0)]],
+                  ID: [item.ID],
+                });
+              }),
+            ),
 
             // --SupplierInvoiceItems--
 
-            'SupplierInvoiceItems': this.formBuilder.array(invoice.SupplierInvoiceItems.map((item: any) => {
-              const matchingOriginCountryCode = this.declarationCountryOfExport.find((element: { code: any }) => element.code == item.OriginCountryCode);
-              return this.formBuilder.group({
-                'Id': [item.Id, Validators.required],
-                'ClassificationID': [item.ClassificationID, Validators.required],
-                'CustomsValueAmount': [item.CustomsValueAmount, Validators.required],
-                'AmountType': [item.AmountType, Validators.required],
-                'OriginCountryCode': [matchingOriginCountryCode, Validators.required],
-                'MeasureQualifier': [item.MeasureQualifier]
-              });
-            }))
+            SupplierInvoiceItems: this.formBuilder.array(
+              invoice.SupplierInvoiceItems.map((item: any) => {
+                const matchingOriginCountryCode =
+                  this.declarationCountryOfExport.find(
+                    (element: { code: any }) =>
+                      element.code == item.OriginCountryCode,
+                  );
+                return this.formBuilder.group({
+                  Id: [item.Id, Validators.required],
+                  ClassificationID: [
+                    item.ClassificationID,
+                    Validators.required,
+                  ],
+                  CustomsValueAmount: [
+                    item.CustomsValueAmount,
+                    Validators.required,
+                  ],
+                  AmountType: [item.AmountType, Validators.required],
+                  OriginCountryCode: [
+                    matchingOriginCountryCode,
+                    Validators.required,
+                  ],
+                  MeasureQualifier: [item.MeasureQualifier],
+                });
+              }),
+            ),
           });
 
           supplierInvoicesFormArray.push(invoiceGroup);
@@ -821,11 +1187,12 @@ export class DeclarationFormComponent implements OnInit {
           if (code) {
             const codes = ['FCA', 'FOB', 'EXW', 'FAS'];
             this.showCustomsValuation[i] = codes.includes(code);
-            if (codes.includes(code))
-              this.updateValuationValidators(i);
+            if (codes.includes(code)) this.updateValuationValidators(i);
           }
         });
       }
+
+      this.loading = false; // ✅ כבה את ה-loading בסוף
     });
   }
 
@@ -833,9 +1200,14 @@ export class DeclarationFormComponent implements OnInit {
     let errors: string[] = [];
 
     if (checkInvoice) {
-      const checkSupplierInvoiceConsistency = (invoice: FormGroup, parentKey: string) => {
+      const checkSupplierInvoiceConsistency = (
+        invoice: FormGroup,
+        parentKey: string,
+      ) => {
         const invoiceAmount = invoice.get('InvoiceAmount')?.value;
-        const supplierInvoiceItems = invoice.get('SupplierInvoiceItems') as FormArray;
+        const supplierInvoiceItems = invoice.get(
+          'SupplierInvoiceItems',
+        ) as FormArray;
 
         let customsValueAmountSum = 0;
 
@@ -846,21 +1218,24 @@ export class DeclarationFormComponent implements OnInit {
         if (customsValueAmountSum !== +invoiceAmount) {
           this.suplierErrorExist = true;
           this.suplierError = ` ${parentKey} - סה"כ ערכי טובין לא שווה לסה"כ חשבון`;
-        }
-        else {
+        } else {
           this.suplierErrorExist = false;
           this.suplierError = '';
         }
       };
 
-
-      const supplierInvoices = this.generalDeclarationForm.get('SupplierInvoices') as FormArray;
+      const supplierInvoices = this.generalDeclarationForm.get(
+        'SupplierInvoices',
+      ) as FormArray;
       supplierInvoices.controls.forEach((invoice: any, index: number) => {
         checkSupplierInvoiceConsistency(invoice, `חשבונית ${index + 1}`);
       });
     }
 
-    if ((!this.generalDeclarationForm || !this.generalDeclarationForm.controls) && !checkInvoice) {
+    if (
+      (!this.generalDeclarationForm || !this.generalDeclarationForm.controls) &&
+      !checkInvoice
+    ) {
       return '';
     }
 
@@ -869,7 +1244,7 @@ export class DeclarationFormComponent implements OnInit {
         errors = [this.suplierError];
       }
       if (formGroup instanceof FormGroup) {
-        Object.keys(formGroup.controls).forEach(key => {
+        Object.keys(formGroup.controls).forEach((key) => {
           const control = formGroup.controls[key];
           const fieldPath = parentKey ? `${parentKey}.${key}` : key;
           const fieldName = key.split('.').pop() || key;
@@ -879,19 +1254,20 @@ export class DeclarationFormComponent implements OnInit {
           if (control instanceof FormGroup || control instanceof FormArray) {
             checkErrors(control, fieldPath);
           } else if (control.errors !== null) {
-            Object.keys(control.errors).forEach(errorKey => {
-
+            Object.keys(control.errors).forEach((errorKey) => {
               switch (errorKey) {
                 case 'required':
                   errors.push(`${fieldLabel}: שדה חובה`);
                   break;
                 case 'min':
                   const minValue = control.errors?.['min'];
-                  errors.push(`${fieldLabel}: חייב להכיל לפחות ${minValue.min}`);
+                  errors.push(
+                    `${fieldLabel}: חייב להכיל לפחות ${minValue.min}`,
+                  );
                   break;
-                case 'minlength':
-                  errors.push(`${fieldLabel}: חייב להכיל לפחות ${control.errors ? control.errors['minlength'].requiredLength : null} תווים`);
-                  break;
+                //case 'minlength':
+                //errors.push(`${fieldLabel}: חייב להכיל לפחות ${control.errors ? control.errors['minlength'].requiredLength : null} תווים`);
+                //  break;
                 // case 'maxlength':
                 //     errors.push(`${fieldLabel}: לא יכול להכיל יותר מ-${control.errors['maxlength'].requiredLength} תווים`);
                 //     break;
@@ -914,64 +1290,80 @@ export class DeclarationFormComponent implements OnInit {
     checkErrors(this.generalDeclarationForm);
 
     return errors.length > 0 ? errors.join('\n') : 'הטופס תקין';
-
   }
 
   checkVersion(): boolean {
-    const version = +this.generalDeclarationForm.controls['VersionID'].value
+    const version = +this.generalDeclarationForm.controls['VersionID'].value;
 
-    return version > 0.5
+    return version > 0.5;
   }
 
   //get values by cargo Ids
   onCargoIDBlur(cargoIdNum: any) {
     if (cargoIdNum == 2) {
-      const consignment = this.generalDeclarationForm.controls["Consignments"] as FormGroup
+      const consignment = this.generalDeclarationForm.controls[
+        'Consignments'
+      ] as FormGroup;
       let secondCargoID = consignment.controls['SecondCargoID'].value;
       secondCargoID = secondCargoID.trim();
       if (/^\d{11}$/.test(secondCargoID)) {
         secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
         consignment.controls['SecondCargoID'].setValue(secondCargoID);
         this.secondCargoIDError = '';
-      }
-      else if (/^\d{11,12}$/.test(secondCargoID.replace('-', ''))) {
+      } else if (/^\d{11,12}$/.test(secondCargoID.replace('-', ''))) {
         secondCargoID = secondCargoID.replace('-', '');
         secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
         consignment.controls['SecondCargoID'].setValue(secondCargoID);
         this.secondCargoIDError = '';
-      }
-      else {
+      } else {
         this.secondCargoIDError = 'מבנה לא תקין';
       }
     }
-    const consignment = this.generalDeclarationForm.controls["Consignments"] as FormGroup
-    const cargoType = consignment.controls['TransportContractDocumentTypeCode'].value?.code
-    const firstCargoID = consignment.controls['TransportContractDocumentID'].value
-    const secondCargoID = consignment.controls['SecondCargoID'].value
-    const thirdCargoID = consignment.controls['ThirdCargoID'].value
+    const consignment = this.generalDeclarationForm.controls[
+      'Consignments'
+    ] as FormGroup;
+    const cargoType =
+      consignment.controls['TransportContractDocumentTypeCode'].value?.code;
+    const firstCargoID =
+      consignment.controls['TransportContractDocumentID'].value;
+    const secondCargoID = consignment.controls['SecondCargoID'].value;
+    const thirdCargoID = consignment.controls['ThirdCargoID'].value;
 
     if (cargoType && firstCargoID && secondCargoID) {
-      const params = { cargoType, firstCargoID, secondCargoID, thirdCargoID }
+      const params = { cargoType, firstCargoID, secondCargoID, thirdCargoID };
       this.decService.getCagroQueryMessage$(params).subscribe((res: any) => {
         console.log(res);
         if (res.cargoField) {
-          const totalNumberOfPackeges = res.cargoField.totalNumberOfPackegesField
+          const decId = localStorage.getItem('currentDecId') || '';
+
+          const createDateField = res?.cargosVersionField?.[0]?.createDateField;
+
+          this.decService.setCargoContext({
+            decId,
+            key: { cargoType, firstCargoID, secondCargoID, thirdCargoID },
+            createDate: createDateField, // ✅ זה השדה הנכון
+            receivedAtIso: new Date().toISOString(),
+          });
+
+          const totalNumberOfPackeges =
+            res.cargoField.totalNumberOfPackegesField;
           const totalWeight = res.cargoField.totalWeightField;
-          const typeCode = res.cargoItemField[0].packingTypeField
+          const typeCode = res.cargoItemField[0].packingTypeField;
           const unloadingLocation = {
-            code: res.cargoField.cargoAdditionalDataField[0].unloadingLocationIDField,
-            name: res.cargoField.cargoAdditionalDataField[0].unloadingLocationNameField
-          }
+            code: res.cargoField.cargoAdditionalDataField[0]
+              .unloadingLocationIDField,
+            name: res.cargoField.cargoAdditionalDataField[0]
+              .unloadingLocationNameField,
+          };
 
           this.decService.updatePackageData({
             totalNumberOfPackeges,
             totalWeight,
             typeCode,
-            unloadingLocation
+            unloadingLocation,
           });
         }
-      })
-
+      });
     }
   }
 
@@ -981,12 +1373,14 @@ export class DeclarationFormComponent implements OnInit {
 
   onExportationCountrySelect(event: any) {
     this.ExportationCountrySelect = event?.value.name;
-    this.loadingChargingCountry$.subscribe(loading => {
+    this.loadingChargingCountry$.subscribe((loading) => {
       if (!loading) {
         this.filterChargingCountryByExportCode();
       }
     });
-    this.generalDeclarationForm.get("Consignments.LoadingLocation")?.setValue('');
+    this.generalDeclarationForm
+      .get('Consignments.LoadingLocation')
+      ?.setValue('');
   }
 
   onTradeTermsSelect(event: any, i: any) {
@@ -998,59 +1392,82 @@ export class DeclarationFormComponent implements OnInit {
         this.showCustomsValuation[i] = true;
         this.updateValuationValidators(i);
       } else {
-        this.showCustomsValuation[i] = false
-        this.updateValuationValidators(i)
+        this.showCustomsValuation[i] = false;
+        this.updateValuationValidators(i);
       }
     }
   }
 
   updateValuationValidators(i: number) {
-    const supplierInvoice = this.generalDeclarationForm.get('SupplierInvoices') as FormArray
-    const customsValuation = supplierInvoice.at(i).get('CustomsValuation') as FormArray;
+    const supplierInvoice = this.generalDeclarationForm.get(
+      'SupplierInvoices',
+    ) as FormArray;
+    const customsValuation = supplierInvoice
+      .at(i)
+      .get('CustomsValuation') as FormArray;
     const control = customsValuation.controls[1];
     if (control) {
       const chargesTypeControl = control.get('ChargesTypeCode');
       const otherChargeControl = control.get('OtherChargeDeductionAmount');
 
       if (this.showCustomsValuation[i]) {
-        if (chargesTypeControl?.value.name === 'הובלה' && this.showCustomsValuation[i]) {
-          otherChargeControl?.setValidators([Validators.required, Validators.min(1)]);
-          otherChargeControl?.setValue(1)
-        }
-        else {
+        if (
+          chargesTypeControl?.value.name === 'הובלה' &&
+          this.showCustomsValuation[i]
+        ) {
+          otherChargeControl?.setValidators([
+            Validators.required,
+            Validators.min(1),
+          ]);
+          otherChargeControl?.setValue(1);
+        } else {
           otherChargeControl?.clearValidators();
           otherChargeControl?.setErrors(null);
-          otherChargeControl?.setValue(0)
+          otherChargeControl?.setValue(0);
         }
       } else {
         otherChargeControl?.clearValidators();
         otherChargeControl?.setErrors(null);
-        otherChargeControl?.setValue(0)
+        otherChargeControl?.setValue(0);
       }
       otherChargeControl?.updateValueAndValidity();
     }
   }
 
-
   filterChargingCountryByExportCode() {
-    const exportCountryCode = this.generalDeclarationForm.get("Consignments")?.get("ExportationCountryCode")?.value.code;
-    this.filteredChargingCountry = this.declarationChargingCountry.filter((site: any) =>
-      site.code.startsWith(exportCountryCode)
+    const exportCountryCode = this.generalDeclarationForm
+      .get('Consignments')
+      ?.get('ExportationCountryCode')?.value.code;
+    this.filteredChargingCountry = this.declarationChargingCountry.filter(
+      (site: any) => site.code.startsWith(exportCountryCode),
     );
     if (this.filteredChargingCountry.length)
-      this.isCustomsChargingCountry = true
+      this.isCustomsChargingCountry = true;
   }
 
   filterCustomsProcess(event: any) {
     let filtered: any[] = [];
     let query = event.query;
+
+    const allowedOptions = [
+      'יבוא אישי',
+      'יבוא מסחרי',
+      'שטעון מסחרי - שטעון באותו נמל',
+    ];
+
     for (let i = 0; i < this.declarationCustomsProcess.length; i++) {
       let a = this.declarationCustomsProcess[i];
-      if (a.name.indexOf(query) != -1) {
+
+      // בודק גם שהשם קיים ברשימה וגם תואם לחיפוש
+      if (
+        allowedOptions.includes(a.name) &&
+        a.name.toLowerCase().includes(query.toLowerCase())
+      ) {
         filtered.push(a);
       }
     }
-    this.filteredCustomsProcess = filtered
+
+    this.filteredCustomsProcess = filtered;
   }
 
   filterCountryOfExport(event: any) {
@@ -1062,7 +1479,7 @@ export class DeclarationFormComponent implements OnInit {
         filtered.push(a);
       }
     }
-    this.filteredCountryOfExport = filtered
+    this.filteredCountryOfExport = filtered;
   }
 
   filterChargingCountry(event: any) {
@@ -1090,11 +1507,9 @@ export class DeclarationFormComponent implements OnInit {
       // }
 
       if (preferredValues1.includes(a.code) && a.name.indexOf(query) != -1) {
-        preferred.push(a)
-      }
-      else if (a.name.indexOf(query) != -1) {
+        preferred.push(a);
+      } else if (a.name.indexOf(query) != -1) {
         others.push(a);
-
       }
     }
     // this.filteredUnpackingSite = filtered;
@@ -1123,26 +1538,31 @@ export class DeclarationFormComponent implements OnInit {
     for (let i = 0; i < this.declarationFacilityID.length; i++) {
       let a = this.declarationFacilityID[i];
 
-      const TransportContractDocumentTypeCode = this.generalDeclarationForm.get("Consignments.TransportContractDocumentTypeCode")?.value.code
+      const TransportContractDocumentTypeCode = this.generalDeclarationForm.get(
+        'Consignments.TransportContractDocumentTypeCode',
+      )?.value.code;
 
-      if (TransportContractDocumentTypeCode == "1") {
-        if (preferredValues1.includes(a.code) && a.name.indexOf(query) != -1 && a.siteType === "24") {
-          preferred.push(a)
-        }
-        else if (a.name.indexOf(query) != -1 && a.siteType === "24") {
-          others.push(a);
-
-        }
-      }
-      else if (TransportContractDocumentTypeCode == "11") {
-        if (preferredValues11.includes(a.code) && a.name.indexOf(query) != -1 && a.siteType === "1") {
+      if (TransportContractDocumentTypeCode == '1') {
+        if (
+          preferredValues1.includes(a.code) &&
+          a.name.indexOf(query) != -1 &&
+          a.siteType === '24'
+        ) {
           preferred.push(a);
+        } else if (a.name.indexOf(query) != -1 && a.siteType === '24') {
+          others.push(a);
         }
-        else if (a.name.indexOf(query) != -1 && a.siteType === "1") {
-          others.push(a)
+      } else if (TransportContractDocumentTypeCode == '11') {
+        if (
+          preferredValues11.includes(a.code) &&
+          a.name.indexOf(query) != -1 &&
+          a.siteType === '1'
+        ) {
+          preferred.push(a);
+        } else if (a.name.indexOf(query) != -1 && a.siteType === '1') {
+          others.push(a);
         }
-      }
-      else if (a.name.indexOf(query) != -1) {
+      } else if (a.name.indexOf(query) != -1) {
         others.push(a);
       }
     }
@@ -1209,19 +1629,16 @@ export class DeclarationFormComponent implements OnInit {
     }
     this.filteredSupplierID = filtered;
   }
-  i = 0
+  i = 0;
   customStatusName(status: any) {
-    console.log(this.i++);
-
     // if (status ) {
-      if (status && status !== this.customStatus) {
+    if (status && status !== this.customStatus) {
       this.customStatus = status;
       if (status == 7) {
-        localStorage.setItem("maxIndex", "4");
+        localStorage.setItem('maxIndex', '4');
         this.stepService.updateMaxIndex(4);
-      }
-      else {
-        localStorage.setItem("maxIndex", "2");
+      } else {
+        localStorage.setItem('maxIndex', '2');
         this.stepService.updateMaxIndex(2);
       }
     }
@@ -1230,10 +1647,81 @@ export class DeclarationFormComponent implements OnInit {
       for (let i = 0; i < this.customsStatuses.length; i++) {
         let a = this.customsStatuses[i];
         if (a.code == this.customStatus) {
-          return a.name
+          return a.name;
         }
       }
+    } else return 'לא תקין';
+  }
+
+  copyDeclaration() {
+    const currentFormValue = this.generalDeclarationForm.getRawValue();
+
+    const copiedData = {
+      ...currentFormValue,
+      Consignments: {
+        ...currentFormValue.Consignments,
+        // ניקוי שדות המטען
+        TransportContractDocumentID: '',
+        SecondCargoID: '',
+        ThirdCargoID: '',
+      },
+    };
+
+    this.generalDeclarationForm.patchValue({
+      Id: null,
+      DeclarationNumber: '',
+      VersionID: '',
+      CustomsStatus: null,
+      AgentFileReferenceID: '',
+    });
+
+    this.generalDeclarationForm.patchValue(copiedData);
+
+    localStorage.removeItem('currentDecId');
+    localStorage.removeItem('AgentFileReferenceID');
+
+    this.mode = 'n';
+
+    // צור מספר תיק חדש מהשרת
+    this.customsDataService.GetSeq$('Customs').subscribe((res) => {
+      localStorage.setItem('AgentFileReferenceID', res);
+      this.generalDeclarationForm.patchValue({
+        AgentFileReferenceID: res,
+      });
+    });
+
+    this.msgs1 = [
+      {
+        severity: 'success',
+        summary: 'success',
+        detail: 'ההצהרה הועתקה - לחץ "המשך" כדי לשמור',
+      },
+    ];
+  }
+
+  // ✅ פונקציה חדשה לטעינה והעתקה אוטומטית
+  private loadAndCopyDeclaration() {
+    const decId = localStorage.getItem('currentDecId');
+
+    if (!decId) {
+      this.loading = false;
+      return;
     }
-    else return "לא תקין"
+
+    this.decService.getDeclaration(decId).subscribe((res) => {
+      if (!res) {
+        this.loading = false;
+        return;
+      }
+
+      // ✅ טען את הנתונים לטופס
+      this.initElements();
+
+      // ✅ אחרי הטעינה - הפעל את פונקצ העתקה
+      setTimeout(() => {
+        this.copyDeclaration();
+        localStorage.removeItem('copyMode'); // ✅ נקה את הסימן
+      }, 500);
+    });
   }
 }

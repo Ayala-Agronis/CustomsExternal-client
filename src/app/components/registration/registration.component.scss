@@ -2,17 +2,17 @@
     display: flex;
     justify-content: space-between;
     height: 98vh;
-    width: 100vw;
+    // width: 100vw;
 }
 
-.right-side{
+.right-side {
     width: 55%;
     // display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 4.625rem;
-    margin-right:5%;
-    margin-top: 6%; 
+    margin-right: 5%;
+    margin-top: 6%;
 }
 
 .registrationForm {
@@ -42,6 +42,7 @@
     gap: 2%;
     direction: ltr;
     margin-top: 2%;
+    margin-bottom: 1%;
 }
 
 .left-side {
@@ -53,9 +54,60 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    gap:2vh;
+    gap: 2vh;
 }
 
 .p-password-panel {
-  display: none !important;
+    display: none !important;
+}
+
+.classification-section {
+    width: 65%;
+}
+
+::ng-deep .user .p-datatable .p-datatable-thead>tr>th,
+::ng-deep .user .p-datatable .p-datatable-tbody>tr>td {
+    text-align: right;
+}
+
+::ng-deep .user .p-datatable th:nth-child(1),
+::ng-deep .user .p-datatable td:nth-child(1) {
+    width: 7%;
+}
+
+::ng-deep .user .p-datatable th:nth-child(2),
+::ng-deep .user .p-datatable td:nth-child(2) {
+    width: 30%;
+}
+
+::ng-deep .user .p-datatable th:nth-child(3),
+::ng-deep .user .p-datatable td:nth-child(3) {
+    width: 30%;
+}
+
+::ng-deep .user .p-datatable th:nth-child(3),
+::ng-deep .user .p-datatable td:nth-child(3) {
+    width: 30%;
+}
+
+::ng-deep .user .add-btn.p-button.p-button-icon-only {
+    width: 1.357rem;
+}
+
+::ng-deep .user .add-btn.button-primary {
+    background-color: #EC8305;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 15px;
+    font-size: 17px;
+}
+
+::ng-deep .user .p-datatable .p-datatable-tbody>tr>td,
+::ng-deep .user .p-datatable .p-datatable-thead>tr>th {
+    padding: 0.3rem 0.3rem;
+}
+
+::ng-deep .classifications .p-inputtext {
+    padding: 0.3px 0.3px;
 }

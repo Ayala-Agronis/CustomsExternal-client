@@ -1,21 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { UserService } from '../../shared/services/user.service';
 import { InputTextModule } from 'primeng/inputtext';
-import { Password, PasswordModule } from 'primeng/password';
+import { PasswordModule } from 'primeng/password';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
+import { TableModule } from 'primeng/table';
+import { ClientClassificationService } from '../../shared/services/client-classification.service';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ButtonModule, CardModule, RadioButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessagesModule],
+  imports: [CommonModule, FormsModule, TableModule, ReactiveFormsModule, CheckboxModule, ButtonModule, CardModule, RadioButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessagesModule],
   providers: [MessageService],
   templateUrl: './registration.component.html',
   styleUrl: './registration.component.scss'
@@ -27,8 +30,9 @@ export class RegistrationComponent implements OnInit {
   msg: Message[] = [];
   showPersonalDetails: boolean = false;
   user: any
+  classifications: any[] = [];
 
-  constructor(private fb: FormBuilder, private userService: UserService, private router: Router, private route: ActivatedRoute) {
+  constructor(private fb: FormBuilder, private userService: UserService, private classificationService: ClientClassificationService, private router: Router, private route: ActivatedRoute) {
     this.registrationForm = this.fb.group({
       FirstName: ['', [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')]],
       LastName: ['', [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')]],
@@ -38,6 +42,7 @@ export class RegistrationComponent implements OnInit {
       CustomerType: ['', [Validators.required]],
       Id: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(9)]],
       RowId: [null],
+      // ComissionPerTranc: [false]
     });
   }
   ngOnInit(): void {
@@ -56,8 +61,10 @@ export class RegistrationComponent implements OnInit {
             Id: this.user.Id,
             RowId: this.user.RowId,
             Password: this.user.Password,
+            ComissionPerTranc: this.user.ComissionPerTranc
           });
         }
+        this.loadClassifications();
       }
     });
   }
@@ -131,6 +138,59 @@ export class RegistrationComponent implements OnInit {
 
   goBack() {
     window.history.back()
+  }
+
+  addRow() {
+    this.classifications.push({
+      GoodsDescription: '',
+      ClassificationBook: '',
+      Classification: ''
+    });
+  }
+
+  // deleteRow(row: any) {
+  //   this.classifications = this.classifications.filter(r => r !== row);
+  // }
+
+  canEditRow(row: any): boolean {
+    return !row.ClassificationBook || !row.Classification;
+  }
+
+  saveClassifications() {
+    if (!this.user?.Id) {
+      this.msg = [{ severity: 'error', summary: '', detail: 'לא ניתן לשמור ללא מזהה משתמש' }];
+      return;
+    }
+
+    const classificationsPayload = this.classifications.map(c => ({
+      RowID: c.RowID ?? 0,
+      ClientID: this.user.Id,
+      GoodsDescription: c.GoodsDescription,
+      ClassificationBook: c.ClassificationBook,
+      Classification: c.Classification
+    }));
+
+    this.isLoading = true;
+
+    this.classificationService.saveAllClassifications$(classificationsPayload, this.user.Id).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        console.log(res);
+        this.msg = [{ severity: 'success', summary: '', detail: 'הסיווגים נשמרו בהצלחה' }];
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error(err);
+        this.msg = [{ severity: 'error', summary: '', detail: 'אירעה שגיאה בשמירה' }];
+      }
+    });
+  }
+
+
+  loadClassifications() {
+    this.classificationService.getClassifications$(this.user.Id).subscribe(res => {
+      this.classifications = res
+    })
   }
 
 }
