@@ -5,30 +5,55 @@
 <div class="login-container">
   <div class="login-form">
     <h2>התחברות</h2>
-    <p-messages class="ui-ltr" dir="ltr" [(value)]="msg" [enableService]="false"></p-messages>
+    <p-messages
+      class="ui-ltr"
+      dir="ltr"
+      [(value)]="msg"
+      [enableService]="false"
+    ></p-messages>
 
     <form [formGroup]="loginForm">
       <div class="form-group">
         <div class="form-item">
           <label for="email">אימייל </label>
-          <input #emailInput id="email" type="email" pInputText autocomplete="username" formControlName="Email" />
+          <input
+            #emailInput
+            id="email"
+            type="email"
+            pInputText
+            autocomplete="username"
+            formControlName="Email"
+          />
         </div>
         <div class="form-item password-wrapper">
-          <label for="password">סיסמא
-
-
-          </label>
+          <label for="password">סיסמא </label>
           <div class="password-container">
-            <input #passwordInput id="password" [type]="showPassword ? 'text' : 'password'" pPassword [feedback]="false"
-              autocomplete="current-password" formControlName="Password" />
+            <input
+              #passwordInput
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              pPassword
+              [feedback]="false"
+              autocomplete="current-password"
+              formControlName="Password"
+            />
 
-            <i class="pi" [ngClass]="showPassword ? 'pi-eye' : 'pi-eye-slash'" (click)="togglePassword()"></i>
+            <i
+              class="pi"
+              [ngClass]="showPassword ? 'pi-eye' : 'pi-eye-slash'"
+              (click)="togglePassword()"
+            ></i>
           </div>
         </div>
       </div>
 
       <div class="btnSubmit">
-        <button type="submit" (click)="onSubmit()" class="button-primary">התחברות</button>
+        <button type="submit" (click)="onSubmit()" class="button-primary">
+          התחברות
+        </button>
+        <button type="button" (click)="navigateToRegister()" class="button-primary">
+          הרשמה
+        </button>
       </div>
 
       <button class="btnGoogle" (click)="loginWithGoogle()">

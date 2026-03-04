@@ -195,4 +195,8 @@ export class LoginComponent implements AfterViewInit {
       ];
     }
   }
+
+  navigateToRegister():void{
+    this.router.navigate(['register'])
+  }
 }

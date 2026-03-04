@@ -896,6 +896,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   sendDeclaration() {
+    debugger
     this.loading = true;
     const id = localStorage.getItem('currentDecId');
     const dec = this.generalDeclarationForm.value;
