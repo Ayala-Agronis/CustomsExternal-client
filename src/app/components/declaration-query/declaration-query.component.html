@@ -1,5 +1,5 @@
 <div class="progress-spinner" *ngIf="loading">
-    <p-progressSpinner></p-progressSpinner>
+  <p-progressSpinner></p-progressSpinner>
 </div>
 
 <!-- ✅ הוסף את זה למעלה בתחילת הקובץ -->
@@ -7,187 +7,303 @@
 
 <p-toast></p-toast>
 <p-card class="queryDec">
-    <div class="card">
-        <div class="ui-rtl" dir="rtl">
-            <h2 class="title"> הצהרות שלי</h2>
-            <div class="p-grid p-fluid p-nogutter center-content">
-                <div class="p-md-4 p-lg-3">
-                    <div class="p-field">
-                        <label class="date-label" for="Start">מתאריך </label>
-                        <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="Start" [required]="true"
-                            [(ngModel)]="startDate" (onSelect)="updateEndDateMinDate()"></p-calendar>
-                    </div>
-                </div>
-                <div class="p-md-4 p-lg-3">
-                    <div class="p-field">
-                        <label class="date-label" for="End">עד תאריך </label>
-                        <p-calendar dateFormat="dd/mm/yy" [showIcon]="true" inputId="End" [required]="true"
-                            [(ngModel)]="endDate" [minDate]="minEndDate" (onselect)="handleDateSelect()"></p-calendar>
-                    </div>
-                </div>
+  <div class="card">
+    <div class="ui-rtl" dir="rtl">
+      <h2 class="title">הצהרות שלי</h2>
+      <div class="p-grid p-fluid p-nogutter center-content">
+        <div class="p-md-4 p-lg-3">
+          <div class="p-field">
+            <label class="date-label" for="Start">מתאריך </label>
+            <p-calendar
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              inputId="Start"
+              [required]="true"
+              [(ngModel)]="startDate"
+              (onSelect)="updateEndDateMinDate()"
+            ></p-calendar>
+          </div>
+        </div>
+        <div class="p-md-4 p-lg-3">
+          <div class="p-field">
+            <label class="date-label" for="End">עד תאריך </label>
+            <p-calendar
+              dateFormat="dd/mm/yy"
+              [showIcon]="true"
+              inputId="End"
+              [required]="true"
+              [(ngModel)]="endDate"
+              [minDate]="minEndDate"
+              (onselect)="handleDateSelect()"
+            ></p-calendar>
+          </div>
+        </div>
 
-                <div class="currency-label p-lg-3 ">
-                    <button class="filter-btn" *ngIf="!isFiltered" pButton type="submit" label="סנן"
-                        (click)="search()"></button>
-                    <button class="filter-btn" *ngIf="isFiltered" pButton type="submit" label="בטל סינון"
-                        (click)="cancelFilter()"></button>
-                </div>
-            </div>
+        <div class="p-md-4 p-lg-4">
+          <div class="p-field">
+            <label class="date-label" for="DecType">סוג הצהרה</label>
 
-            <br>
+            <p-dropdown
+              inputId="DecType"
+              class="dec-type"
+              [options]="decTypeOptions"
+              [(ngModel)]="selectedTypeCode"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="הכל"
+              [showClear]="true"
+              (onChange)="handleDecTypeChange()"
+            ></p-dropdown>
+          </div>
+        </div>
 
-            <div class="p-mb-8"></div>
+        <div class="currency-label p-lg-3">
+          <button
+            class="filter-btn"
+            *ngIf="!isFiltered"
+            pButton
+            type="submit"
+            label="סנן"
+            (click)="search()"
+          ></button>
+          <button
+            class="filter-btn"
+            *ngIf="isFiltered"
+            pButton
+            type="submit"
+            label="בטל סינון"
+            (click)="cancelFilter()"
+          ></button>
+        </div>
+      </div>
 
-            <p-table [paginator]="true" [rows]="10" [responsive]="true" class="p-table" [value]="filteredDeclarations"
-                dataKey="id" [rowHover]="true" (onFilter)="onFilter($event)" sortMode="multiple">
+      <br />
 
-                <ng-template pTemplate="header">
-                    <tr>
+      <div class="p-mb-8"></div>
 
-                        <th></th>
-                        <th [pSortableColumn]="'Id'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="Id"></p-sortIcon>
-                                מספר הצהרה
-                                <p-columnFilter type="text" field="Id" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <!-- <th [pSortableColumn]="'DeclarationNumber'">
+      <p-table
+        [paginator]="true"
+        [rows]="10"
+        [responsive]="true"
+        class="p-table"
+        [value]="filteredDeclarations"
+        dataKey="id"
+        [rowHover]="true"
+        (onFilter)="onFilter($event)"
+        sortMode="multiple"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th></th>
+            <th [pSortableColumn]="'Id'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="Id"></p-sortIcon>
+                מספר הצהרה
+                <p-columnFilter
+                  type="text"
+                  field="Id"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <!-- <th [pSortableColumn]="'DeclarationNumber'">
                             <div class="flex align-items-center">
                                 <p-sortIcon field="DeclarationNumber"></p-sortIcon>
                                 הצהרה
                                 <p-columnFilter type="text" field="DeclarationNumber" display="menu"></p-columnFilter>
                             </div>
                         </th> -->
-                        <th [pSortableColumn]="'AgentFileReferenceID'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="DeclarationNumber"></p-sortIcon>
-                                הצהרה
-                                <p-columnFilter type="text" field="AgentFileReferenceID"
-                                    display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'ImporterID'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="ImporterID"></p-sortIcon>
-                                יבואן
-                                <p-columnFilter type="text" field="ImporterID" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'DeclarationOfficeID'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="DeclarationOfficeID"></p-sortIcon>
-                                בית מכס
-                                <p-columnFilter type="text" field="DeclarationOfficeID" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'GovernmentProcedure'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="GovernmentProcedure"></p-sortIcon>
-                                תהליך מכס
-                                <p-columnFilter type="text" field="GovernmentProcedure" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'ArrivalDateTime'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="ArrivalDateTime"></p-sortIcon>
-                                תאריך הגעת טובין
-                                <p-columnFilter type="date" field="ArrivalDateTime" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'ExportationCountryCode'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="ExportationCountryCode"></p-sortIcon>
-                                ארץ יצוא
-                                <p-columnFilter type="text" field="ExportationCountryCode"
-                                    display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'TransportContractDocumentID'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="TransportContractDocumentTypeCode"></p-sortIcon>
-                                סוג מזהה מטען
-                                <p-columnFilter type="text" field="TransportContractDocumentTypeCode"
-                                    display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'CargoDescription'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="CargoDescription"></p-sortIcon>
-                                תיאור טובין
-                                <p-columnFilter type="text" field="CargoDescription" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'TotalPackageQuantity'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="TotalPackageQuantity"></p-sortIcon>
-                                כמות חבילות
-                                <p-columnFilter type="text" field="TotalPackageQuantity"
-                                    display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'FacilityID'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="FacilityID"></p-sortIcon>
-                                אתר מסירה
-                                <p-columnFilter type="text" field="FacilityID" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                        <th [pSortableColumn]="'CustomsStatus'">
-                            <div class="flex align-items-center">
-                                <p-sortIcon field="CustomsStatus"></p-sortIcon>
-                                סטטוס מכס
-                                <p-columnFilter type="text" field="CustomsStatus" display="menu"></p-columnFilter>
-                            </div>
-                        </th>
-                    </tr>
-                </ng-template>
+            <th [pSortableColumn]="'AgentFileReferenceID'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="DeclarationNumber"></p-sortIcon>
+                הצהרה
+                <p-columnFilter
+                  type="text"
+                  field="AgentFileReferenceID"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'ImporterID'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="ImporterID"></p-sortIcon>
+                יבואן
+                <p-columnFilter
+                  type="text"
+                  field="ImporterID"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'DeclarationOfficeID'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="DeclarationOfficeID"></p-sortIcon>
+                בית מכס
+                <p-columnFilter
+                  type="text"
+                  field="DeclarationOfficeID"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'GovernmentProcedure'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="GovernmentProcedure"></p-sortIcon>
+                תהליך מכס
+                <p-columnFilter
+                  type="text"
+                  field="GovernmentProcedure"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'ArrivalDateTime'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="ArrivalDateTime"></p-sortIcon>
+                תאריך הגעת טובין
+                <p-columnFilter
+                  type="date"
+                  field="ArrivalDateTime"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'ExportationCountryCode'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="ExportationCountryCode"></p-sortIcon>
+                ארץ יצוא
+                <p-columnFilter
+                  type="text"
+                  field="ExportationCountryCode"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'TransportContractDocumentID'">
+              <div class="flex align-items-center">
+                <p-sortIcon
+                  field="TransportContractDocumentTypeCode"
+                ></p-sortIcon>
+                סוג מזהה מטען
+                <p-columnFilter
+                  type="text"
+                  field="TransportContractDocumentTypeCode"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'CargoDescription'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="CargoDescription"></p-sortIcon>
+                תיאור טובין
+                <p-columnFilter
+                  type="text"
+                  field="CargoDescription"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'TotalPackageQuantity'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="TotalPackageQuantity"></p-sortIcon>
+                כמות חבילות
+                <p-columnFilter
+                  type="text"
+                  field="TotalPackageQuantity"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'FacilityID'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="FacilityID"></p-sortIcon>
+                אתר מסירה
+                <p-columnFilter
+                  type="text"
+                  field="FacilityID"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+            <th [pSortableColumn]="'CustomsStatus'">
+              <div class="flex align-items-center">
+                <p-sortIcon field="CustomsStatus"></p-sortIcon>
+                סטטוס מכס
+                <p-columnFilter
+                  type="text"
+                  field="CustomsStatus"
+                  display="menu"
+                ></p-columnFilter>
+              </div>
+            </th>
+          </tr>
+        </ng-template>
 
-                <ng-template style="text-align: right;" pTemplate="body" let-declartion>
-                    <tr>
-
-                        <!-- <td> <button class="edit" pButton icon="pi pi-pencil"
+        <ng-template style="text-align: right" pTemplate="body" let-declartion>
+          <tr>
+            <!-- <td> <button class="edit" pButton icon="pi pi-pencil"
                                 (click)="editDeclaration(declartion)"></button>
                         </td> -->
-                        <!-- ✅ עמודת כפתורים - עריכה והעתק -->
-                        <td style="display: flex; gap: 5px; align-items: center;">
-                            <button class="edit" pButton icon="pi pi-pencil" (click)="editDeclaration(declartion)"
-                                pTooltip="עריכה" tooltipPosition="top"></button>
-                            <button class="copy" pButton icon="pi pi-copy" (click)="copyDeclaration(declartion)"
-                                pTooltip="העתק" tooltipPosition="top"></button>
-                        </td>
-                        <td>{{declartion.Id}}</td>
-                        <td>{{declartion.DeclarationNumber}}</td>
-                        <td>{{declartion.ImporterID}} {{importerName}}</td>
-                        <td>{{declartion.DeclarationOfficeID}}</td>
-                        <td>{{declartion.GovernmentProcedure}}</td>
-                        <td>
-                            {{ declartion.Consignments?.length > 0 ? (declartion.Consignments[0].ArrivalDateTime |
-                            date:'dd/MM/yy') : '---' }}
-                        </td>
+            <!-- ✅ עמודת כפתורים - עריכה והעתק -->
+            <td style="display: flex; gap: 5px; align-items: center">
+              <button
+                class="edit"
+                pButton
+                icon="pi pi-pencil"
+                (click)="editDeclaration(declartion)"
+                pTooltip="עריכה"
+                tooltipPosition="top"
+              ></button>
+              <button
+                class="copy"
+                pButton
+                icon="pi pi-copy"
+                (click)="copyDeclaration(declartion)"
+                pTooltip="העתק"
+                tooltipPosition="top"
+              ></button>
+            </td>
+            <td>{{ declartion.Id }}</td>
+            <td>{{ declartion.DeclarationNumber }}</td>
+            <td>{{ declartion.ImporterID }} {{ importerName }}</td>
+            <td>{{ declartion.DeclarationOfficeID }}</td>
+            <td>{{ declartion.GovernmentProcedure }}</td>
+            <td>
+              {{
+                declartion.Consignments?.length > 0
+                  ? (declartion.Consignments[0].ArrivalDateTime
+                    | date: "dd/MM/yy")
+                  : "---"
+              }}
+            </td>
 
-                        <td>{{declartion.ExportationCountryCode}}</td>
-                        <td>{{declartion.TransportContractDocumentTypeCode}}</td>
-                        <td>
-                            {{ declartion.Consignments?.length > 0 ? declartion.Consignments[0].CargoDescription : '---'
-                            }}
-                        </td>
-                        <td>{{declartion.TotalPackageQuantity}}</td>
-                        <td>{{declartion.FacilityID}}</td>
-                        <td>{{customStatusName(declartion.CustomsStatus)}}</td>
-                    </tr>
-                </ng-template>
+            <td>{{ declartion.ExportationCountryCode }}</td>
+            <td>{{ declartion.TransportContractDocumentTypeCode }}</td>
+            <td>
+              {{
+                declartion.Consignments?.length > 0
+                  ? declartion.Consignments[0].CargoDescription
+                  : "---"
+              }}
+            </td>
+            <td>{{ declartion.TotalPackageQuantity }}</td>
+            <td>{{ declartion.FacilityID }}</td>
+            <td>{{ customStatusName(declartion.CustomsStatus) }}</td>
+          </tr>
+        </ng-template>
 
-                <ng-template pTemplate="summary">
-                    <div class="p-d-flex p-ai-center p-jc-between">
-                        מספר שורות: {{filteredDeclarationsCount }}
-                    </div>
-                </ng-template>
-            </p-table>
-            <p-messages *ngIf="noDeclarationsFound" [value]="noDeclarationsMsg" [enableService]="false"></p-messages>
-
-        </div>
-
+        <ng-template pTemplate="summary">
+          <div class="p-d-flex p-ai-center p-jc-between">
+            מספר שורות: {{ filteredDeclarationsCount }}
+          </div>
+        </ng-template>
+      </p-table>
+      <p-messages
+        *ngIf="noDeclarationsFound"
+        [value]="noDeclarationsMsg"
+        [enableService]="false"
+      ></p-messages>
     </div>
-    <p-messages [(value)]="msgs1" [enableService]="false"></p-messages>
+  </div>
+  <p-messages [(value)]="msgs1" [enableService]="false"></p-messages>
 </p-card>

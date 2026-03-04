@@ -156,13 +156,18 @@ export class DeclarationService {
     Date2: string,
     importerId: string,
     eventCode: any,
+    typeCode: string | null,
   ): Observable<any> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('Date1', Date1)
       .set('Date2', Date2)
       .set('importerId', importerId)
       .set('eventCode', eventCode)
       .set('governmentProcedureType', '');
+
+    if (typeCode) {
+      params = params.set('typeCode', typeCode); // או typeCode אם שינית גם בשרת
+    }
 
     return this.http.get<any>(`${apiConfig.customsdbApiUrl}DecQuery`, {
       params,

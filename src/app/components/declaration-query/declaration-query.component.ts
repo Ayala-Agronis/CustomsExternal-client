@@ -1,4 +1,9 @@
-import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Output,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -21,47 +26,66 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 @Component({
   selector: 'app-declaration-query',
   standalone: true,
-  imports: [CommonModule, FormsModule, CardModule, ProgressSpinnerModule, ButtonModule, TableModule, ToastModule, DropdownModule, CalendarModule, MessagesModule,ConfirmDialogModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CardModule,
+    ProgressSpinnerModule,
+    ButtonModule,
+    TableModule,
+    ToastModule,
+    DropdownModule,
+    CalendarModule,
+    MessagesModule,
+    ConfirmDialogModule,
+  ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './declaration-query.component.html',
-  styleUrl: './declaration-query.component.scss'
+  styleUrl: './declaration-query.component.scss',
 })
 export class DeclarationQueryComponent {
   msgs1: Message[] = [];
 
   declartions: any;
-  decType = 'tr'
+  decType = 'tr';
   allDeclarations: any;
   // declartion!: Declaration;
   initialDeclarationsCount: number = 0;
   filteredDeclarationsCount: number = 0;
   filteredDeclarations: any[] = [];
-  loading = false
+  loading = false;
 
-  endDate = new Date()
+  endDate = new Date();
   startDate: Date = new Date();
   importerId: any;
   eventCode: any;
 
-  minEndDate!: Date
+  minEndDate!: Date;
 
   @Output() newItemEvent = new EventEmitter<string>();
 
-  UpdateModeE = 'e'
+  UpdateModeE = 'e';
 
-  DeclarationToEdit: any
+  DeclarationToEdit: any;
 
   importerFilter: string = '';
   declarationOfficeFilter: string = '';
   governmentProcedureFilter: string = '';
 
-  isShowFilter = false
+  isShowFilter = false;
   importerName: any;
   customsStatuses: any;
   isLoading: boolean = true;
   events: any;
   isFiltered: boolean = false;
 
+  selectedTypeCode: string | null = null;
+
+  decTypeOptions = [
+    { label: 'הכל', value: null },
+    { label: 'הצהרת יבוא', value: '1' },
+    { label: 'הצהרת שטעון', value: '3' },
+  ];
 
   constructor(
     private router: Router,
@@ -71,8 +95,7 @@ export class DeclarationQueryComponent {
     private cdRef: ChangeDetectorRef,
     private stepService: StepService,
     private confirmationService: ConfirmationService, // ✅ הוסף את זה
-  ) { }
-
+  ) {}
 
   ngAfterViewInit() {
     this.cdRef.detectChanges();
@@ -89,14 +112,19 @@ export class DeclarationQueryComponent {
 
     this.search();
 
-    this.customsDataService.getCustomsTableValues$('1981').pipe(
-      map(res => {
-        this.customsStatuses = res.map((item: { Value2: any; Value1: any }) => ({
-          name: item.Value2,
-          code: item.Value1
-        }));
-      })
-    ).subscribe();
+    this.customsDataService
+      .getCustomsTableValues$('1981')
+      .pipe(
+        map((res) => {
+          this.customsStatuses = res.map(
+            (item: { Value2: any; Value1: any }) => ({
+              name: item.Value2,
+              code: item.Value1,
+            }),
+          );
+        }),
+      )
+      .subscribe();
   }
 
   updateEndDateMinDate() {
@@ -104,11 +132,11 @@ export class DeclarationQueryComponent {
       // Set the minimum date for endDate to be the startDate
       this.minEndDate = new Date(this.startDate);
     }
-    this.isFiltered = false
+    this.isFiltered = false;
   }
 
   handleDateSelect() {
-    this.isFiltered = false
+    this.isFiltered = false;
   }
 
   noDeclarationsFound: boolean = false;
@@ -117,17 +145,20 @@ export class DeclarationQueryComponent {
     {
       severity: 'info ',
       summary: ' תוצאה',
-      detail: ' לא נמצאו הצהרות בטווח התאריכים שבחרת.'
-    }
+      detail: ' לא נמצאו הצהרות בטווח התאריכים שבחרת.',
+    },
   ];
 
   search() {
-
     this.msgs1 = [];
 
     if (!this.endDate || !this.startDate) {
       this.msgs1 = [
-        { severity: 'error', summary: ' שאילתת הצהרות', detail: 'נא להשלים שדה תאריך' }
+        {
+          severity: 'error',
+          summary: ' שאילתת הצהרות',
+          detail: 'נא להשלים שדה תאריך',
+        },
       ];
       this.noDeclarationsFound = false;
       this.noDeclarationsMsg = [];
@@ -136,53 +167,78 @@ export class DeclarationQueryComponent {
 
     this.loading = true;
 
-    const start = this.startDate instanceof Date ? this.startDate : new Date(this.startDate);
-    const end = this.endDate instanceof Date ? this.endDate : new Date(this.endDate);
+    const start =
+      this.startDate instanceof Date
+        ? this.startDate
+        : new Date(this.startDate);
+    const end =
+      this.endDate instanceof Date ? this.endDate : new Date(this.endDate);
 
-    this.declarationService.getDeclarations$(
-      start.toISOString(),
-      end.toISOString(),
-      this.importerId || "",
-      this.eventCode || ""
-    ).pipe(
-      tap(res => {
-        this.allDeclarations = res;
+    this.declarationService
+      .getDeclarations$(
+        start.toISOString(),
+        end.toISOString(),
+        this.importerId || '',
+        this.eventCode || '',
+        this.selectedTypeCode,
+      )
+      .pipe(
+        tap((res) => {
+          this.allDeclarations = res;
+          console.log('all Types:', [
+            ...new Set(this.allDeclarations.map((x: any) => x.Type)),
+          ]);
 
-        this.allDeclarations.forEach((x: any) => {
-          const arrival = x.Consignments?.[0]?.ArrivalDateTime;
-          if (arrival) {
-            const myDate = new Date(arrival);
-            const formatted = (myDate.getMonth() + 1) + '/' + myDate.getDate() + '/' + myDate.getFullYear();
-            x.ArrivalDateTime = formatted;
-            x.CargoDescription = x.Consignments?.[0]?.CargoDescription;
+          this.allDeclarations.forEach((x: any) => {
+            const arrival = x.Consignments?.[0]?.ArrivalDateTime;
+            if (arrival) {
+              const myDate = new Date(arrival);
+              const formatted =
+                myDate.getMonth() +
+                1 +
+                '/' +
+                myDate.getDate() +
+                '/' +
+                myDate.getFullYear();
+              x.ArrivalDateTime = formatted;
+              x.CargoDescription = x.Consignments?.[0]?.CargoDescription;
+            }
+          });
+
+          this.filteredDeclarations = this.allDeclarations;
+          this.filteredDeclarationsCount = this.filteredDeclarations.length;
+          this.noDeclarationsFound = this.filteredDeclarationsCount === 0;
+
+          if (this.noDeclarationsFound) {
+            this.noDeclarationsMsg = [
+              {
+                severity: 'info',
+                summary: 'תוצאה',
+                detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.',
+              },
+            ];
+          } else {
+            this.noDeclarationsMsg = [];
           }
-        });
 
-        this.filteredDeclarations = this.allDeclarations;
-        this.filteredDeclarationsCount = this.filteredDeclarations.length;
-        this.noDeclarationsFound = this.filteredDeclarationsCount === 0;
-
-        if (this.noDeclarationsFound) {
-          this.noDeclarationsMsg = [{
-            severity: 'info',
-            summary: 'תוצאה',
-            detail: 'לא נמצאו הצהרות בטווח התאריכים שבחרת.'
-          }];
-        } else {
-          this.noDeclarationsMsg = [];
-        }
-
-        this.msgs1 = [];
-        this.isShowFilter = true;
-        this.isFiltered = true;
-      }),
-      tap(_ => this.loading = false)
-    ).subscribe({
-      error: err => {
-        this.loading = false;
-        this.msgs1 = [{ severity: 'error', summary: 'שגיאה', detail: 'שגיאה בעת שליפת ההצהרות' }];
-      }
-    });
+          this.msgs1 = [];
+          this.isShowFilter = true;
+          this.isFiltered = true;
+        }),
+        tap((_) => (this.loading = false)),
+      )
+      .subscribe({
+        error: (err) => {
+          this.loading = false;
+          this.msgs1 = [
+            {
+              severity: 'error',
+              summary: 'שגיאה',
+              detail: 'שגיאה בעת שליפת ההצהרות',
+            },
+          ];
+        },
+      });
   }
 
   filterByDates() {
@@ -190,13 +246,17 @@ export class DeclarationQueryComponent {
       const start = new Date(this.startDate);
       const end = new Date(this.endDate);
 
-      this.filteredDeclarations = this.allDeclarations.filter((declaration: any) => {
-        const arrivalDate = declaration.Consignments?.[0]?.ArrivalDateTime ? new Date(declaration.Consignments[0].ArrivalDateTime) : null;
-        if (arrivalDate) {
-          return arrivalDate >= start && arrivalDate <= end;
-        }
-        return false;
-      });
+      this.filteredDeclarations = this.allDeclarations.filter(
+        (declaration: any) => {
+          const arrivalDate = declaration.Consignments?.[0]?.ArrivalDateTime
+            ? new Date(declaration.Consignments[0].ArrivalDateTime)
+            : null;
+          if (arrivalDate) {
+            return arrivalDate >= start && arrivalDate <= end;
+          }
+          return false;
+        },
+      );
     } else {
       this.filteredDeclarations = this.allDeclarations;
     }
@@ -229,7 +289,7 @@ export class DeclarationQueryComponent {
     for (let i = 0; i < this.customsStatuses?.length; i++) {
       let a = this.customsStatuses[i];
       if (a.code == code) {
-        return a.name
+        return a.name;
       }
     }
   }
@@ -246,17 +306,19 @@ export class DeclarationQueryComponent {
 
     // localStorage.setItem('declarationId', declaration.AgentFileReferenceID)
     // this.router.navigateByUrl('app-declaration/new-declaration?Mode=e');
-    localStorage.setItem('currentDecId', declaration.Id)
+    localStorage.setItem('currentDecId', declaration.Id);
     this.decType = declaration.Type;
     localStorage.setItem('decType', declaration.Type);
 
     if (this.decType == 'tr') {
-      this.router.navigate(['declaration-main/dec-form-ts'], { queryParams: { 'Mode': 'e', } })
+      this.router.navigate(['declaration-main/dec-form-ts'], {
+        queryParams: { Mode: 'e' },
+      });
       this.stepService.emitStepCompleted('dec-form-ts');
-
-    }
-    else {
-      this.router.navigate(['declaration-main/dec-form'], { queryParams: { 'Mode': 'e', } })
+    } else {
+      this.router.navigate(['declaration-main/dec-form'], {
+        queryParams: { Mode: 'e' },
+      });
       this.stepService.emitStepCompleted('dec-form');
     }
 
@@ -282,17 +344,17 @@ export class DeclarationQueryComponent {
         if (declaration.Type == 'tr') {
           this.router.navigate(['declaration-main/dec-form-ts'], {
             queryParams: {
-              'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
-              'type': 'transshipment'
-            }
+              Mode: 'copy', // ✅ מצב העתקה במקום עריכה
+              type: 'transshipment',
+            },
           });
           this.stepService.emitStepCompleted('dec-form-ts');
         } else {
           this.router.navigate(['declaration-main/dec-form'], {
             queryParams: {
-              'Mode': 'copy',  // ✅ מצב העתקה במקום עריכה
-              'type': 'import'
-            }
+              Mode: 'copy', // ✅ מצב העתקה במקום עריכה
+              type: 'import',
+            },
           });
           this.stepService.emitStepCompleted('dec-form');
         }
@@ -300,9 +362,11 @@ export class DeclarationQueryComponent {
       reject: () => {
         // ✅ אם לחץ "לא" - אל תעשה כלום
         console.log('העתקה בוטלה');
-
-      }
+      },
     });
   }
 
+  handleDecTypeChange() {
+    this.isFiltered = false;
+  }
 }
