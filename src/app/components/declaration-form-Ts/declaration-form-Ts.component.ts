@@ -158,7 +158,7 @@ export class DeclarationFormTsComponent implements OnInit {
   customStatus: any;
   customsStatuses: any;
 
-  showBtnCustoms = false;
+  showBtnCustoms = true;
   loading: boolean = false;
   isLocked: boolean = false;
   msgs1: Message[] = [];
