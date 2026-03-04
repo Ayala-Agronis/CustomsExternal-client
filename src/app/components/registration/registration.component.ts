@@ -1,6 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  ValidatorFn,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { RadioButtonModule } from 'primeng/radiobutton';
@@ -18,35 +27,66 @@ import { CheckboxModule } from 'primeng/checkbox';
 @Component({
   selector: 'app-registration',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableModule, ReactiveFormsModule, CheckboxModule, ButtonModule, CardModule, RadioButtonModule, InputTextModule, PasswordModule, ProgressSpinnerModule, MessagesModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    ReactiveFormsModule,
+    CheckboxModule,
+    ButtonModule,
+    CardModule,
+    RadioButtonModule,
+    InputTextModule,
+    PasswordModule,
+    ProgressSpinnerModule,
+    MessagesModule,
+  ],
   providers: [MessageService],
   templateUrl: './registration.component.html',
-  styleUrl: './registration.component.scss'
+  styleUrl: './registration.component.scss',
 })
 export class RegistrationComponent implements OnInit {
-
   registrationForm!: FormGroup;
   isLoading: boolean = false;
   msg: Message[] = [];
   showPersonalDetails: boolean = false;
-  user: any
+  user: any;
   classifications: any[] = [];
 
-  constructor(private fb: FormBuilder, private userService: UserService, private classificationService: ClientClassificationService, private router: Router, private route: ActivatedRoute) {
+  constructor(
+    private fb: FormBuilder,
+    private userService: UserService,
+    private classificationService: ClientClassificationService,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {
     this.registrationForm = this.fb.group({
-      FirstName: ['', [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')]],
-      LastName: ['', [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')]],
+      FirstName: [
+        '',
+        [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')],
+      ],
+      LastName: [
+        '',
+        [Validators.required, Validators.pattern('^[א-תA-Za-z ]+$')],
+      ],
       Mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       Email: ['', [Validators.required, Validators.email]],
-      Password: ['', [Validators.required, Validators.minLength(6)]],
+      Password: [
+        '',
+        [Validators.required, this.passwordValidator()],
+        { updateOn: 'change' },
+      ],
       CustomerType: ['', [Validators.required]],
-      Id: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(9)]],
+      Id: [
+        '',
+        [Validators.required, Validators.minLength(6), Validators.maxLength(9)],
+      ],
       RowId: [null],
       // ComissionPerTranc: [false]
     });
   }
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       if (params['personalDetails']) {
         this.showPersonalDetails = true;
         this.user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -61,7 +101,7 @@ export class RegistrationComponent implements OnInit {
             Id: this.user.Id,
             RowId: this.user.RowId,
             Password: this.user.Password,
-            ComissionPerTranc: this.user.ComissionPerTranc
+            ComissionPerTranc: this.user.ComissionPerTranc,
           });
         }
         this.loadClassifications();
@@ -71,41 +111,51 @@ export class RegistrationComponent implements OnInit {
 
   onSubmit() {
     if (this.registrationForm.valid) {
-      this.isLoading = true
+      this.isLoading = true;
       console.log(this.registrationForm.value);
       if (!this.showPersonalDetails) {
         this.userService.signUp(this.registrationForm.value).subscribe(
-          res => {
-            this.isLoading = false
+          (res) => {
+            this.isLoading = false;
             console.log(res);
-            this.router.navigate(['login'], { state: { user: res.body } })
+            this.router.navigate(['login'], { state: { user: res.body } });
           },
-          err => {
-            this.isLoading = false
+          (err) => {
+            this.isLoading = false;
             console.log(err);
             this.msg = [
               { severity: 'error', summary: '', detail: err.error.Message },
             ];
-          }
-        )
+          },
+        );
       }
       //save updated details
       else {
-        this.userService.editUser(this.user.RowId, this.registrationForm.value).subscribe(res => {
-          this.isLoading = false;
+        this.userService
+          .editUser(this.user.RowId, this.registrationForm.value)
+          .subscribe((res) => {
+            this.isLoading = false;
 
-          const userJson = JSON.stringify(res.body);
-          localStorage.setItem('user', userJson);
+            const userJson = JSON.stringify(res.body);
+            localStorage.setItem('user', userJson);
 
-          console.log(res);
-          this.msg = [
-            { severity: 'success', summary: '', detail: 'העדכון התבצע בהצלחה' },
-          ];
-        })
+            console.log(res);
+            this.msg = [
+              {
+                severity: 'success',
+                summary: '',
+                detail: 'העדכון התבצע בהצלחה',
+              },
+            ];
+          });
       }
     } else {
       this.msg = [
-        { severity: 'error', summary: '', detail: 'אנא מלא את כל השדות הנדרשים' },
+        {
+          severity: 'error',
+          summary: '',
+          detail: 'אנא מלא את כל השדות הנדרשים',
+        },
       ];
     }
   }
@@ -124,6 +174,24 @@ export class RegistrationComponent implements OnInit {
           return 'יש להזין מספר סלולרי תקין בן 10 ספרות';
       }
     }
+
+    if (controlName === 'Password') {
+      if (control?.hasError('required')) return 'סיסמה היא שדה חובה';
+      if (control?.hasError('invalidChars')) return 'הסר תווים לא חוקיים';
+      if (control?.hasError('passwordStrength')) {
+        const value = control.value || '';
+        const missing: string[] = [];
+
+        if (value.length < 8) missing.push('8 תווים');
+        if (!/[a-zA-Z]/.test(value)) missing.push('אות באנגלית');
+        if (!/[0-9]/.test(value)) missing.push('ספרה');
+        if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value))
+          missing.push('תו מיוחד');
+
+        return 'חסר: ' + missing.join(', ');
+      }
+    }
+
     if (control?.hasError('email')) {
       return 'כתובת המייל אינה תקינה';
     }
@@ -137,14 +205,14 @@ export class RegistrationComponent implements OnInit {
   }
 
   goBack() {
-    window.history.back()
+    window.history.back();
   }
 
   addRow() {
     this.classifications.push({
       GoodsDescription: '',
       ClassificationBook: '',
-      Classification: ''
+      Classification: '',
     });
   }
 
@@ -158,39 +226,74 @@ export class RegistrationComponent implements OnInit {
 
   saveClassifications() {
     if (!this.user?.Id) {
-      this.msg = [{ severity: 'error', summary: '', detail: 'לא ניתן לשמור ללא מזהה משתמש' }];
+      this.msg = [
+        {
+          severity: 'error',
+          summary: '',
+          detail: 'לא ניתן לשמור ללא מזהה משתמש',
+        },
+      ];
       return;
     }
 
-    const classificationsPayload = this.classifications.map(c => ({
+    const classificationsPayload = this.classifications.map((c) => ({
       RowID: c.RowID ?? 0,
       ClientID: this.user.Id,
       GoodsDescription: c.GoodsDescription,
       ClassificationBook: c.ClassificationBook,
-      Classification: c.Classification
+      Classification: c.Classification,
     }));
 
     this.isLoading = true;
 
-    this.classificationService.saveAllClassifications$(classificationsPayload, this.user.Id).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        console.log(res);
-        this.msg = [{ severity: 'success', summary: '', detail: 'הסיווגים נשמרו בהצלחה' }];
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error(err);
-        this.msg = [{ severity: 'error', summary: '', detail: 'אירעה שגיאה בשמירה' }];
-      }
-    });
+    this.classificationService
+      .saveAllClassifications$(classificationsPayload, this.user.Id)
+      .subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          console.log(res);
+          this.msg = [
+            {
+              severity: 'success',
+              summary: '',
+              detail: 'הסיווגים נשמרו בהצלחה',
+            },
+          ];
+        },
+        error: (err) => {
+          this.isLoading = false;
+          console.error(err);
+          this.msg = [
+            { severity: 'error', summary: '', detail: 'אירעה שגיאה בשמירה' },
+          ];
+        },
+      });
   }
-
 
   loadClassifications() {
-    this.classificationService.getClassifications$(this.user.Id).subscribe(res => {
-      this.classifications = res
-    })
+    this.classificationService
+      .getClassifications$(this.user.Id)
+      .subscribe((res) => {
+        this.classifications = res;
+      });
   }
 
+  passwordValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+
+      const hasNumber = /[0-9]/.test(value);
+      const hasLetter = /[a-zA-Z]/.test(value);
+      const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value);
+      const isValidChars =
+        /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(value);
+      const isLengthValid = value.length >= 8;
+
+      if (!isValidChars) return { invalidChars: true };
+
+      const valid = hasNumber && hasLetter && hasSpecial && isLengthValid;
+      return valid ? null : { passwordStrength: true };
+    };
+  }
 }
