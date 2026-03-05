@@ -1,7 +1,20 @@
 // ✅ login.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, AfterViewInit, ChangeDetectorRef, NgZone, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  Component,
+  AfterViewInit,
+  ChangeDetectorRef,
+  NgZone,
+  ViewChild,
+  ElementRef,
+  OnInit,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -13,7 +26,6 @@ import { MessagesModule } from 'primeng/messages';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { MixpanelService } from '../../shared/services/mixpanel.service';
 
-
 @Component({
   selector: 'app-login',
   standalone: true,
@@ -24,14 +36,13 @@ import { MixpanelService } from '../../shared/services/mixpanel.service';
     InputTextModule,
     PasswordModule,
     ProgressSpinnerModule,
-    MessagesModule
+    MessagesModule,
   ],
   providers: [MessageService],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
 })
-export class LoginComponent implements AfterViewInit {
-
+export class LoginComponent implements OnInit, AfterViewInit {
   loginForm!: FormGroup;
   loading = false;
   msg: Message[] = [];
@@ -49,18 +60,23 @@ export class LoginComponent implements AfterViewInit {
     private customsDataService: CustomsDataService,
     private cd: ChangeDetectorRef,
     private zone: NgZone,
-    private mixpanel: MixpanelService
-
+    private mixpanel: MixpanelService,
   ) {
     this.loginForm = this.fb.group({
-      Email: ['', {
-        validators: [Validators.required, Validators.email],
-        updateOn: 'change'
-      }],
-      Password: ['', {
-        validators: [Validators.required, Validators.minLength(6)],
-        updateOn: 'change'
-      }]
+      Email: [
+        '',
+        {
+          validators: [Validators.required, Validators.email],
+          updateOn: 'change',
+        },
+      ],
+      Password: [
+        '',
+        {
+          validators: [Validators.required, Validators.minLength(6)],
+          updateOn: 'change',
+        },
+      ],
     });
   }
 
@@ -69,9 +85,28 @@ export class LoginComponent implements AfterViewInit {
 
     const user = history.state.user;
     if (user) {
-      this.loginForm.controls["Email"].patchValue(user.Email);
-      this.loginForm.controls["Password"].patchValue(user.Password);
+      this.loginForm.controls['Email'].patchValue(user.Email);
+      this.loginForm.controls['Password'].patchValue(user.Password);
     }
+
+    // הוספה חדשה - בדיקה אם המשתמש הגיע אחרי הרשמה
+    this.route.queryParams.subscribe((params) => {
+      console.log('Query params:', params);
+      console.log('registered value:', params['registered']);
+      console.log('is true?:', params['registered'] === 'true');
+
+      if (params['registered'] === 'true') {
+        console.log('Setting message!');
+        this.msg = [
+          {
+            severity: 'info',
+            summary: '!נרשמת בהצלחה',
+            detail: 'אשר את המייל שנשלח אליך כדי להתחבר',
+          },
+        ];
+        console.log('msg after set:', this.msg);
+      }
+    });
   }
 
   ngAfterViewInit(): void {
@@ -99,11 +134,9 @@ export class LoginComponent implements AfterViewInit {
     }, 300);
   }
 
-
   togglePassword() {
     this.showPassword = !this.showPassword;
   }
-
 
   loginWithGoogle(): void {
     const googleLoginUrl =
@@ -120,19 +153,25 @@ export class LoginComponent implements AfterViewInit {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.loading = true;
-      console.log("in login");
+      console.log('in login');
 
       this.userService.login(this.loginForm.value).subscribe({
-        next: res => {
+        next: (res) => {
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token);
-            localStorage.setItem('isRegister', "true");
+            localStorage.setItem('isRegister', 'true');
             localStorage.setItem('userId', res.body.user.Id);
 
-            this.customsDataService.GetClient$(res.body.Id).subscribe(client => {
-              const status = client?.generalCustomerDataField?.costomerStatusForCAField;
-              localStorage.setItem('isClientAuthorized', status === 6 ? 'false' : 'true');
-            });
+            this.customsDataService
+              .GetClient$(res.body.Id)
+              .subscribe((client) => {
+                const status =
+                  client?.generalCustomerDataField?.costomerStatusForCAField;
+                localStorage.setItem(
+                  'isClientAuthorized',
+                  status === 6 ? 'false' : 'true',
+                );
+              });
 
             const userJson = JSON.stringify(res.body.user);
             localStorage.setItem('user', userJson);
@@ -143,15 +182,14 @@ export class LoginComponent implements AfterViewInit {
               $name: `${user.FirstName} ${user.LastName}`,
               $email: user.Email,
               customerType: user.CustomerType,
-              mobile: user.Mobile
+              mobile: user.Mobile,
             });
             this.mixpanel.track('Login Successful', {
               email: user.Email,
-              customerType: user.CustomerType
+              customerType: user.CustomerType,
             });
-
           }
-            this.router.navigate(['home-page']);
+          this.router.navigate(['home-page']);
 
           // if (this.typeDec == 'tr')
           //   this.router.navigate(['declaration-main/dec-form-ts']);
@@ -159,7 +197,7 @@ export class LoginComponent implements AfterViewInit {
           //   this.router.navigate(['declaration-main/dec-form']);
         },
 
-        error: error => {
+        error: (error) => {
           this.zone.run(() => {
             let errorMessage = 'שגיאה בלתי צפויה. נסה שוב מאוחר יותר.';
             if (error.status === 401) {
@@ -185,18 +223,20 @@ export class LoginComponent implements AfterViewInit {
           this.zone.run(() => {
             this.loading = false;
           });
-        }
-
+        },
       });
-
     } else {
       this.msg = [
-        { severity: 'error', summary: '', detail: 'אנא מלא את כל השדות הנדרשים' },
+        {
+          severity: 'error',
+          summary: '',
+          detail: 'אנא מלא את כל השדות הנדרשים',
+        },
       ];
     }
   }
 
-  navigateToRegister():void{
-    this.router.navigate(['register'])
+  navigateToRegister(): void {
+    this.router.navigate(['register']);
   }
 }

@@ -71,11 +71,7 @@ export class RegistrationComponent implements OnInit {
       ],
       Mobile: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       Email: ['', [Validators.required, Validators.email]],
-      Password: [
-        '',
-        [Validators.required, this.passwordValidator()],
-        { updateOn: 'change' },
-      ],
+      Password: ['', [Validators.required, this.passwordValidator()]],
       CustomerType: ['', [Validators.required]],
       Id: [
         '',
@@ -118,7 +114,10 @@ export class RegistrationComponent implements OnInit {
           (res) => {
             this.isLoading = false;
             console.log(res);
-            this.router.navigate(['login'], { state: { user: res.body } });
+            this.router.navigate(['login'], {
+              // state: { user: res.body },
+              queryParams: { registered: 'true' },
+            });
           },
           (err) => {
             this.isLoading = false;

@@ -118,3 +118,10 @@
   width: 100%;
   padding-right: 35px;
 }
+
+::ng-deep{
+    .login-form p-messages{
+        width: 70% !important;
+        display: block;
+    }
+}
