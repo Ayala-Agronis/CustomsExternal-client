@@ -44,6 +44,14 @@
               (click)="togglePassword()"
             ></i>
           </div>
+
+          <button
+            type="button"
+            class="forgot-link"
+            (click)="goToForgotPassword()"
+          >
+            שכחתי סיסמה
+          </button>
         </div>
       </div>
 
@@ -51,7 +59,11 @@
         <button type="submit" (click)="onSubmit()" class="button-primary">
           התחברות
         </button>
-        <button type="button" (click)="navigateToRegister()" class="button-primary">
+        <button
+          type="button"
+          (click)="navigateToRegister()"
+          class="button-primary"
+        >
           הרשמה
         </button>
       </div>

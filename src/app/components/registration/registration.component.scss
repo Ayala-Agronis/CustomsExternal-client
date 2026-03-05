@@ -111,3 +111,26 @@
 ::ng-deep .classifications .p-inputtext {
     padding: 0.3px 0.3px;
 }
+
+.password-item { 
+  width: 40%;        // תנסי 30%-40% עד שנראה לך נכון
+}
+
+.password-label {
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.password-requirements {
+  display: block;
+  width: 100%;
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0.8;
+  margin: 2px 0 6px;
+}
+
+.email-field {
+    width: 30%;
+}

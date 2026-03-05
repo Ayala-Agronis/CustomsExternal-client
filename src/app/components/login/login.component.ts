@@ -239,4 +239,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   navigateToRegister(): void {
     this.router.navigate(['register']);
   }
+
+  goToForgotPassword(): void {
+    this.router.navigate(['forgot-password']);
+  }
 }
