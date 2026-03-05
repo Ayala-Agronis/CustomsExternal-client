@@ -896,7 +896,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   sendDeclaration() {
-    debugger
+    debugger;
     this.loading = true;
     const id = localStorage.getItem('currentDecId');
     const dec = this.generalDeclarationForm.value;
@@ -1724,5 +1724,10 @@ export class DeclarationFormComponent implements OnInit {
         localStorage.removeItem('copyMode'); // ✅ נקה את הסימן
       }, 500);
     });
+  }
+
+  goToDeclarationsQuery() {
+    // תשני את הנתיב למה שקיים אצלך בפועל
+    this.router.navigate(['/dec-query']);
   }
 }

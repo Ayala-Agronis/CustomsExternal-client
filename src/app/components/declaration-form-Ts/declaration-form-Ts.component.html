@@ -1,142 +1,245 @@
 <form [formGroup]="generalDeclarationForm" class="form dec-form">
-    <div class="progress-spinner" *ngIf="loading">
-        <p-progressSpinner></p-progressSpinner>
-    </div>
-    <div class="title-container">
-        <h2 class="form-title title">תהליך הזנת הצהרה</h2>
-        <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value"> מספר הצהרה
-            :{{generalDeclarationForm.get("DeclarationNumber")?.value }}</label>
-        <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value">סטטוס הצהרה
-            :{{customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }} </label>
-        <label *ngIf="generalDeclarationForm.get('LogisticStatusCode')?.value">סטטוס לוגיסטי
+  <!-- Back to declarations query -->
+  <button
+    type="button"
+    class="back-fab"
+    pButton
+    pRipple
+    icon="pi pi-arrow-right"
+    (click)="goToDeclarationsQuery()"
+    pTooltip="חזרה לשאילתת ההצהרות"
+    tooltipPosition="left"
+    aria-label="חזרה לשאילתת ההצהרות"
+  ></button>
 
-            :{{customStatusName(generalDeclarationForm.get("LogisticStatusCode")?.value) }} </label>
-    </div>
+  <div class="progress-spinner" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+  <div class="title-container">
+    <h2 class="form-title title">תהליך הזנת הצהרה</h2>
+    <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value">
+      מספר הצהרה :{{
+        generalDeclarationForm.get("DeclarationNumber")?.value
+      }}</label
+    >
+    <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value"
+      >סטטוס הצהרה :{{
+        customStatusName(generalDeclarationForm.get("CustomsStatus")?.value)
+      }}
+    </label>
+    <label *ngIf="generalDeclarationForm.get('LogisticStatusCode')?.value"
+      >סטטוס לוגיסטי :{{
+        customStatusName(
+          generalDeclarationForm.get("LogisticStatusCode")?.value
+        )
+      }}
+    </label>
+  </div>
 
-    <p-confirmDialog></p-confirmDialog>
-    <p-messages class="ui-ltr" dir="ltr" [(value)]="msgs1" [enableService]="false"></p-messages>
+  <p-confirmDialog></p-confirmDialog>
+  <p-messages
+    class="ui-ltr"
+    dir="ltr"
+    [(value)]="msgs1"
+    [enableService]="false"
+  ></p-messages>
 
-    <!-- General Information -->
-    <p-card>
-        <div class="form-group">
+  <!-- General Information -->
+  <p-card>
+    <div class="form-group">
+      <div class="form-item">
+        <label>מזהה יצואן </label>
+        <input
+          pInputText
+          formControlName="ImporterID"
+          readonly
+          class="readonly-field"
+        />
+      </div>
 
-            <div class="form-item">
-                <label>מזהה יצואן </label>
-                <input pInputText formControlName="ImporterID" readonly class="readonly-field">
-            </div>
+      <div class="form-item">
+        <label for="customsProcess"
+          >תהליך מכס <span class="required">*</span></label
+        >
+        <p-autoComplete
+          [forceSelection]="true"
+          id="customsProcess"
+          formControlName="GovernmentProcedure"
+          inputId="autocomplete"
+          [suggestions]="filteredCustomsProcess"
+          (completeMethod)="filterCustomsProcess($event)"
+          field="name"
+          [dropdown]="true"
+        >
+        </p-autoComplete>
+      </div>
+      <div class="form-item">
+        <label> מדינת יעד *</label>
+        <p-autoComplete
+          [forceSelection]="true"
+          id="DestinationCountry"
+          formControlName="DestinationCountry"
+          class="ng-dirty"
+          [required]="true"
+          inputId="autocomplete"
+          [suggestions]="filteredDestinationCountry"
+          (completeMethod)="filterDestinationCountry($event)"
+          field="name"
+          [dropdown]="true"
+          (onSelect)="onDestinationCountrySelect($event, null)"
+        >
+        </p-autoComplete>
+      </div>
 
-            <div class="form-item">
-                <label for="customsProcess">תהליך מכס <span class="required">*</span></label>
-                <p-autoComplete [forceSelection]="true" id="customsProcess" formControlName="GovernmentProcedure"
-                    inputId="autocomplete" [suggestions]="filteredCustomsProcess"
-                    (completeMethod)="filterCustomsProcess($event)" field="name" [dropdown]="true">
-                </p-autoComplete>
-            </div>
-            <div class="form-item">
-                <label> מדינת יעד *</label>
-                <p-autoComplete [forceSelection]="true" id="DestinationCountry" formControlName="DestinationCountry"
-                    class="ng-dirty" [required]="true" inputId="autocomplete" [suggestions]="filteredDestinationCountry"
-                    (completeMethod)="filterDestinationCountry($event)" field="name" [dropdown]="true"
-                    (onSelect)="onDestinationCountrySelect($event,null)">
-                </p-autoComplete>
-            </div>
+      <div class="form-item">
+        <label for="RecipientName">שם מקבל *</label>
+        <input id="RecipientName" formControlName="RecipientName" type="text" />
+      </div>
 
-            <div class="form-item">
-                <label for="RecipientName">שם מקבל *</label>
-                <input id="RecipientName" formControlName="RecipientName" type="text" />
-            </div>
+      <div class="form-item">
+        <label for="RecipientAddress">כתובת מקבל *</label>
+        <input
+          id="RecipientAddress"
+          formControlName="RecipientAddress"
+          type="text"
+        />
+      </div>
 
-            <div class="form-item">
-                <label for="RecipientAddress">כתובת מקבל *</label>
-                <input id="RecipientAddress" formControlName="RecipientAddress" type="text" />
-            </div>
-
-            <div class="form-item">
-                <label for="RecipientIssueLocation">מדינת מקבל *</label>
-                <div class="ui-ltr" dir="ltr">
-                    <p-autoComplete [forceSelection]="true" formControlName="RecipientIssueLocation"
-                        [suggestions]="filteredRecipientCountries" (completeMethod)="filterRecipientCountries($event)"
-                        (onDropdownClick)="onRecipientDropdownClick()" field="name" [forceSelection]="true"
-                        [dropdown]="true" placeholder="בחר מדינה">
-                    </p-autoComplete>
-                </div>
-            </div>
+      <div class="form-item">
+        <label for="RecipientIssueLocation">מדינת מקבל *</label>
+        <div class="ui-ltr" dir="ltr">
+          <p-autoComplete
+            [forceSelection]="true"
+            formControlName="RecipientIssueLocation"
+            [suggestions]="filteredRecipientCountries"
+            (completeMethod)="filterRecipientCountries($event)"
+            (onDropdownClick)="onRecipientDropdownClick()"
+            field="name"
+            [forceSelection]="true"
+            [dropdown]="true"
+            placeholder="בחר מדינה"
+          >
+          </p-autoComplete>
         </div>
+      </div>
+    </div>
 
-        <!-- Consignment Details -->
+    <!-- Consignment Details -->
 
-        <div formGroupName="Consignments">
-
-            <p-tabView [(activeIndex)]="activeTabIndex" (activeIndexChange)="onTabChange($event)">
-                <p-tabPanel header="משגור יבוא">
-                    <div class="form-group">
-                        <div class="form-item">
-                            <label> סוג מזהה מטען <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
-                                formControlName="TransportContractDocumentTypeCode" inputId="autocomplete"
-                                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)"
-                                field="name" [dropdown]="true">
-                            </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label> שנה <span class="required">*</span></label>
-                            <input pInputText formControlName="TransportContractDocumentID" (blur)="onCargoIDBlur(1)">
-                        </div>
-                        <div class="form-item">
-                            <label> מזהה מטען ראשי <span class="required">*</span></label>
-                            <input pInputText formControlName="SecondCargoID" (blur)="onCargoIDBlur(2)" maxlength="12"
-                                minlength="11">
-                        </div>
-                        <div class="error" *ngIf="secondCargoIDError">
-                            {{ secondCargoIDError }}
-                        </div>
-                        <div class="form-item">
-                            <label>מזהה מטען פנימי</label>
-                            <input pInputText formControlName="ThirdCargoID" (blur)="onCargoIDBlur(3)">
-                        </div>
-                        <div class="form-item">
-                            <label>ארץ יצוא <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" formControlName="ExportationCountryCode"
-                                [required]="true" inputId="autocomplete" [suggestions]="filteredCountryOfExport"
-                                (completeMethod)="filterCountryOfExport($event)" field="name" [dropdown]="true"
-                                (onSelect)="onExportationCountrySelect($event)"></p-autoComplete>
-                        </div>
-                        <!-- [disabled]="formDisabled ||!isImportCountrySelected"  -->
-                        <div class="form-item">
-                            <label> נמל טעינה <span class="required">*</span></label>
-                            <p-autoComplete formControlName="LoadingLocation"
-                                [suggestions]="currentFilteredChargingCountryImport"
-                                (completeMethod)="filterChargingCountry($event, 'import')" field="name"
-                                [dropdown]="true"></p-autoComplete>
-
-                        </div>
-                        <div class="form-item">
-                            <label>נמל פריקה <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="unpackingSite"
-                                formControlName="UnloadingLocationID" inputId="autocomplete"
-                                [suggestions]="filteredUnpackingSite" (completeMethod)="filterUnpackingSite($event)"
-                                field="name" [dropdown]="true" (onSelect)="onUnloadingLocationIDSelect($event,i)">
-                            </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label> אתר מסירה <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" formControlName="FacilityType"
-                                inputId="autocomplete" [suggestions]="filteredFacilityType"
-                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true"
-                                (onSelect)="onFacilityTypeSelect($event,i)">
-                            </p-autoComplete>
-                        </div>
-                        <!-- <div class="form-item">
+    <div formGroupName="Consignments">
+      <p-tabView
+        [(activeIndex)]="activeTabIndex"
+        (activeIndexChange)="onTabChange($event)"
+      >
+        <p-tabPanel header="משגור יבוא">
+          <div class="form-group">
+            <div class="form-item">
+              <label> סוג מזהה מטען <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                id="TransportContractDocument_TypeCode"
+                formControlName="TransportContractDocumentTypeCode"
+                inputId="autocomplete"
+                [suggestions]="filteredCargoIDType"
+                (completeMethod)="filterCargoIDType($event)"
+                field="name"
+                [dropdown]="true"
+              >
+              </p-autoComplete>
+            </div>
+            <div class="form-item">
+              <label> שנה <span class="required">*</span></label>
+              <input
+                pInputText
+                formControlName="TransportContractDocumentID"
+                (blur)="onCargoIDBlur(1)"
+              />
+            </div>
+            <div class="form-item">
+              <label> מזהה מטען ראשי <span class="required">*</span></label>
+              <input
+                pInputText
+                formControlName="SecondCargoID"
+                (blur)="onCargoIDBlur(2)"
+                maxlength="12"
+                minlength="11"
+              />
+            </div>
+            <div class="error" *ngIf="secondCargoIDError">
+              {{ secondCargoIDError }}
+            </div>
+            <div class="form-item">
+              <label>מזהה מטען פנימי</label>
+              <input
+                pInputText
+                formControlName="ThirdCargoID"
+                (blur)="onCargoIDBlur(3)"
+              />
+            </div>
+            <div class="form-item">
+              <label>ארץ יצוא <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                formControlName="ExportationCountryCode"
+                [required]="true"
+                inputId="autocomplete"
+                [suggestions]="filteredCountryOfExport"
+                (completeMethod)="filterCountryOfExport($event)"
+                field="name"
+                [dropdown]="true"
+                (onSelect)="onExportationCountrySelect($event)"
+              ></p-autoComplete>
+            </div>
+            <!-- [disabled]="formDisabled ||!isImportCountrySelected"  -->
+            <div class="form-item">
+              <label> נמל טעינה <span class="required">*</span></label>
+              <p-autoComplete
+                formControlName="LoadingLocation"
+                [suggestions]="currentFilteredChargingCountryImport"
+                (completeMethod)="filterChargingCountry($event, 'import')"
+                field="name"
+                [dropdown]="true"
+              ></p-autoComplete>
+            </div>
+            <div class="form-item">
+              <label>נמל פריקה <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                id="unpackingSite"
+                formControlName="UnloadingLocationID"
+                inputId="autocomplete"
+                [suggestions]="filteredUnpackingSite"
+                (completeMethod)="filterUnpackingSite($event)"
+                field="name"
+                [dropdown]="true"
+                (onSelect)="onUnloadingLocationIDSelect($event, i)"
+              >
+              </p-autoComplete>
+            </div>
+            <div class="form-item">
+              <label> אתר מסירה <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                formControlName="FacilityType"
+                inputId="autocomplete"
+                [suggestions]="filteredFacilityType"
+                (completeMethod)="filterFacilityType($event)"
+                field="name"
+                [dropdown]="true"
+                (onSelect)="onFacilityTypeSelect($event, i)"
+              >
+              </p-autoComplete>
+            </div>
+            <!-- <div class="form-item">
                             <label for="Quantity">כמות אריזות</label>
                             <input id="Quantity" formControlName="Quantity" type="number" pInputText min="0" />
                         </div> -->
 
-
-                        <!-- <div class="form-item">
+            <!-- <div class="form-item">
                             <label for="UnitType">סוג אריזה </label>
                             <input id="UnitType" formControlName="UnitType" type="text" pInputText />
                         </div> -->
-                        <!-- <div class="form-item">
+            <!-- <div class="form-item">
                             <label for="UnitType">סוג אריזה</label>
                             <div class="ui-ltr" dir="ltr">
                                 <p-autoComplete id="UnitType" formControlName="UnitType" [forceSelection]="true"
@@ -146,56 +249,79 @@
                             </div>
                         </div> -->
 
-                        <div class="form-item">
-                            <label for="MarksAndNumbers">סימנים ומספרים</label>
-                            <input id="MarksAndNumbers" formControlName="MarksAndNumbers" type="text" pInputText />
-                        </div>
-                        <!-- <div class="form-item">
+            <div class="form-item">
+              <label for="MarksAndNumbers">סימנים ומספרים</label>
+              <input
+                id="MarksAndNumbers"
+                formControlName="MarksAndNumbers"
+                type="text"
+                pInputText
+              />
+            </div>
+            <!-- <div class="form-item">
                             <label for="IsHazardous">חומר מסוכן </label>
                             <select id="IsHazardous" formControlName="IsHazardous" class="p-inputtext">
                                 <option value="Y">Y</option>
                                 <option value="N">N</option>
                             </select>
                         </div> -->
-                        <!-- <div class="form-item">
+            <!-- <div class="form-item">
                             <label> תאריך הגעת טובין <span class="required">*</span> </label>
                             <p-calendar formControlName="ArrivalDateTime" [showIcon]="true"
                                 dateFormat="dd/mm/yy"></p-calendar>
                         </div> -->
 
-                        <div class="form-item">
-                            <label>תיאור טובין <span class="required">*</span></label>
-                            <input pInputText formControlName="CargoDescription">
-                        </div>
-
-                    </div>
-                </p-tabPanel>
-                <p-tabPanel header=" משגור יצוא">
-                    <div class="form-group">
-                        <div class="form-item">
-                            <label> סוג מזהה מטען <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="TransportContractDocument_TypeCode"
-                                formControlName="TransportContractDocumentTypeCode2" inputId="autocomplete"
-                                [suggestions]="filteredCargoIDType" (completeMethod)="filterCargoIDType($event)"
-                                field="name" [dropdown]="true">
-                            </p-autoComplete>
-                        </div>
-                        <div class="form-item">
-                            <label> שנה <span class="required">*</span></label>
-                            <input pInputText formControlName="TransportContractDocumentID2" (blur)="onCargoIDBlur(1)">
-                        </div>
-                        <div class="form-item">
-                            <label> מזהה מטען ראשי <span class="required">*</span></label>
-                            <input pInputText formControlName="SecondCargoID2" (blur)="onCargoIDBlur(2)" maxlength="12">
-                        </div>
-                        <div class="error" *ngIf="secondCargoIDError">
-                            {{ secondCargoIDError }}
-                        </div>
-                        <div class="form-item">
-                            <label>מזהה מטען פנימי</label>
-                            <input pInputText formControlName="ThirdCargoID2" (blur)="onCargoIDBlur(3)">
-                        </div>
-                        <!-- <div class="form-item">
+            <div class="form-item">
+              <label>תיאור טובין <span class="required">*</span></label>
+              <input pInputText formControlName="CargoDescription" />
+            </div>
+          </div>
+        </p-tabPanel>
+        <p-tabPanel header=" משגור יצוא">
+          <div class="form-group">
+            <div class="form-item">
+              <label> סוג מזהה מטען <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                id="TransportContractDocument_TypeCode"
+                formControlName="TransportContractDocumentTypeCode2"
+                inputId="autocomplete"
+                [suggestions]="filteredCargoIDType"
+                (completeMethod)="filterCargoIDType($event)"
+                field="name"
+                [dropdown]="true"
+              >
+              </p-autoComplete>
+            </div>
+            <div class="form-item">
+              <label> שנה <span class="required">*</span></label>
+              <input
+                pInputText
+                formControlName="TransportContractDocumentID2"
+                (blur)="onCargoIDBlur(1)"
+              />
+            </div>
+            <div class="form-item">
+              <label> מזהה מטען ראשי <span class="required">*</span></label>
+              <input
+                pInputText
+                formControlName="SecondCargoID2"
+                (blur)="onCargoIDBlur(2)"
+                maxlength="12"
+              />
+            </div>
+            <div class="error" *ngIf="secondCargoIDError">
+              {{ secondCargoIDError }}
+            </div>
+            <div class="form-item">
+              <label>מזהה מטען פנימי</label>
+              <input
+                pInputText
+                formControlName="ThirdCargoID2"
+                (blur)="onCargoIDBlur(3)"
+              />
+            </div>
+            <!-- <div class="form-item">
                             <label>ארץ יצוא <span class="required">*</span></label>
                             <p-autoComplete [forceSelection]="true" formControlName="ExportationCountryCode2"
                                 [required]="true" inputId="autocomplete" [suggestions]="filteredCountryOfExport"
@@ -203,45 +329,59 @@
                                 (onSelect)="onExportationCountrySelect($event)"></p-autoComplete>
                         </div> -->
 
-                        <div class="form-item">
-                            <label> נמל טעינה <span class="required">*</span></label>
-                            <p-autoComplete formControlName="LoadingLocation2"
-                                [suggestions]="currentFilteredChargingCountryExport"
-                                (completeMethod)="filterChargingCountry($event, 'export')" field="name"
-                                [dropdown]="true">
-                                <!-- <ng-template let-item pTemplate="item">
+            <div class="form-item">
+              <label> נמל טעינה <span class="required">*</span></label>
+              <p-autoComplete
+                formControlName="LoadingLocation2"
+                [suggestions]="currentFilteredChargingCountryExport"
+                (completeMethod)="filterChargingCountry($event, 'export')"
+                field="name"
+                [dropdown]="true"
+              >
+                <!-- <ng-template let-item pTemplate="item">
                                     <div pTooltip="{{ item.fullName }}" tooltipPosition="top">
                                         {{ item.code }}
                                     </div>
                                 </ng-template> -->
-                            </p-autoComplete>
+              </p-autoComplete>
+            </div>
+            <div class="form-item">
+              <label> אתר מסירה <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                formControlName="FacilityType2"
+                inputId="autocomplete"
+                [suggestions]="filteredFacilityType"
+                (completeMethod)="filterFacilityType($event)"
+                field="name"
+                [dropdown]="true"
+                (onSelect)="onFacilityType2Select($event, i)"
+              >
+              </p-autoComplete>
+            </div>
 
-                        </div>
-                        <div class="form-item">
-                            <label> אתר מסירה <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" formControlName="FacilityType2"
-                                inputId="autocomplete" [suggestions]="filteredFacilityType"
-                                (completeMethod)="filterFacilityType($event)" field="name" [dropdown]="true"
-                                (onSelect)="onFacilityType2Select($event,i)">
-                            </p-autoComplete>
-                        </div>
+            <div class="form-item">
+              <label>נמל פריקה <span class="required">*</span></label>
+              <p-autoComplete
+                [forceSelection]="true"
+                id="unpackingSite"
+                formControlName="UnloadingLocationID2"
+                inputId="autocomplete"
+                [suggestions]="filteredUnpackingSite"
+                (completeMethod)="filterUnpackingSiteByReceiptCountry($event)"
+                field="name"
+                [dropdown]="true"
+                (onSelect)="onUnloadingLocationID2Select($event, i)"
+              >
+              </p-autoComplete>
+            </div>
 
-                        <div class="form-item">
-                            <label>נמל פריקה <span class="required">*</span></label>
-                            <p-autoComplete [forceSelection]="true" id="unpackingSite"
-                                formControlName="UnloadingLocationID2" inputId="autocomplete"
-                                [suggestions]="filteredUnpackingSite"
-                                (completeMethod)="filterUnpackingSiteByReceiptCountry($event)" field="name"
-                                [dropdown]="true" (onSelect)="onUnloadingLocationID2Select($event,i)">
-                            </p-autoComplete>
-                        </div>
-
-                        <!-- <div class="form-item">
+            <!-- <div class="form-item">
                             <label> תאריך הגעת טובין <span class="required">*</span> </label>
                             <p-calendar formControlName="ArrivalDateTime2" [showIcon]="true"
                                 dateFormat="dd/mm/yy"></p-calendar>
                         </div> -->
-                        <!-- <div class="form-item">
+            <!-- <div class="form-item">
                             <label for="Quantity2">כמות אריזות</label>
                             <input id="Quantity2" formControlName="Quantity2" type="number" pInputText min="0" />
                         </div>
@@ -252,167 +392,274 @@
                             <input id="UnitType2" formControlName="UnitType2" type="text" pInputText />
                         </div> -->
 
-                        <div class="form-item">
-                            <label for="MarksAndNumbers2">סימנים ומספרים</label>
-                            <input id="MarksAndNumbers2" formControlName="MarksAndNumbers2" type="text" pInputText />
-                        </div>
-                        <div class="form-item">
-                            <label>תיאור טובין <span class="required">*</span></label>
-                            <input pInputText formControlName="CargoDescription2">
-                        </div>
-                        <div class="form-item" *ngIf="activeTabIndex === 1">
-                            <label for="IsHazardous2">חומר מסוכן</label>
-                            <p-checkbox inputId="IsHazardous2" formControlName="IsHazardous2"
-                                [binary]="true"></p-checkbox>
-                            <!-- <label for="IsHazardous2">חומר מסוכן </label>
+            <div class="form-item">
+              <label for="MarksAndNumbers2">סימנים ומספרים</label>
+              <input
+                id="MarksAndNumbers2"
+                formControlName="MarksAndNumbers2"
+                type="text"
+                pInputText
+              />
+            </div>
+            <div class="form-item">
+              <label>תיאור טובין <span class="required">*</span></label>
+              <input pInputText formControlName="CargoDescription2" />
+            </div>
+            <div class="form-item" *ngIf="activeTabIndex === 1">
+              <label for="IsHazardous2">חומר מסוכן</label>
+              <p-checkbox
+                inputId="IsHazardous2"
+                formControlName="IsHazardous2"
+                [binary]="true"
+              ></p-checkbox>
+              <!-- <label for="IsHazardous2">חומר מסוכן </label>
                             <select id="IsHazardous2" formControlName="IsHazardous2" class="p-inputtext">
                                 <option value="Y">Y</option>
                                 <option value="N">N</option>
                             </select> -->
-                        </div>
-
-
-                    </div>
-                </p-tabPanel>
-
-            </p-tabView>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </p-card>
+  <br />
+  <!-- Package Details -->
+  <p-card>
+    <h3 class="form-subtitle">פירוט חבילות</h3>
+    <div class="form-group" formGroupName="ConsignmentPackagesMeasures">
+      <div class="form-item">
+        <label for="TypeCode">סוג אריזה </label>
+        <div class="ui-ltr" dir="ltr">
+          <p-autoComplete
+            id="TypeCode"
+            formControlName="TypeCode"
+            [forceSelection]="true"
+            inputId="autocomplete"
+            field="name"
+            [dropdown]="true"
+            [suggestions]="filteredTypeCode"
+            (completeMethod)="filterTypeCode($event)"
+          >
+          </p-autoComplete>
         </div>
-    </p-card>
-    <br />
-    <!-- Package Details -->
-    <p-card>
-        <h3 class="form-subtitle">פירוט חבילות</h3>
-        <div class="form-group" formGroupName="ConsignmentPackagesMeasures">
-            <div class="form-item">
-                <label for="TypeCode">סוג אריזה </label>
-                <div class="ui-ltr" dir="ltr">
-                    <p-autoComplete id="TypeCode" formControlName="TypeCode" [forceSelection]="true"
-                        inputId="autocomplete" field="name" [dropdown]="true" [suggestions]="filteredTypeCode"
-                        (completeMethod)="filterTypeCode($event)">
-                    </p-autoComplete>
-                </div>
-                <!-- <input id="UnitType" formControlName="UnitType" type="text" pInputText /> -->
-            </div>
-            <div class="form-item">
-                <label> כמות *
-                </label>
-                <input pInputText type="number" formControlName="TotalPackageQuantity">
-            </div>
-            <!-- <div class="form-item">
+        <!-- <input id="UnitType" formControlName="UnitType" type="text" pInputText /> -->
+      </div>
+      <div class="form-item">
+        <label> כמות * </label>
+        <input
+          pInputText
+          type="number"
+          formControlName="TotalPackageQuantity"
+        />
+      </div>
+      <!-- <div class="form-item">
                 <label> משקל *</label>
                 <input pInputText type="number" formControlName="GrossMassMeasure">
             </div> -->
-        </div>
-    </p-card>
+    </div>
+  </p-card>
 
-    <br />
-    <!-- Supplier Invoices -->
+  <br />
+  <!-- Supplier Invoices -->
 
-    <!-- <div formGroupName="SupplierInvoices"> -->
-    <div formArrayName="SupplierInvoices">
-        <p-tabView>
-            <p-tabPanel *ngFor="let supplierInvoice of supplierInvoices.controls; let i = index" [formGroupName]="i"
-                [header]="'חשבונית ' + (i+1)">
-                <button [disabled]="formDisabled" pButton pRipple icon="pi pi-plus"
-                    class="p-button-raised p-button-text" (click)="addSupplierInvoice()"></button>
-                <button [disabled]="formDisabled" *ngIf="i" pButton pRipple icon="pi pi-minus"
-                    class="p-button-raised p-button-text " (click)="removeSupplierInvoice(supplierInvoice,i)"></button>
-                <p-card>
-                    <div class="supplierInvoices-container">
-                        <div class="right-side">
-                            <div class="header">
-                                <h3 class="form-subtitle">חשבוניות וסחורות</h3>
+  <!-- <div formGroupName="SupplierInvoices"> -->
+  <div formArrayName="SupplierInvoices">
+    <p-tabView>
+      <p-tabPanel
+        *ngFor="let supplierInvoice of supplierInvoices.controls; let i = index"
+        [formGroupName]="i"
+        [header]="'חשבונית ' + (i + 1)"
+      >
+        <button
+          [disabled]="formDisabled"
+          pButton
+          pRipple
+          icon="pi pi-plus"
+          class="p-button-raised p-button-text"
+          (click)="addSupplierInvoice()"
+        ></button>
+        <button
+          [disabled]="formDisabled"
+          *ngIf="i"
+          pButton
+          pRipple
+          icon="pi pi-minus"
+          class="p-button-raised p-button-text"
+          (click)="removeSupplierInvoice(supplierInvoice, i)"
+        ></button>
+        <p-card>
+          <div class="supplierInvoices-container">
+            <div class="right-side">
+              <div class="header">
+                <h3 class="form-subtitle">חשבוניות וסחורות</h3>
+              </div>
+              <div class="form-group">
+                <div class="form-item">
+                  <label>
+                    מספר חשבונית ספק <span class="required">*</span></label
+                  >
+                  <input pInputText formControlName="InvoiceNumber" />
+                </div>
+                <div class="form-item">
+                  <label class="vendor-label"
+                    >שם ספק <span class="required">*</span>
+                    <button
+                      pButton
+                      pRipple
+                      icon="pi pi-plus"
+                      class="p-button-raised p-button-text"
+                      (click)="serchVendor()"
+                      title="הוסף ספק"
+                    ></button
+                  ></label>
+                  <p-autoComplete
+                    [forceSelection]="true"
+                    id="SupplierID"
+                    formControlName="SupplierID"
+                    inputId="autocomplete"
+                    [suggestions]="filteredSupplierID"
+                    (completeMethod)="filterSupplierID($event)"
+                    field="name"
+                    [dropdown]="true"
+                  >
+                  </p-autoComplete>
+                </div>
+                <div class="form-item">
+                  <label> מטבע חשבון <span class="required">*</span></label>
+                  <p-autoComplete
+                    formControlName="CurrencyCode"
+                    (completeMethod)="filterCurrencyCode($event)"
+                    [suggestions]="filteredCurrencyCode"
+                    [forceSelection]="true"
+                    field="code"
+                    [dropdown]="true"
+                  >
+                  </p-autoComplete>
+                </div>
+                <div class="form-item">
+                  <label>תאריך חשבון מכר <span class="required">*</span></label>
+                  <p-calendar
+                    formControlName="IssueDateTime"
+                    [showIcon]="true"
+                    dateFormat="dd/mm/yy"
+                  ></p-calendar>
+                </div>
+                <div class="form-item">
+                  <label> ארץ יצוא <span class="required">*</span></label>
+                  <p-autoComplete
+                    [forceSelection]="true"
+                    formControlName="LocationID"
+                    class="ng-dirty"
+                    inputId="autocomplete"
+                    [suggestions]="filteredCountryOfExport"
+                    (completeMethod)="filterCountryOfExport($event)"
+                    field="name"
+                    [dropdown]="true"
+                  ></p-autoComplete>
+                </div>
+                <div class="form-item">
+                  <label> תנאי מכר <span class="required">*</span></label>
+                  <p-autoComplete
+                    [forceSelection]="true"
+                    id="TradeTermsConditionCode"
+                    formControlName="TradeTermsConditionCode"
+                    inputId="autocomplete"
+                    [suggestions]="filteredTradeTermsConditionCode"
+                    (completeMethod)="filterTradeTermsConditionCode($event)"
+                    field="name"
+                    [dropdown]="true"
+                    (onSelect)="onTradeTermsSelect($event, i)"
+                  >
+                  </p-autoComplete>
+                </div>
+                <div class="form-item">
+                  <label>סוג חשבון <span class="required">*</span></label>
+                  <p-autoComplete
+                    [forceSelection]="true"
+                    formControlName="InvoiceTypeCode"
+                    inputId="autocomplete"
+                    [suggestions]="filteredInvoiceTypeCode"
+                    (completeMethod)="filterInvoiceTypeCode($event)"
+                    field="name"
+                    [dropdown]="true"
+                  >
+                  </p-autoComplete>
+                </div>
+                <div class="form-item">
+                  <label>סה"כ חשבון <span class="required">*</span></label>
+                  <input
+                    (blur)="getFormErrors(true)"
+                    pInputText
+                    formControlName="InvoiceAmount"
+                  />
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="form-item">
+                  <label for="BuyerName">
+                    שם הקונה <span class="required">*</span></label
+                  >
+                  <input
+                    id="Name"
+                    formControlName="BuyerName"
+                    type="text"
+                    pInputText
+                  />
+                </div>
+                <div class="form-item">
+                  <label for="BuyerAddress">
+                    כתובת הקונה<span class="required">*</span></label
+                  >
+                  <input
+                    id="Address"
+                    formControlName="BuyerAddress"
+                    type="text"
+                    pInputText
+                  />
+                </div>
+                <div class="form-item">
+                  <label for="BuyerIssueLocation">
+                    מדינת הקונה <span class="required">*</span></label
+                  >
+                  <div class="ui-ltr" dir="ltr">
+                    <p-autoComplete
+                      [forceSelection]="true"
+                      id="IssueLocation"
+                      formControlName="BuyerIssueLocation"
+                      [required]="true"
+                      inputId="autocomplete"
+                      [suggestions]="filteredIssueLocation"
+                      (completeMethod)="filterIssueLocation($event)"
+                      field="name"
+                      [dropdown]="true"
+                    >
+                    </p-autoComplete>
+                  </div>
+                </div>
+                <div class="form-item">
+                  <label for="BuyerRole">
+                    תפקיד קונה <span class="required">*</span></label
+                  >
+                  <div class="ui-ltr" dir="ltr">
+                    <p-autoComplete
+                      [forceSelection]="true"
+                      id="RoleCode"
+                      formControlName="BuyerRole"
+                      [required]="true"
+                      inputId="autocomplete"
+                      [suggestions]="filteredRoleCode"
+                      (completeMethod)="filterRoleCode($event)"
+                      field="name"
+                      [dropdown]="true"
+                    >
+                    </p-autoComplete>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                            </div>
-                            <div class="form-group">
-                                <div class="form-item">
-                                    <label> מספר חשבונית ספק <span class="required">*</span></label>
-                                    <input pInputText formControlName="InvoiceNumber">
-                                </div>
-                                <div class="form-item">
-                                    <label class="vendor-label">שם ספק <span class="required">*</span> <button pButton
-                                            pRipple icon="pi pi-plus" class="p-button-raised p-button-text"
-                                            (click)="serchVendor()" title="הוסף ספק"></button></label>
-                                    <p-autoComplete [forceSelection]="true" id="SupplierID" formControlName="SupplierID"
-                                        inputId="autocomplete" [suggestions]="filteredSupplierID"
-                                        (completeMethod)="filterSupplierID($event)" field="name" [dropdown]="true">
-                                    </p-autoComplete>
-                                </div>
-                                <div class="form-item">
-                                    <label> מטבע חשבון <span class="required">*</span></label>
-                                    <p-autoComplete formControlName="CurrencyCode"
-                                        (completeMethod)="filterCurrencyCode($event)"
-                                        [suggestions]="filteredCurrencyCode" [forceSelection]="true" field="code"
-                                        [dropdown]="true">
-                                    </p-autoComplete>
-                                </div>
-                                <div class="form-item">
-                                    <label>תאריך חשבון מכר <span class="required">*</span></label>
-                                    <p-calendar formControlName="IssueDateTime" [showIcon]="true"
-                                        dateFormat="dd/mm/yy"></p-calendar>
-                                </div>
-                                <div class="form-item">
-                                    <label> ארץ יצוא <span class="required">*</span></label>
-                                    <p-autoComplete [forceSelection]="true" formControlName="LocationID"
-                                        class="ng-dirty" inputId="autocomplete" [suggestions]="filteredCountryOfExport"
-                                        (completeMethod)="filterCountryOfExport($event)" field="name"
-                                        [dropdown]="true"></p-autoComplete>
-                                </div>
-                                <div class="form-item">
-                                    <label> תנאי מכר <span class="required">*</span></label>
-                                    <p-autoComplete [forceSelection]="true" id="TradeTermsConditionCode"
-                                        formControlName="TradeTermsConditionCode" inputId="autocomplete"
-                                        [suggestions]="filteredTradeTermsConditionCode"
-                                        (completeMethod)="filterTradeTermsConditionCode($event)" field="name"
-                                        [dropdown]="true" (onSelect)="onTradeTermsSelect($event,i)">
-                                    </p-autoComplete>
-                                </div>
-                                <div class="form-item">
-                                    <label>סוג חשבון <span class="required">*</span></label>
-                                    <p-autoComplete [forceSelection]="true" formControlName="InvoiceTypeCode"
-                                        inputId="autocomplete" [suggestions]="filteredInvoiceTypeCode"
-                                        (completeMethod)="filterInvoiceTypeCode($event)" field="name" [dropdown]="true">
-                                    </p-autoComplete>
-                                </div>
-                                <div class="form-item">
-                                    <label>סה"כ חשבון <span class="required">*</span></label>
-                                    <input (blur)="getFormErrors(true)" pInputText formControlName="InvoiceAmount">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="form-item">
-                                    <label for="BuyerName"> שם הקונה <span class="required">*</span></label>
-                                    <input id="Name" formControlName="BuyerName" type="text" pInputText />
-                                </div>
-                                <div class="form-item">
-                                    <label for="BuyerAddress"> כתובת הקונה<span class="required">*</span></label>
-                                    <input id="Address" formControlName="BuyerAddress" type="text" pInputText />
-                                </div>
-                                <div class="form-item">
-                                    <label for="BuyerIssueLocation"> מדינת הקונה <span class="required">*</span></label>
-                                    <div class="ui-ltr" dir="ltr">
-                                        <p-autoComplete [forceSelection]="true" id="IssueLocation"
-                                            formControlName="BuyerIssueLocation" [required]="true"
-                                            inputId="autocomplete" [suggestions]="filteredIssueLocation"
-                                            (completeMethod)="filterIssueLocation($event)" field="name"
-                                            [dropdown]="true">
-                                        </p-autoComplete>
-                                    </div>
-                                </div>
-                                <div class="form-item">
-                                    <label for="BuyerRole"> תפקיד קונה <span class="required">*</span></label>
-                                    <div class="ui-ltr" dir="ltr">
-                                        <p-autoComplete [forceSelection]="true" id="RoleCode"
-                                            formControlName="BuyerRole" [required]="true" inputId="autocomplete"
-                                            [suggestions]="filteredRoleCode" (completeMethod)="filterRoleCode($event)"
-                                            field="name" [dropdown]="true">
-                                        </p-autoComplete>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- <div class="valuations" *ngIf="showCustomsValuation[i]">
+            <!-- <div class="valuations" *ngIf="showCustomsValuation[i]">
                             <h4>התאמות / הפחתות</h4>
                             <div class="valuation-items">
                                 <div class="valuation-item"
@@ -442,48 +689,65 @@
                                 </div>
                             </div>
                         </div> -->
-                    </div>
-                </p-card>
-                <br />
+          </div>
+        </p-card>
+        <br />
 
-                <div>
-                    <div formArrayName="SupplierInvoiceItems">
-                        <p-card>
+        <div>
+          <div formArrayName="SupplierInvoiceItems">
+            <p-card>
+              <p-table [value]="GetSupplierInvoiceItems(i).controls">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th class="sCol"></th>
+                    <ng-container *ngFor="let col of columns">
+                      <th>{{ col }}</th>
+                    </ng-container>
+                  </tr>
+                </ng-template>
+                <ng-template
+                  pTemplate="body"
+                  let-rowData
+                  let-rowIndex="rowIndex"
+                >
+                  <tr [formGroupName]="rowIndex">
+                    <td class="sCol">
+                      <button
+                        [disabled]="formDisabled"
+                        pButton
+                        pRipple
+                        icon="pi pi-minus"
+                        class="p-button-raised p-button-text"
+                        (click)="onDeleteRow(rowData, rowIndex, i)"
+                      ></button>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <p-autoComplete
+                            [forceSelection]="true"
+                            [appendTo]="'body'"
+                            (onSelect)="selectClassification($event)"
+                            formControlName="ClassificationID"
+                            [suggestions]="filteredClassification"
+                            (completeMethod)="filterClassification($event)"
+                            field="name"
+                            [dropdown]="true"
+                            placeholder="בחר מוצר"
+                          >
+                          </p-autoComplete>
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          {{
+                            GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                              "ClassificationID"
+                            )?.value?.name
+                          }}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
 
-                            <p-table [value]="GetSupplierInvoiceItems(i).controls">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th class="sCol"></th>
-                                        <ng-container *ngFor="let col of columns">
-                                            <th>{{col}}</th>
-                                        </ng-container>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-rowData let-rowIndex="rowIndex">
-                                    <tr [formGroupName]="rowIndex">
-                                        <td class="sCol">
-                                            <button [disabled]="formDisabled" pButton pRipple icon="pi pi-minus"
-                                                class="p-button-raised p-button-text"
-                                                (click)="onDeleteRow(rowData,rowIndex,i)"></button>
-                                        </td>
-                                        <td pEditableColumn>
-                                            <p-cellEditor>
-                                                <ng-template pTemplate="input">
-                                                    <p-autoComplete [forceSelection]="true" [appendTo]="'body'"
-                                                        (onSelect)="selectClassification($event)"
-                                                        formControlName="ClassificationID"
-                                                        [suggestions]="filteredClassification"
-                                                        (completeMethod)="filterClassification($event)" field="name"
-                                                        [dropdown]="true" placeholder="בחר מוצר">
-                                                    </p-autoComplete>
-                                                </ng-template>
-                                                <ng-template pTemplate="output">
-                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("ClassificationID")?.value?.name}}
-                                                </ng-template>
-                                            </p-cellEditor>
-                                        </td>
-
-                                        <!-- <td pEditableColumn>
+                    <!-- <td pEditableColumn>
                                             <p-cellEditor>
                                                 <ng-template pTemplate="input">
                                                     <input pInputText type="text" formControlName="ClassificationID"
@@ -495,116 +759,167 @@
                                             </p-cellEditor>
                                         </td> -->
 
-                                        <td pEditableColumn>
-                                            <p-cellEditor>
-                                                <ng-template pTemplate="input">
-                                                    <input pInputText type="text" formControlName="AmountType">
-                                                </ng-template>
-                                                <ng-template pTemplate="output">
-                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("AmountType")?.value}}
-                                                </ng-template>
-                                            </p-cellEditor>
-                                        </td>
-                                        <td pEditableColumn>
-                                            <p-cellEditor>
-                                                <ng-template pTemplate="input">
-                                                    <input (blur)="getFormErrors(true)" pInputText type="text"
-                                                        formControlName="CustomsValueAmount">
-                                                </ng-template>
-                                                <ng-template pTemplate="output">
-                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("CustomsValueAmount")?.value
-                                                    | number: '1.0-0'}}
-                                                </ng-template>
-                                            </p-cellEditor>
-                                        </td>
-                                        <td pEditableColumn>
-                                            <p-cellEditor>
-                                                <ng-template pTemplate="input">
-                                                    <div class="ui-ltr" dir="ltr">
-                                                        <p-autoComplete formControlName="OriginCountryCode"
-                                                            [forceSelection]="true"
-                                                            [suggestions]="filteredCountryOfExport"
-                                                            (completeMethod)="filterCountryOfExport($event)"
-                                                            field="name" [dropdown]="true" [appendTo]="'body'">
-                                                        </p-autoComplete>
-                                                    </div>
-                                                </ng-template>
-                                                <ng-template pTemplate="output">
-                                                    {{GetSupplierInvoiceItems(i).controls[rowIndex].get("OriginCountryCode")?.value?.name}}
-                                                </ng-template>
-                                            </p-cellEditor>
-                                        </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input
+                            pInputText
+                            type="text"
+                            formControlName="AmountType"
+                          />
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          {{
+                            GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                              "AmountType"
+                            )?.value
+                          }}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <input
+                            (blur)="getFormErrors(true)"
+                            pInputText
+                            type="text"
+                            formControlName="CustomsValueAmount"
+                          />
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          {{
+                            GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                              "CustomsValueAmount"
+                            )?.value | number: "1.0-0"
+                          }}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                    <td pEditableColumn>
+                      <p-cellEditor>
+                        <ng-template pTemplate="input">
+                          <div class="ui-ltr" dir="ltr">
+                            <p-autoComplete
+                              formControlName="OriginCountryCode"
+                              [forceSelection]="true"
+                              [suggestions]="filteredCountryOfExport"
+                              (completeMethod)="filterCountryOfExport($event)"
+                              field="name"
+                              [dropdown]="true"
+                              [appendTo]="'body'"
+                            >
+                            </p-autoComplete>
+                          </div>
+                        </ng-template>
+                        <ng-template pTemplate="output">
+                          {{
+                            GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                              "OriginCountryCode"
+                            )?.value?.name
+                          }}
+                        </ng-template>
+                      </p-cellEditor>
+                    </td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                  <tr>
+                    <td>
+                      <button
+                        [disabled]="formDisabled"
+                        pButton
+                        pRipple
+                        icon="pi pi-plus"
+                        class="p-button-raised p-button-text"
+                        (click)="addNewInvoiceItem(i)"
+                      ></button>
+                    </td>
+                    <td colspan="3"></td>
+                    <td>מספר שורות: {{ GetSupplierInvoiceItems(i).length }}</td>
+                  </tr>
+                </ng-template>
+              </p-table>
+            </p-card>
+          </div>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
+    <!-- </div> -->
+  </div>
 
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="footer">
-                                    <tr>
-                                        <td>
-                                            <button [disabled]="formDisabled" pButton pRipple icon="pi pi-plus"
-                                                class="p-button-raised p-button-text"
-                                                (click)="addNewInvoiceItem(i)"></button>
-                                        </td>
-                                        <td colspan="3"></td>
-                                        <td>מספר שורות: {{GetSupplierInvoiceItems(i).length }}</td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
-                        </p-card>
-                    </div>
-                </div>
-            </p-tabPanel>
-        </p-tabView>
-        <!-- </div> -->
-    </div>
-
-    <div class="btns">
-
-
-        <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
-        <button [disabled]="generalDeclarationForm.invalid ||suplierErrorExist" class="button-primary"
-            (click)="saveDeclaration()" pTooltip="{{ formErrorsMessage }}" tooltipPosition="top"
-            [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist">המשך</button>
-        <!-- <button class="button-primary" (click)="copyDeclaration()" [disabled]="loading">
+  <div class="btns">
+    <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
+    <button
+      [disabled]="generalDeclarationForm.invalid || suplierErrorExist"
+      class="button-primary"
+      (click)="saveDeclaration()"
+      pTooltip="{{ formErrorsMessage }}"
+      tooltipPosition="top"
+      [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist"
+    >
+      המשך
+    </button>
+    <!-- <button class="button-primary" (click)="copyDeclaration()" [disabled]="loading">
             העתק
         </button> -->
-        <button [disabled]="generalDeclarationForm.invalid" [ngClass]="{'disabled':generalDeclarationForm.invalid }"
-            *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"
-            pTooltip="ניתן לשלוח למכס עד 6 טיוטות " tooltipPosition="top" [tooltipDisabled]="!checkVersion()">
-            שלח למכס</button>
-        <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
-    </div>
+    <button
+      [disabled]="generalDeclarationForm.invalid"
+      [ngClass]="{ disabled: generalDeclarationForm.invalid }"
+      *ngIf="showBtnCustoms"
+      class="button-primary"
+      (click)="sendDeclaration()"
+      pTooltip="ניתן לשלוח למכס עד 6 טיוטות "
+      tooltipPosition="top"
+      [tooltipDisabled]="!checkVersion()"
+    >
+      שלח למכס
+    </button>
+    <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
+  </div>
 
-    <p-card *ngIf="customsError || customsErrorsContent" class="customs-error">
-        <div *ngIf="customsError">
-            <h3>פירוט תשובת מכס</h3>
-            <p>
-                סטטוס טיוטא:
-                <span [ngClass]="{'highlight-error': customsError, 'highlight-success': !customsError}">
-                    {{customStatusName(null)}}
-                </span>
-            </p>
-            <ul>
-                <li *ngFor="let error of customsError">
-                    <strong> > </strong> <strong>{{ error.exeptionTypeField }}</strong> : "{{
-                    error.exeptionDescriptionField }}"
-                </li>
-            </ul>
-        </div>
-        <div *ngIf="customsErrorsContent">
-            <h3>פירוט תשובת מכס</h3>
-            <p>
-                סטטוס טיוטא:
-                <span [ngClass]="{'highlight-error': customsErrorsContent, 'highlight-success': !customsErrorsContent}">
-                    {{customStatusName(null)}}
-                </span>
-            </p>
-            <ul>
-                <li *ngFor="let error of customsErrorsContent">
-                    <strong> > </strong> <strong>{{ error.validationCodeField.valueField }}</strong> : "{{
-                    error.validationCodeField.nameField
-                    }}"
-                </li>
-            </ul>
-        </div>
-    </p-card>
+  <p-card *ngIf="customsError || customsErrorsContent" class="customs-error">
+    <div *ngIf="customsError">
+      <h3>פירוט תשובת מכס</h3>
+      <p>
+        סטטוס טיוטא:
+        <span
+          [ngClass]="{
+            'highlight-error': customsError,
+            'highlight-success': !customsError,
+          }"
+        >
+          {{ customStatusName(null) }}
+        </span>
+      </p>
+      <ul>
+        <li *ngFor="let error of customsError">
+          <strong> > </strong> <strong>{{ error.exeptionTypeField }}</strong> :
+          "{{ error.exeptionDescriptionField }}"
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="customsErrorsContent">
+      <h3>פירוט תשובת מכס</h3>
+      <p>
+        סטטוס טיוטא:
+        <span
+          [ngClass]="{
+            'highlight-error': customsErrorsContent,
+            'highlight-success': !customsErrorsContent,
+          }"
+        >
+          {{ customStatusName(null) }}
+        </span>
+      </p>
+      <ul>
+        <li *ngFor="let error of customsErrorsContent">
+          <strong> > </strong>
+          <strong>{{ error.validationCodeField.valueField }}</strong> : "{{
+            error.validationCodeField.nameField
+          }}"
+        </li>
+      </ul>
+    </div>
+  </p-card>
 </form>

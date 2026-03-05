@@ -3110,4 +3110,10 @@ export class DeclarationFormTsComponent implements OnInit {
         }, 500);
       });
   }
+
+  goToDeclarationsQuery() {
+    // תשני את הנתיב למה שקיים אצלך בפועל
+    this.router.navigate(['/dec-query']);
+  }
+  
 }
