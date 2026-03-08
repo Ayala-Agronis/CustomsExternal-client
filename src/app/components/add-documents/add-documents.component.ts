@@ -801,7 +801,7 @@
 //   }
 // }
 
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -860,7 +860,17 @@ export class AddDocumentsComponent {
   selectedFile: File | null = null;
 
   uploadedFilesByType: { [key: string]: File[] } = {};
+  requiredDocuments: {
+    code: string;
+    name: string;
+    required: boolean;
+    exists: boolean;
+    pendingFiles: File[];
+  }[] = [];
 
+  pendingDocumentCode: string | null = null;
+
+  @ViewChild('hiddenFileInput') hiddenFileInput!: ElementRef<HTMLInputElement>;
   // =========================
   // צפייה במסמך
   // =========================
@@ -898,33 +908,67 @@ export class AddDocumentsComponent {
   // =========================
   // טעינת מסמכים קיימים
   // =========================
+  // loadDocuments() {
+  //   if (!this.currentDecId) return;
+  //   this.loading = true;
+  //   this.documentsService.getDocumentsByEntityId$(this.currentDecId).subscribe({
+  //     next: (res) => {
+  //       this.documents = res;
+  //       this.loading = false;
+  //       // ✅ בדוק אם אין מסמכים
+  //       if (!this.documents || this.documents.length === 0) {
+  //         this.msgs1 = [
+  //           // {
+  //           //   severity: 'info',
+  //           //   summary: 'מסמכי הצהרה',
+  //           //   detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
+  //           // }
+  //         ];
+  //       }
+  //     },
+  //     error: (err: any) => {
+  //       this.documents = [];
+  //       this.loading = false;
+  //       // ✅ אם אין מסמכים (404/204) אל תציג הודעה
+  //       if (err?.status === 404 || err?.status === 204) {
+  //         this.msgs1 = [];
+  //         return;
+  //       }
+  //       // ✅ בודא הודעה בשגיאה
+  //       this.msgs1 = [
+  //         {
+  //           severity: 'error',
+  //           summary: 'מסמכי הצהרה',
+  //           detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`,
+  //         },
+  //       ];
+  //     },
+  //   });
+  // }
   loadDocuments() {
     if (!this.currentDecId) return;
     this.loading = true;
+
     this.documentsService.getDocumentsByEntityId$(this.currentDecId).subscribe({
       next: (res) => {
-        this.documents = res;
+        this.documents = res ?? [];
+        this.buildRequiredDocuments();
         this.loading = false;
-        // ✅ בדוק אם אין מסמכים
+
         if (!this.documents || this.documents.length === 0) {
-          this.msgs1 = [
-            // {
-            //   severity: 'info',
-            //   summary: 'מסמכי הצהרה',
-            //   detail: `לא נמצאו מסמכים להצהרה מספר ${this.currentDecId}`
-            // }
-          ];
+          this.msgs1 = [];
         }
       },
       error: (err: any) => {
         this.documents = [];
+        this.buildRequiredDocuments();
         this.loading = false;
-        // ✅ אם אין מסמכים (404/204) אל תציג הודעה
+
         if (err?.status === 404 || err?.status === 204) {
           this.msgs1 = [];
           return;
         }
-        // ✅ בודא הודעה בשגיאה
+
         this.msgs1 = [
           {
             severity: 'error',
@@ -936,10 +980,17 @@ export class AddDocumentsComponent {
     });
   }
 
+  // hasDocument(type: string): boolean {
+  //   return (
+  //     Array.isArray(this.documents) &&
+  //     this.documents.some((d: any) => d.DocumentType === type)
+  //   );
+  // }
+
   hasDocument(type: string): boolean {
     return (
       Array.isArray(this.documents) &&
-      this.documents.some((d: any) => d.DocumentType === type)
+      this.documents.some((d: any) => (d.DocumentType ?? d.Code) === type)
     );
   }
 
@@ -949,13 +1000,23 @@ export class AddDocumentsComponent {
   }
 
   // תנאי האם אפשר לשלוח למכס (כמו שהיה לך: 714 + 380)
+  // canSendToCustoms(): boolean {
+  //   return (
+  //     this.hasDocument('714') &&
+  //     this.hasDocument('380') &&
+  //     !this.loading &&
+  //     !this.hasPendingUploads()
+  //   );
+  // }
+
   canSendToCustoms(): boolean {
-    return (
-      this.hasDocument('714') &&
-      this.hasDocument('380') &&
-      !this.loading &&
-      !this.hasPendingUploads()
+    const requiredCodes = this.getRequiredDocumentCodes();
+
+    const allRequiredExist = requiredCodes.every((code) =>
+      this.hasDocument(code),
     );
+
+    return allRequiredExist && !this.loading && !this.hasPendingUploads();
   }
 
   sendDecToCustoms() {
@@ -992,21 +1053,49 @@ export class AddDocumentsComponent {
     );
   }
 
-  getSendToCustomsTooltip(): string {
-    if (this.hasPendingUploads())
-      return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמרי קודם ואז שלחי למכס.';
-    const has714 = this.hasDocument('714');
-    const has380 = this.hasDocument('380');
+  // getSendToCustomsTooltip(): string {
+  //   if (this.hasPendingUploads())
+  //     return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמרי קודם ואז שלחי למכס.';
+  //   const has714 = this.hasDocument('714');
+  //   const has380 = this.hasDocument('380');
 
-    if (!has714 && !has380) return 'חסר שטר מטען (714) וחסר חשבונית ספק (380)';
-    if (!has714) return 'חסר שטר מטען (714)';
-    if (!has380) return 'חסר חשבונית ספק (380)';
+  //   if (!has714 && !has380) return 'חסר שטר מטען (714) וחסר חשבונית ספק (380)';
+  //   if (!has714) return 'חסר שטר מטען (714)';
+  //   if (!has380) return 'חסר חשבונית ספק (380)';
+  //   return '';
+  // }
+
+  getSendToCustomsTooltip(): string {
+    if (this.hasPendingUploads()) {
+      return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמרי קודם ואז שלחי למכס.';
+    }
+
+    const missingDocs = this.getRequiredDocumentCodes()
+      .filter((code) => !this.hasDocument(code))
+      .map((code) => this.getDocumentTypeName(code));
+
+    if (missingDocs.length > 0) {
+      return `חסרים מסמכי חובה: ${missingDocs.join(', ')}`;
+    }
+
     return '';
   }
 
   // =========================
   // בחירת קובץ חדש
   // =========================
+  // onFileSelect(event: any) {
+  //   const file = event.target.files?.[0];
+  //   if (file && this.selectedDocumentCode) {
+  //     const code = this.selectedDocumentCode.code;
+  //     if (!this.uploadedFilesByType[code]) {
+  //       this.uploadedFilesByType[code] = [];
+  //     }
+  //     this.uploadedFilesByType[code].push(file);
+  //   }
+  //   event.target.value = '';
+  // }
+
   onFileSelect(event: any) {
     const file = event.target.files?.[0];
     if (file && this.selectedDocumentCode) {
@@ -1015,6 +1104,7 @@ export class AddDocumentsComponent {
         this.uploadedFilesByType[code] = [];
       }
       this.uploadedFilesByType[code].push(file);
+      this.buildRequiredDocuments();
     }
     event.target.value = '';
   }
@@ -1037,9 +1127,21 @@ export class AddDocumentsComponent {
     const types = Object.keys(this.uploadedFilesByType);
     let pending = 0;
 
+    // const finalizeIfDone = () => {
+    //   if (pending === 0) {
+    //     this.uploadedFilesByType = {};
+    //     this.loadDocuments();
+    //     this.msgs1 = [
+    //       { severity: 'success', summary: 'הצלחה', detail: 'המסמכים נשמרו' },
+    //     ];
+    //     this.loading = false;
+    //   }
+    // };
+
     const finalizeIfDone = () => {
       if (pending === 0) {
         this.uploadedFilesByType = {};
+        this.buildRequiredDocuments();
         this.loadDocuments();
         this.msgs1 = [
           { severity: 'success', summary: 'הצלחה', detail: 'המסמכים נשמרו' },
@@ -1218,11 +1320,19 @@ export class AddDocumentsComponent {
     reader.readAsDataURL(file);
   }
 
+  // removeFile(type: string, index: number) {
+  //   this.uploadedFilesByType[type].splice(index, 1);
+  //   if (this.uploadedFilesByType[type].length === 0) {
+  //     delete this.uploadedFilesByType[type];
+  //   }
+  // }
+
   removeFile(type: string, index: number) {
     this.uploadedFilesByType[type].splice(index, 1);
     if (this.uploadedFilesByType[type].length === 0) {
       delete this.uploadedFilesByType[type];
     }
+    this.buildRequiredDocuments();
   }
 
   getDocumentTypeName(code: string): string {
@@ -1432,5 +1542,93 @@ export class AddDocumentsComponent {
       (a.firstCargoID ?? '') === (b.firstCargoID ?? '') &&
       (a.secondCargoID ?? '') === (b.secondCargoID ?? '')
     );
+  }
+
+  private getTotalPackageQuantity(): number {
+    const raw = localStorage.getItem('currentDec');
+    if (!raw) return 0;
+
+    try {
+      const dec = JSON.parse(raw);
+
+      const qty = dec?.ConsignmentPackagesMeasures?.[0]?.TotalPackageQuantity;
+      const parsedQty = Number(qty);
+
+      return isNaN(parsedQty) ? 0 : parsedQty;
+    } catch {
+      return 0;
+    }
+  }
+
+  private getRequiredDocumentCodes(): string[] {
+    const totalPackageQuantity = this.getTotalPackageQuantity();
+
+    const requiredCodes = ['714', '380'];
+
+    if (totalPackageQuantity >= 2) {
+      requiredCodes.push('271');
+    }
+
+    return requiredCodes;
+  }
+
+  private buildRequiredDocuments(): void {
+    const requiredCodes = this.getRequiredDocumentCodes();
+
+    this.requiredDocuments = this.documentCodes
+      .filter((doc) => requiredCodes.includes(doc.code))
+      .map((doc) => ({
+        code: doc.code,
+        name: doc.name,
+        required: true,
+        exists: this.hasDocument(doc.code),
+        pendingFiles: this.uploadedFilesByType[doc.code] ?? [],
+      }));
+  }
+
+  getRequiredDocumentStatus(doc: {
+    code: string;
+    required: boolean;
+    exists: boolean;
+    pendingFiles: File[];
+  }): string {
+    if (doc.exists) return 'קיים במערכת';
+    if (doc.pendingFiles.length > 0) return 'נבחר קובץ וטרם נשמר';
+    if (doc.required) return 'חסר';
+    return 'לא הועלה';
+  }
+
+  getRequiredDocumentStatusClass(doc: {
+    code: string;
+    required: boolean;
+    exists: boolean;
+    pendingFiles: File[];
+  }): string {
+    if (doc.exists) return 'status-ok';
+    if (doc.pendingFiles.length > 0) return 'status-pending';
+    if (doc.required) return 'status-missing';
+    return 'status-optional';
+  }
+
+  openFilePicker(code: string): void {
+    this.pendingDocumentCode = code;
+    this.hiddenFileInput.nativeElement.click();
+  }
+
+  onRequiredFileSelect(event: any): void {
+    const file = event.target.files?.[0];
+    const code = this.pendingDocumentCode;
+
+    if (file && code) {
+      if (!this.uploadedFilesByType[code]) {
+        this.uploadedFilesByType[code] = [];
+      }
+
+      this.uploadedFilesByType[code].push(file);
+      this.buildRequiredDocuments();
+    }
+
+    event.target.value = '';
+    this.pendingDocumentCode = null;
   }
 }

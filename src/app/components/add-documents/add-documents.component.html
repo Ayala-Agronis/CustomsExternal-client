@@ -14,6 +14,65 @@
     [enableService]="false"
   ></p-messages>
 
+  <h4>צרופות נדרשות</h4>
+
+  <div class="required-documents">
+    <div class="required-document-row" *ngFor="let doc of requiredDocuments">
+      <div class="required-document-main">
+        <div class="required-document-title">
+          {{ doc.name }}
+          <span *ngIf="doc.required" class="required-badge">חובה</span>
+          <span *ngIf="!doc.required" class="optional-badge">רשות</span>
+        </div>
+
+        <div
+          class="required-document-status"
+          [ngClass]="getRequiredDocumentStatusClass(doc)"
+        >
+          {{ getRequiredDocumentStatus(doc) }}
+        </div>
+
+        <div
+          class="required-document-files"
+          *ngIf="doc.pendingFiles.length > 0"
+        >
+          <ul>
+            <li *ngFor="let file of doc.pendingFiles; let i = index">
+              <a class="file-link" (click)="viewNewFile(file)">{{
+                file.name
+              }}</a>
+              <button
+                type="button"
+                class="remove-file-btn"
+                (click)="removeFile(doc.code, i)"
+              >
+                הסר
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="required-document-actions">
+        <button
+          type="button"
+          class="button-add-file"
+          (click)="openFilePicker(doc.code)"
+        >
+          <i class="pi pi-plus"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <input
+    #hiddenFileInput
+    type="file"
+    hidden
+    accept=".pdf,.xls,.xlsx,.jpg,.png"
+    (change)="onRequiredFileSelect($event)"
+  />
+
   <!-- טבלת מסמכים קיימים -->
   <p-table
     [value]="documents"
