@@ -446,3 +446,28 @@ input {
 :host ::ng-deep .back-fab:active {
   transform: translateY(0);
 }
+
+.type-error {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.type-constraint-submit {
+  color: #1565c0;
+  font-weight: bold;
+}
+
+.type-constraint-release {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.type-warning {
+  color: #f9a825;
+  font-weight: bold;
+}
+
+.type-critical-warning {
+  color: #ef6c00;
+  font-weight: bold;
+}

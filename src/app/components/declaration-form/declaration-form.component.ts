@@ -114,6 +114,8 @@ export class DeclarationFormComponent implements OnInit {
   msgs1: Message[] = [];
   customsErrorsContent: any;
   customsError: any;
+  private errorTypesMap: { [key: string]: string } = {};
+  formattedCustomsErrors: any[] = [];
 
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
@@ -323,6 +325,14 @@ export class DeclarationFormComponent implements OnInit {
               }),
             )),
         ),
+      ),
+      this.customsDataService.getCustomsTableValues$('1517').pipe(
+        map((res) => {
+          res.forEach((item: any) => {
+            this.errorTypesMap[item.Value1] = item.Value2;
+          });
+          return res;
+        }),
       ),
       // this.customsDataService.getCustomsTableValues$('1426').pipe(
       //   map(res => res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
@@ -943,10 +953,19 @@ export class DeclarationFormComponent implements OnInit {
               },
             ];
           }
+          // if (res.responseField.errorField) {
+          //   this.customsErrorsContent = res.responseField.errorField;
+          //   // res.responseField.errorField[0].validationCodeField.nameField
+          //   // res.responseField.errorField[1].validationCodeField.valueField
+          // }
           if (res.responseField.errorField) {
             this.customsErrorsContent = res.responseField.errorField;
-            // res.responseField.errorField[0].validationCodeField.nameField
-            // res.responseField.errorField[1].validationCodeField.valueField
+            this.formattedCustomsErrors = this.formatCustomsErrors(
+              res.responseField.errorField,
+            );
+
+            console.log('errorField', res.responseField.errorField);
+            console.log('formattedCustomsErrors', this.formattedCustomsErrors);
           }
         } else if (res.responseContentHeaderField) {
           this.customsError = res.responseContentHeaderField.exceptionField;
@@ -1729,5 +1748,43 @@ export class DeclarationFormComponent implements OnInit {
   goToDeclarationsQuery() {
     // תשני את הנתיב למה שקיים אצלך בפועל
     this.router.navigate(['/dec-query']);
+  }
+
+  private formatCustomsErrors(errors: any[]): any[] {
+    if (!Array.isArray(errors)) {
+      errors = [errors];
+    }
+
+    return errors.map((error: any) => {
+      const typeCode =
+        error?.validationCodeField?.listVersionIDField?.toString?.() ??
+        error?.validationCodeField?.listVersionIDField ??
+        '1';
+
+      return {
+        code: error?.validationCodeField?.valueField ?? '',
+        message: error?.validationCodeField?.nameField ?? '',
+        typeCode,
+        typeName: this.errorTypesMap[typeCode] || 'שגיאה',
+        typeClass: this.getErrorClass(typeCode),
+      };
+    });
+  }
+
+  getErrorClass(code: string): string {
+    switch (code) {
+      case '1':
+        return 'type-error';
+      case '2':
+        return 'type-constraint-submit';
+      case '3':
+        return 'type-constraint-release';
+      case '4':
+        return 'type-warning';
+      case '5':
+        return 'type-critical-warning';
+      default:
+        return 'type-error';
+    }
   }
 }

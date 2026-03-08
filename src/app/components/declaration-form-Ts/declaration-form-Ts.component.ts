@@ -166,6 +166,9 @@ export class DeclarationFormTsComponent implements OnInit {
   customsError: any;
   formErrorsMessage: string = '';
 
+  private errorTypesMap: { [key: string]: string } = {};
+  formattedCustomsErrors: any[] = [];
+
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
   showCustomsValuation: boolean[] = [];
@@ -524,6 +527,11 @@ export class DeclarationFormTsComponent implements OnInit {
         code: i.Value1,
         siteType: i.Value7,
       })),
+      errorTypes: this.getCachedTable$('1517', (i) => ({
+        code: i.Value1,
+        name: i.Value2,
+      })),
+
       // ...existing code...
 
       suppliers: this.customsDataService.getVendor$().pipe(
@@ -573,6 +581,10 @@ export class DeclarationFormTsComponent implements OnInit {
 
         // ✅✅✅ הדפס את כל הנתונים מהשרת:
         console.group('🔍 SERVER DATA INSPECTION');
+
+        res.errorTypes.forEach((item: any) => {
+          this.errorTypesMap[item.code] = item.name;
+        });
 
         if (res.declaration) {
           console.log('📦 Declaration from server:', res.declaration);
@@ -2261,10 +2273,18 @@ export class DeclarationFormTsComponent implements OnInit {
           // if (+dec.VersionID > 0.5) {
           //   this.msgs1 = [{ severity: 'error', summary: 'נשלחו 6 טיוטות שגויות', detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ' }]
           // }
+          // if (res.responseField.errorField) {
+          //   this.customsErrorsContent = res.responseField.errorField;
+          //   // res.responseField.errorField[0].validationCodeField.nameField
+          //   // res.responseField.errorField[1].validationCodeField.valueField
+          // }
+          console.log('errorField', res.responseField.errorField);
+          console.log('first error', res.responseField.errorField?.[0]);
           if (res.responseField.errorField) {
             this.customsErrorsContent = res.responseField.errorField;
-            // res.responseField.errorField[0].validationCodeField.nameField
-            // res.responseField.errorField[1].validationCodeField.valueField
+            this.formattedCustomsErrors = this.formatCustomsErrors(
+              res.responseField.errorField,
+            );
           }
         } else if (res.responseContentHeaderField) {
           this.customsError = res.responseContentHeaderField.exceptionField;
@@ -3115,5 +3135,42 @@ export class DeclarationFormTsComponent implements OnInit {
     // תשני את הנתיב למה שקיים אצלך בפועל
     this.router.navigate(['/dec-query']);
   }
-  
+
+  private formatCustomsErrors(errors: any[]): any[] {
+    if (!Array.isArray(errors)) {
+      errors = [errors];
+    }
+
+    return errors.map((error: any) => {
+      const typeCode =
+        error?.validationCodeField?.listVersionIDField?.toString?.() ??
+        error?.validationCodeField?.listVersionIDField ??
+        '1';
+
+      return {
+        code: error?.validationCodeField?.valueField ?? '',
+        message: error?.validationCodeField?.nameField ?? '',
+        typeCode,
+        typeName: this.errorTypesMap[typeCode] || 'שגיאה',
+        typeClass: this.getErrorClass(typeCode),
+      };
+    });
+  }
+
+  getErrorClass(code: string): string {
+    switch (code) {
+      case '1':
+        return 'type-error';
+      case '2':
+        return 'type-constraint-submit';
+      case '3':
+        return 'type-constraint-release';
+      case '4':
+        return 'type-warning';
+      case '5':
+        return 'type-critical-warning';
+      default:
+        return 'type-error';
+    }
+  }
 }

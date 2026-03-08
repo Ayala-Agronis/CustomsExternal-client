@@ -913,11 +913,20 @@
         </span>
       </p>
       <ul>
-        <li *ngFor="let error of customsErrorsContent">
+        <!-- <li *ngFor="let error of customsErrorsContent">
           <strong> > </strong>
           <strong>{{ error.validationCodeField.valueField }}</strong> : "{{
             error.validationCodeField.nameField
           }}"
+        </li> -->
+        <li *ngFor="let error of formattedCustomsErrors">
+          <span
+            [ngClass]="error.typeClass"
+            style="font-weight: bold; margin-left: 6px"
+          >
+            {{ error.typeName }} :
+          </span>
+          <strong>{{ error.code }}</strong> - "{{ error.message }}"
         </li>
       </ul>
     </div>
