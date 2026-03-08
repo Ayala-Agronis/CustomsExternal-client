@@ -15,6 +15,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessagesModule } from 'primeng/messages';
 import { Message } from 'primeng/api';
 import { UserService } from '../../shared/services/user.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-reset-password',
@@ -72,24 +73,22 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   submit(): void {
-    if (!this.token) return;
+    if (!this.token) {
+      this.msg = [
+        { severity: 'error', summary: '', detail: 'הקישור אינו תקין.' },
+      ];
+      return;
+    }
 
-    const { NewPassword, ConfirmPassword } = this.form.value;
+    const { NewPassword } = this.form.value;
 
     if (this.form.invalid) {
       this.msg = [
         {
           severity: 'error',
           summary: '',
-          detail: 'תקן את הסיסמא לפי הדרישות',
+          detail: 'יש לתקן את הסיסמה לפי הדרישות.',
         },
-      ];
-      return;
-    }
-
-    if (NewPassword !== ConfirmPassword) {
-      this.msg = [
-        { severity: 'error', summary: '', detail: 'הסיסמאות לא תואמות' },
       ];
       return;
     }
@@ -97,28 +96,41 @@ export class ResetPasswordComponent implements OnInit {
     this.loading = true;
     this.msg = [];
 
-    this.userService.resetPassword(this.token, NewPassword).subscribe({
-      next: () => {
-        this.msg = [
-          {
-            severity: 'success',
-            summary: '',
-            detail: 'הסיסמה עודכנה! מעבירים להתחברות…',
-          },
-        ];
-        setTimeout(() => this.router.navigate(['login']), 900);
-      },
-      error: () => {
-        this.msg = [
-          {
-            severity: 'error',
-            summary: '',
-            detail: 'הטוקן לא תקף/פג תוקף. נסי מחדש.',
-          },
-        ];
-      },
-      complete: () => (this.loading = false),
-    });
+    this.userService
+      .resetPassword(this.token, NewPassword)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.msg = [
+            {
+              severity: 'success',
+              summary: '',
+              detail: 'הסיסמה עודכנה בהצלחה. מתבצעת העברה להתחברות…',
+            },
+          ];
+          setTimeout(() => this.router.navigate(['login']), 900);
+        },
+        error: (err) => {
+          let errorMessage = 'אירעה שגיאה בלתי צפויה. נסה שוב מאוחר יותר.';
+
+          if (err.status === 400) {
+            errorMessage =
+              err.error?.message || 'הקישור אינו תקין או שפג תוקפו.';
+          }
+
+          this.msg = [
+            {
+              severity: 'error',
+              summary: '',
+              detail: errorMessage,
+            },
+          ];
+        },
+      });
   }
 
   backToLogin(): void {

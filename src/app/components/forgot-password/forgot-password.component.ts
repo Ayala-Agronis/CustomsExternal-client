@@ -12,6 +12,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessagesModule } from 'primeng/messages';
 import { Message } from 'primeng/api';
 import { UserService } from '../../shared/services/user.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-forgot-password',
@@ -44,7 +45,7 @@ export class ForgotPasswordComponent {
   submit(): void {
     if (this.form.invalid) {
       this.msg = [
-        { severity: 'error', summary: '', detail: 'אנא הזיני אימייל תקין' },
+        { severity: 'error', summary: '', detail: 'יש להזין כתובת מייל תקינה' },
       ];
       return;
     }
@@ -54,27 +55,44 @@ export class ForgotPasswordComponent {
 
     const email = this.form.value.Email;
 
-    this.userService.forgotPassword(email).subscribe({
-      next: () => {
-        this.msg = [
-          {
-            severity: 'info',
-            summary: '',
-            detail: 'אם האימייל קיים במערכת, נשלחה הודעה עם קישור לאיפוס סיסמה',
-          },
-        ];
-      },
-      error: () => {
-        this.msg = [
-          {
-            severity: 'info',
-            summary: '',
-            detail: 'אם האימייל קיים במערכת, נשלחה הודעה עם קישור לאיפוס סיסמה',
-          },
-        ];
-      },
-      complete: () => (this.loading = false),
-    });
+    this.userService
+      .forgotPassword(email)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        }),
+      )
+      .subscribe({
+        next: (res) => {
+          this.msg = [
+            {
+              severity: 'success',
+              summary: '',
+              detail: res.body?.message || 'נשלחה הודעה לכתובת המייל שהוזנה.',
+            },
+          ];
+        },
+        error: (err) => {
+          let errorMessage = 'אירעה שגיאה בלתי צפויה. נסה שוב מאוחר יותר.';
+
+          if (err.status === 404) {
+            errorMessage =
+              err.error?.message || 'כתובת המייל אינה קיימת במערכת.';
+          } else if (err.status === 400) {
+            errorMessage = err.error?.message || 'יש להזין כתובת מייל תקינה.';
+          } else if (err.status === 500 || err.status === 0) {
+            errorMessage = 'אירעה שגיאה בלתי צפויה. נסה שוב מאוחר יותר.';
+          }
+
+          this.msg = [
+            {
+              severity: 'error',
+              summary: '',
+              detail: errorMessage,
+            },
+          ];
+        },
+      });
   }
 
   backToLogin(): void {

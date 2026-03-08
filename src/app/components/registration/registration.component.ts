@@ -23,6 +23,7 @@ import { MessagesModule } from 'primeng/messages';
 import { TableModule } from 'primeng/table';
 import { ClientClassificationService } from '../../shared/services/client-classification.service';
 import { CheckboxModule } from 'primeng/checkbox';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-registration',
@@ -106,35 +107,59 @@ export class RegistrationComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.registrationForm.valid) {
-      this.isLoading = true;
-      console.log(this.registrationForm.value);
-      if (!this.showPersonalDetails) {
-        this.userService.signUp(this.registrationForm.value).subscribe(
-          (res) => {
+    if (!this.registrationForm.valid) {
+      this.msg = [
+        {
+          severity: 'error',
+          summary: '',
+          detail: 'אנא מלא את כל השדות הנדרשים',
+        },
+      ];
+      return;
+    }
+
+    this.isLoading = true;
+    this.msg = [];
+
+    if (!this.showPersonalDetails) {
+      this.userService
+        .signUp(this.registrationForm.value)
+        .pipe(
+          finalize(() => {
             this.isLoading = false;
+          }),
+        )
+        .subscribe({
+          next: (res) => {
             console.log(res);
             this.router.navigate(['login'], {
-              // state: { user: res.body },
               queryParams: { registered: 'true' },
             });
           },
-          (err) => {
-            this.isLoading = false;
+          error: (err) => {
             console.log(err);
             this.msg = [
-              { severity: 'error', summary: '', detail: err.error.Message },
+              {
+                severity: 'error',
+                summary: '',
+                detail:
+                  err.error?.Message ||
+                  err.error?.message ||
+                  'אירעה שגיאה בלתי צפויה. נסה שוב מאוחר יותר.',
+              },
             ];
           },
-        );
-      }
-      //save updated details
-      else {
-        this.userService
-          .editUser(this.user.RowId, this.registrationForm.value)
-          .subscribe((res) => {
+        });
+    } else {
+      this.userService
+        .editUser(this.user.RowId, this.registrationForm.value)
+        .pipe(
+          finalize(() => {
             this.isLoading = false;
-
+          }),
+        )
+        .subscribe({
+          next: (res) => {
             const userJson = JSON.stringify(res.body);
             localStorage.setItem('user', userJson);
 
@@ -146,16 +171,21 @@ export class RegistrationComponent implements OnInit {
                 detail: 'העדכון התבצע בהצלחה',
               },
             ];
-          });
-      }
-    } else {
-      this.msg = [
-        {
-          severity: 'error',
-          summary: '',
-          detail: 'אנא מלא את כל השדות הנדרשים',
-        },
-      ];
+          },
+          error: (err) => {
+            console.log(err);
+            this.msg = [
+              {
+                severity: 'error',
+                summary: '',
+                detail:
+                  err.error?.Message ||
+                  err.error?.message ||
+                  'אירעה שגיאה בלתי צפויה. נסה שוב מאוחר יותר.',
+              },
+            ];
+          },
+        });
     }
   }
 
@@ -269,12 +299,30 @@ export class RegistrationComponent implements OnInit {
       });
   }
 
+  // loadClassifications() {
+  //   this.classificationService
+  //     .getClassifications$(this.user.Id)
+  //     .subscribe((res) => {
+  //       this.classifications = res;
+  //     });
+  // }
+
   loadClassifications() {
-    this.classificationService
-      .getClassifications$(this.user.Id)
-      .subscribe((res) => {
+    this.classificationService.getClassifications$(this.user.Id).subscribe({
+      next: (res) => {
         this.classifications = res;
-      });
+      },
+      error: (err) => {
+        console.error(err);
+        this.msg = [
+          {
+            severity: 'error',
+            summary: '',
+            detail: 'אירעה שגיאה בטעינת הסיווגים',
+          },
+        ];
+      },
+    });
   }
 
   passwordValidator(): ValidatorFn {
