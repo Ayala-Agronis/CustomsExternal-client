@@ -1572,6 +1572,19 @@ export class AddDocumentsComponent {
     return requiredCodes;
   }
 
+  // private buildRequiredDocuments(): void {
+  //   const requiredCodes = this.getRequiredDocumentCodes();
+
+  //   this.requiredDocuments = this.documentCodes
+  //     .filter((doc) => requiredCodes.includes(doc.code))
+  //     .map((doc) => ({
+  //       code: doc.code,
+  //       name: doc.name,
+  //       required: true,
+  //       exists: this.hasDocument(doc.code),
+  //       pendingFiles: this.uploadedFilesByType[doc.code] ?? [],
+  //     }));
+  // }
   private buildRequiredDocuments(): void {
     const requiredCodes = this.getRequiredDocumentCodes();
 
@@ -1583,7 +1596,9 @@ export class AddDocumentsComponent {
         required: true,
         exists: this.hasDocument(doc.code),
         pendingFiles: this.uploadedFilesByType[doc.code] ?? [],
-      }));
+      }))
+      // ✅ סינון: השאר רק מה שחסר או חובה
+      .filter((doc) => !doc.exists);
   }
 
   getRequiredDocumentStatus(doc: {
