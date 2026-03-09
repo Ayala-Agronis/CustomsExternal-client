@@ -1229,6 +1229,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   selectClassification(event: any) {
+    debugger
     if (event?.value?.name === 'סיווג לא ידוע') {
       this.unclassified = true;
     }
@@ -2150,6 +2151,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   saveDeclaration() {
+    debugger;
     if (this.generalDeclarationForm.invalid) {
       const invoiceAmountError =
         this.generalDeclarationForm.get('SupplierInvoices')?.errors?.[
@@ -2174,6 +2176,9 @@ export class DeclarationFormTsComponent implements OnInit {
           localStorage.setItem('currentDecId', res.body?.Id);
           // localStorage.setItem('currentDec', res.body)
           localStorage.setItem('currentDec', JSON.stringify(res.body));
+          if (this.unclassified) {
+            this.addEvent();
+          }
           this.stepService.emitStepCompleted('+');
         });
     } else {
@@ -2182,30 +2187,90 @@ export class DeclarationFormTsComponent implements OnInit {
         .pipe(takeUntil(this.destroy$))
         .subscribe((res: any) => {
           localStorage.setItem('activeIndex', '0');
+
+          if (this.unclassified) {
+            this.addEvent();
+          }
+
           this.stepService.emitStepCompleted('+');
         });
     }
   }
 
   addEvent() {
-    const entityEvent = {
-      EntityKey: localStorage.getItem('currentDecId') || '',
-      EntityType: '2',
-      EventCode: 'CLSREQ',
-      EventDate: new Date(),
-      RegistrationDate: new Date(),
-      UserID: localStorage.getItem('userId') || '',
-      Remarks: '',
-      TimeZone: 0,
-      Valid: true,
-    };
+    // קביעת EntityType לפי סוג ההצהרה
+    const decType = localStorage.getItem('decType');
+    const typeCode = this.generalDeclarationForm.get('TypeCode')?.value;
 
-    this.customsDataService
-      .addEntityEvent$(entityEvent)
-      .pipe(takeUntil(this.destroy$))
+    let entityType = '2'; // ברירת מחדל - שטעון
 
-      .subscribe((res) => console.log(res));
+    if (decType === 'regular' || typeCode === '1') {
+      entityType = '1'; // יבוא רגיל
+    } else if (decType === 'tr' || typeCode === '3') {
+      entityType = '2'; // שטעון
+    }
 
+    const userDataStr = localStorage.getItem('user');
+    let clientName = '';
+    let clientId = '';
+
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        clientName = userData.FirstName || '';
+        clientId = userData.Id || '';
+      } catch (e) {
+        console.error('Failed to parse user data', e);
+      }
+    }
+
+    // IP adress
+    fetch('https://api.ipify.org?format=json')
+      .then((response) => response.json())
+      .then((data) => {
+        const clientIP = data.ip;
+        const remarks = `שם לקוח: ${clientName}, ת.ז: ${clientId}, IP: ${clientIP}`;
+
+        const entityEvent = {
+          EntityKey: localStorage.getItem('currentDecId') || '',
+          EntityType: entityType,
+          EventCode: 'CLSREQ',
+          EventDate: new Date(),
+          RegistrationDate: new Date(),
+          // UserID: localStorage.getItem('userId') || '',
+          UserID: '19',
+          Remarks: remarks,
+          TimeZone: 0,
+          Valid: true,
+        };
+
+        this.customsDataService
+          .addEntityEvent$(entityEvent)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((res) => console.log(res));
+      })
+      .catch((err) => {
+        console.error('Failed to get IP', err);
+        // שלח בלי IP במקרה של שגיאה
+        const remarks = `שם לקוח: ${clientName}, ת.ז: ${clientId}, IP: לא זמין`;
+
+        const entityEvent = {
+          EntityKey: localStorage.getItem('currentDecId') || '',
+          EntityType: '2',
+          EventCode: 'CLSREQ',
+          EventDate: new Date(),
+          RegistrationDate: new Date(),
+          UserID: '19',
+          Remarks: remarks,
+          TimeZone: 0,
+          Valid: true,
+        };
+
+        this.customsDataService
+          .addEntityEvent$(entityEvent)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((res) => console.log(res));
+      });
     this.msgs1 = [
       {
         severity: 'info',
@@ -2222,9 +2287,9 @@ export class DeclarationFormTsComponent implements OnInit {
     const perfectDec = this.convertToDecObj(dec);
     console.log(perfectDec);
 
-    if (this.unclassified) {
-      this.addEvent();
-    }
+    // if (this.unclassified) {
+    //   this.addEvent();
+    // }
     this.decService
       .updateAndSendDeclarationTs$(id, perfectDec, false)
       .pipe(takeUntil(this.destroy$))
@@ -3051,8 +3116,27 @@ export class DeclarationFormTsComponent implements OnInit {
   copyDeclaration() {
     const currentFormValue = this.generalDeclarationForm.getRawValue();
 
+    // const copiedData = {
+    //   ...currentFormValue,
+    //   Consignments: {
+    //     ...currentFormValue.Consignments,
+    //     TransportContractDocumentID: '',
+    //     SecondCargoID: '',
+    //     ThirdCargoID: '',
+    //     TransportContractDocumentID2: '',
+    //     SecondCargoID2: '',
+    //     ThirdCargoID2: '',
+    //   },
+    // };
     const copiedData = {
       ...currentFormValue,
+      Id: null,
+      DeclarationNumber: '',
+      VersionID: '',
+      CustomsStatus: null,
+      AgentFileReferenceID: '',
+      DeclarationStatusCode: '',
+      ReleaseDateTime: null,
       Consignments: {
         ...currentFormValue.Consignments,
         TransportContractDocumentID: '',
@@ -3064,13 +3148,16 @@ export class DeclarationFormTsComponent implements OnInit {
       },
     };
 
-    this.generalDeclarationForm.patchValue({
-      Id: null,
-      DeclarationNumber: '',
-      VersionID: '',
-      CustomsStatus: null,
-      AgentFileReferenceID: '', // ✅ הוסף את זה!
-    });
+    debugger;
+    // this.generalDeclarationForm.patchValue({
+    //   Id: null,
+    //   DeclarationNumber: '',
+    //   VersionID: '',
+    //   CustomsStatus: null,
+    //   AgentFileReferenceID: '', // ✅ הוסף את זה!
+    //   DeclarationStatusCode: '',
+    //   ReleaseDateTime: null,
+    // });
 
     this.generalDeclarationForm.patchValue(copiedData);
 

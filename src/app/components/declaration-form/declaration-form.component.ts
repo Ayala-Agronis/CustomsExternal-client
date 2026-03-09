@@ -879,7 +879,7 @@ export class DeclarationFormComponent implements OnInit {
     this.loading = true;
     const dec = this.generalDeclarationForm.value;
     const perfectDec = this.convertToDecObj(dec);
-
+    
     if (this.mode != 'e') {
       this.decService
         .sendDeclarationToInternal(perfectDec)
@@ -1678,6 +1678,13 @@ export class DeclarationFormComponent implements OnInit {
 
     const copiedData = {
       ...currentFormValue,
+      Id: null,
+      DeclarationNumber: '',
+      VersionID: '',
+      CustomsStatus: null,
+      AgentFileReferenceID: '',
+      DeclarationStatusCode: '',
+      ReleaseDateTime: null,
       Consignments: {
         ...currentFormValue.Consignments,
         // ניקוי שדות המטען
@@ -1686,14 +1693,16 @@ export class DeclarationFormComponent implements OnInit {
         ThirdCargoID: '',
       },
     };
-
-    this.generalDeclarationForm.patchValue({
-      Id: null,
-      DeclarationNumber: '',
-      VersionID: '',
-      CustomsStatus: null,
-      AgentFileReferenceID: '',
-    });
+    debugger;
+    // this.generalDeclarationForm.patchValue({
+    //   Id: null,
+    //   DeclarationNumber: '',
+    //   VersionID: '',
+    //   CustomsStatus: null,
+    //   AgentFileReferenceID: '',
+    //   DeclarationStatusCode: '',
+    //   ReleaseDateTime: null,
+    // });
 
     this.generalDeclarationForm.patchValue(copiedData);
 
