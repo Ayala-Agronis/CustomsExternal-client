@@ -259,3 +259,11 @@
   cursor: pointer;
   font-size: 0.9rem;
 }
+
+.send-tooltip-wrapper {
+  display: inline-flex;
+}
+
+.send-tooltip-wrapper .send-customs-btn {
+  height: 100%;
+}

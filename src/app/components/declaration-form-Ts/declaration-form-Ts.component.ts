@@ -166,6 +166,9 @@ export class DeclarationFormTsComponent implements OnInit {
   customsError: any;
   formErrorsMessage: string = '';
 
+  isLockedByBrokerRouting: boolean = false;
+  brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
+
   private errorTypesMap: { [key: string]: string } = {};
   formattedCustomsErrors: any[] = [];
 
@@ -378,6 +381,13 @@ export class DeclarationFormTsComponent implements OnInit {
     console.time('initForm (global)');
     this.initForm();
     console.timeEnd('initForm (global)');
+
+    this.generalDeclarationForm
+      .get('VersionID')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateBrokerRoutingState();
+      });
 
     // ✅ כל שינוי בארץ יצוא במשגור יבוא -> מעדכן ארץ יצוא בחשבונית
     // this.generalDeclarationForm
@@ -836,7 +846,7 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.CustomsStatus = currentDec.CustomsStatus;
 
-    if (this.CustomsStatus == 3) {
+    if (this.CustomsStatus === 3) {
       this.formDisabled = true;
       this.generalDeclarationForm.disable();
     }
@@ -1146,7 +1156,7 @@ export class DeclarationFormTsComponent implements OnInit {
       }
     });
 
-    if (this.CustomsStatus == 3) {
+    if (this.CustomsStatus === 3) {
       supplierInvoicesFormArray.disable({ emitEvent: false });
     }
 
@@ -1157,6 +1167,8 @@ export class DeclarationFormTsComponent implements OnInit {
       console.log('✅ consignmentInit data ready');
       this.populateDestinationCountryData(currentDec.DestinationCountry);
     }
+
+    this.updateBrokerRoutingState();
 
     console.timeEnd('📝 Populate Form');
 
@@ -1229,7 +1241,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   selectClassification(event: any) {
-    debugger
+    // debugger;
     if (event?.value?.name === 'סיווג לא ידוע') {
       this.unclassified = true;
     }
@@ -2151,7 +2163,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   saveDeclaration() {
-    debugger;
+    // debugger;
     if (this.generalDeclarationForm.invalid) {
       const invoiceAmountError =
         this.generalDeclarationForm.get('SupplierInvoices')?.errors?.[
@@ -2176,10 +2188,19 @@ export class DeclarationFormTsComponent implements OnInit {
           localStorage.setItem('currentDecId', res.body?.Id);
           // localStorage.setItem('currentDec', res.body)
           localStorage.setItem('currentDec', JSON.stringify(res.body));
+
+          this.createEvent('OPEN');
+
           if (this.unclassified) {
-            this.addEvent();
+            // this.addEvent();
+            this.createEvent('CLSREQ', true);
+            // ✅ חכה שנייה לפני המעבר
+            setTimeout(() => {
+              this.stepService.emitStepCompleted('+');
+            }, 2000);
+          } else {
+            this.stepService.emitStepCompleted('+');
           }
-          this.stepService.emitStepCompleted('+');
         });
     } else {
       this.decService
@@ -2189,15 +2210,103 @@ export class DeclarationFormTsComponent implements OnInit {
           localStorage.setItem('activeIndex', '0');
 
           if (this.unclassified) {
-            this.addEvent();
+            // this.addEvent();
+            this.createEvent('CLSREQ', true);
+            // ✅ חכה שנייה לפני המעבר
+            setTimeout(() => {
+              this.stepService.emitStepCompleted('+');
+            }, 2000);
+          } else {
+            this.stepService.emitStepCompleted('+');
           }
-
-          this.stepService.emitStepCompleted('+');
         });
     }
   }
 
-  addEvent() {
+  // addEvent() {
+  //   // קביעת EntityType לפי סוג ההצהרה
+  //   const decType = localStorage.getItem('decType');
+  //   const typeCode = this.generalDeclarationForm.get('TypeCode')?.value;
+
+  //   let entityType = '2'; // ברירת מחדל - שטעון
+
+  //   if (decType === 'regular' || typeCode === '1') {
+  //     entityType = '1'; // יבוא רגיל
+  //   } else if (decType === 'tr' || typeCode === '3') {
+  //     entityType = '2'; // שטעון
+  //   }
+
+  //   const userDataStr = localStorage.getItem('user');
+  //   let clientName = '';
+  //   let clientId = '';
+
+  //   if (userDataStr) {
+  //     try {
+  //       const userData = JSON.parse(userDataStr);
+  //       clientName = userData.FirstName || '';
+  //       clientId = userData.Id || '';
+  //     } catch (e) {
+  //       console.error('Failed to parse user data', e);
+  //     }
+  //   }
+
+  //   // IP adress
+  //   fetch('https://api.ipify.org?format=json')
+  //     .then((response) => response.json())
+  //     .then((data) => {
+  //       const clientIP = data.ip;
+  //       const remarks = `שם לקוח: ${clientName}, ת.ז: ${clientId}, IP: ${clientIP}`;
+
+  //       const entityEvent = {
+  //         EntityKey: localStorage.getItem('currentDecId') || '',
+  //         EntityType: entityType,
+  //         EventCode: 'CLSREQ',
+  //         EventDate: new Date(),
+  //         RegistrationDate: new Date(),
+  //         // UserID: localStorage.getItem('userId') || '',
+  //         UserID: '19',
+  //         Remarks: remarks,
+  //         TimeZone: 0,
+  //         Valid: true,
+  //       };
+
+  //       this.customsDataService
+  //         .addEntityEvent$(entityEvent)
+  //         .pipe(takeUntil(this.destroy$))
+  //         .subscribe((res) => console.log(res));
+  //     })
+  //     .catch((err) => {
+  //       console.error('Failed to get IP', err);
+  //       // שלח בלי IP במקרה של שגיאה
+  //       const remarks = `שם לקוח: ${clientName}, ת.ז: ${clientId}, IP: לא זמין`;
+
+  //       const entityEvent = {
+  //         EntityKey: localStorage.getItem('currentDecId') || '',
+  //         EntityType: '2',
+  //         EventCode: 'CLSREQ',
+  //         EventDate: new Date(),
+  //         RegistrationDate: new Date(),
+  //         UserID: '19',
+  //         Remarks: remarks,
+  //         TimeZone: 0,
+  //         Valid: true,
+  //       };
+
+  //       this.customsDataService
+  //         .addEntityEvent$(entityEvent)
+  //         .pipe(takeUntil(this.destroy$))
+  //         .subscribe((res) => console.log(res));
+  //     });
+  //   this.msgs1 = [
+  //     {
+  //       severity: 'info',
+  //       summary: '',
+  //       detail: 'התיק נשלח לסווג טרם שליחה למכס',
+  //     },
+  //   ];
+  // }
+
+  private createEvent(eventCode: string, showMessage: boolean = false) {
     // קביעת EntityType לפי סוג ההצהרה
     const decType = localStorage.getItem('decType');
     const typeCode = this.generalDeclarationForm.get('TypeCode')?.value;
@@ -2234,7 +2343,7 @@ export class DeclarationFormTsComponent implements OnInit {
         const entityEvent = {
           EntityKey: localStorage.getItem('currentDecId') || '',
           EntityType: entityType,
-          EventCode: 'CLSREQ',
+          EventCode: eventCode,
           EventDate: new Date(),
           RegistrationDate: new Date(),
           // UserID: localStorage.getItem('userId') || '',
@@ -2248,6 +2357,16 @@ export class DeclarationFormTsComponent implements OnInit {
           .addEntityEvent$(entityEvent)
           .pipe(takeUntil(this.destroy$))
           .subscribe((res) => console.log(res));
+
+        if (showMessage) {
+          this.msgs1 = [
+            {
+              severity: 'info',
+              summary: '',
+              detail: 'התיק נשלח לסווג טרם שליחה למכס',
+            },
+          ];
+        }
       })
       .catch((err) => {
         console.error('Failed to get IP', err);
@@ -2257,7 +2376,7 @@ export class DeclarationFormTsComponent implements OnInit {
         const entityEvent = {
           EntityKey: localStorage.getItem('currentDecId') || '',
           EntityType: '2',
-          EventCode: 'CLSREQ',
+          EventCode: eventCode,
           EventDate: new Date(),
           RegistrationDate: new Date(),
           UserID: '19',
@@ -2271,13 +2390,15 @@ export class DeclarationFormTsComponent implements OnInit {
           .pipe(takeUntil(this.destroy$))
           .subscribe((res) => console.log(res));
       });
-    this.msgs1 = [
-      {
-        severity: 'info',
-        summary: '',
-        detail: 'התיק נשלח לסווג טרם שליחה למכס',
-      },
-    ];
+    if (showMessage) {
+      this.msgs1 = [
+        {
+          severity: 'info',
+          summary: '',
+          detail: 'התיק נשלח לסווג טרם שליחה למכס',
+        },
+      ];
+    }
   }
 
   sendDeclaration() {
@@ -2299,6 +2420,8 @@ export class DeclarationFormTsComponent implements OnInit {
         res = JSON.parse(res);
         console.log(res);
         if (res.responseField) {
+          this.createEvent('DRFT', false);
+
           if (res.responseField.statusField.nameCodeField.valueField == 13) {
             //תשלום קופה
           }
@@ -2312,6 +2435,7 @@ export class DeclarationFormTsComponent implements OnInit {
               res.responseField.declarationField.dMExtensionsField
                 .versionIDField.valueField,
             );
+          this.updateBrokerRoutingState();
 
           perfectDec.DeclarationNumber =
             res.responseField.declarationField.idField.valueField;
@@ -2335,9 +2459,15 @@ export class DeclarationFormTsComponent implements OnInit {
               console.log(res);
             });
 
-          // if (+dec.VersionID > 0.5) {
-          //   this.msgs1 = [{ severity: 'error', summary: 'נשלחו 6 טיוטות שגויות', detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ' }]
-          // }
+          if (+dec.VersionID > 0.5) {
+            this.msgs1 = [
+              {
+                severity: 'error',
+                summary: 'נשלחו 6 טיוטות שגויות',
+                detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ',
+              },
+            ];
+          }
           // if (res.responseField.errorField) {
           //   this.customsErrorsContent = res.responseField.errorField;
           //   // res.responseField.errorField[0].validationCodeField.nameField
@@ -2468,9 +2598,43 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   checkVersion(): boolean {
-    const version = +this.generalDeclarationForm.controls['VersionID'].value;
+    // const version = +this.generalDeclarationForm.controls['VersionID'].value;
+    // console.log('Version number:', version);
+    // return version > 0.5;
 
-    return version > 0.5;
+    const versionStr = String(
+      this.generalDeclarationForm.controls['VersionID'].value ?? '',
+    );
+    const parts = versionStr.split('.');
+    const version = parts.length > 1 ? Number(parts[1]) : 0;
+    return version > 5;
+  }
+
+  private updateBrokerRoutingState(): void {
+    const versionStr = String(
+      this.generalDeclarationForm?.get('VersionID')?.value ?? '',
+    );
+
+    const parts = versionStr.split('.');
+    const version = parts.length > 1 ? Number(parts[1]) : 0;
+
+    this.isLockedByBrokerRouting = version > 5;
+
+    if (this.isLockedByBrokerRouting) {
+      this.isLocked = true;
+      this.formDisabled = true;
+      this.generalDeclarationForm.disable({ emitEvent: false });
+    } else {
+      this.isLocked = false;
+      this.formDisabled = false;
+      this.generalDeclarationForm.enable({ emitEvent: false });
+
+      this.setChargingCountryControlStatus('import');
+      this.setChargingCountryControlStatus('export');
+    }
+
+    console.log('Version number:', version);
+    console.log('isLockedByBrokerRouting:', this.isLockedByBrokerRouting);
   }
 
   //get values by cargo Ids
@@ -3148,7 +3312,7 @@ export class DeclarationFormTsComponent implements OnInit {
       },
     };
 
-    debugger;
+    // debugger;
     // this.generalDeclarationForm.patchValue({
     //   Id: null,
     //   DeclarationNumber: '',

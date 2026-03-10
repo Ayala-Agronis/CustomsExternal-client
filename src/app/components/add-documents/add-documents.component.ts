@@ -1016,7 +1016,13 @@ export class AddDocumentsComponent {
       this.hasDocument(code),
     );
 
-    return allRequiredExist && !this.loading && !this.hasPendingUploads();
+    // return allRequiredExist && !this.loading && !this.hasPendingUploads();
+    return (
+      allRequiredExist &&
+      !this.loading &&
+      !this.hasPendingUploads() &&
+      !this.isVersionTooHigh()
+    );
   }
 
   sendDecToCustoms() {
@@ -1066,6 +1072,10 @@ export class AddDocumentsComponent {
   // }
 
   getSendToCustomsTooltip(): string {
+    if (this.isVersionTooHigh()) {
+      return 'ניתן לשלוח למכס עד 6 טיוטות';
+    }
+
     if (this.hasPendingUploads()) {
       return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמרי קודם ואז שלחי למכס.';
     }
@@ -1645,5 +1655,20 @@ export class AddDocumentsComponent {
 
     event.target.value = '';
     this.pendingDocumentCode = null;
+  }
+
+  private isVersionTooHigh(): boolean {
+    const raw = localStorage.getItem('currentDec');
+    if (!raw) return false;
+
+    try {
+      const dec = JSON.parse(raw);
+      const versionStr = String(dec?.VersionID ?? '');
+      const parts = versionStr.split('.');
+      const version = parts.length > 1 ? Number(parts[1]) : 0;
+      return version > 5;
+    } catch {
+      return false;
+    }
   }
 }

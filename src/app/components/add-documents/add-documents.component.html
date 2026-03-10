@@ -202,6 +202,13 @@
       שמור
     </button>
     <!-- <button class="button-secondary" (click)="goBack()">חזור</button> -->
+    <span
+  [pTooltip]="getSendToCustomsTooltip()"
+  tooltipPosition="top"
+  [tooltipDisabled]="canSendToCustoms()"
+    class="send-tooltip-wrapper"
+
+>
     <button
       pButton
       type="button"
@@ -210,9 +217,8 @@
       class="p-button-success"
       (click)="sendDecToCustoms()"
       [disabled]="!canSendToCustoms()"
-      pTooltip="{{ getSendToCustomsTooltip() }}"
-      tooltipPosition="top"
     ></button>
+    </span>
     <button class="button-secondary" (click)="previousStep()">חזור</button>
   </div>
 </p-card>

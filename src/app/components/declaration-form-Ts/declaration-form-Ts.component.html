@@ -18,22 +18,26 @@
   <div class="title-container">
     <h2 class="form-title title">תהליך הזנת הצהרה</h2>
     <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value">
-      מספר הצהרה :{{
+      מספר הצהרה : {{
         generalDeclarationForm.get("DeclarationNumber")?.value
       }}</label
     >
     <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value"
-      >סטטוס הצהרה :{{
+      >סטטוס הצהרה : {{
         customStatusName(generalDeclarationForm.get("CustomsStatus")?.value)
       }}
     </label>
     <label *ngIf="generalDeclarationForm.get('LogisticStatusCode')?.value"
-      >סטטוס לוגיסטי :{{
+      >סטטוס לוגיסטי : {{
         customStatusName(
           generalDeclarationForm.get("LogisticStatusCode")?.value
         )
       }}
     </label>
+
+    <div class="broker-routing-message" *ngIf="isLockedByBrokerRouting">
+  {{ brokerRoutingMessage }}
+</div>
   </div>
 
   <p-confirmDialog></p-confirmDialog>
@@ -864,8 +868,8 @@
             העתק
         </button> -->
     <button
-      [disabled]="generalDeclarationForm.invalid"
-      [ngClass]="{ disabled: generalDeclarationForm.invalid }"
+      [disabled]="generalDeclarationForm.invalid || checkVersion()"
+      [ngClass]="{ disabled: generalDeclarationForm.invalid || checkVersion()}"
       *ngIf="showBtnCustoms"
       class="button-primary"
       (click)="sendDeclaration()"
@@ -875,6 +879,9 @@
     >
       שלח למכס
     </button>
+
+
+    
     <!-- <button [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}" *ngIf="showBtnCustoms" class="button-primary" (click)="sendDeclaration()"  >שלח למכס</button> -->
   </div>
 

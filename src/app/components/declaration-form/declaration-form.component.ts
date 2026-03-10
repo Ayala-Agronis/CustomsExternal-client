@@ -117,6 +117,11 @@ export class DeclarationFormComponent implements OnInit {
   private errorTypesMap: { [key: string]: string } = {};
   formattedCustomsErrors: any[] = [];
 
+  isLockedByBrokerRouting: boolean = false;
+brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
+formDisabled: boolean = false;
+formErrorsMessage: string = '';
+
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
   showCustomsValuation: boolean[] = [];
@@ -222,6 +227,21 @@ export class DeclarationFormComponent implements OnInit {
     });
 
     this.initForm();
+
+    this.deferFormErrorsMessageUpdate();
+
+this.generalDeclarationForm.valueChanges
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.deferFormErrorsMessageUpdate();
+  });
+
+this.generalDeclarationForm
+  .get('VersionID')
+  ?.valueChanges.pipe(takeUntil(this.destroy$))
+  .subscribe(() => {
+    this.updateBrokerRoutingState();
+  });
 
     //data from cargo query
     this.decService.packageData$
@@ -659,10 +679,13 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   addSupplierInvoice(): void {
+      if (this.formDisabled) return;
     this.supplierInvoices.push(this.createSupplierInvoice());
   }
 
   removeSupplierInvoice(rowData: any, index: any) {
+      if (this.formDisabled) return;
+
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
         message: 'האם אתה בטוח שברצונך למחוק?',
@@ -683,6 +706,8 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   addNewInvoiceItem(i: any): void {
+      if (this.formDisabled) return;
+
     const invoiceItemsArray = this.GetSupplierInvoiceItems(i);
     invoiceItemsArray?.push(this.createSupplierInvoiceItem());
   }
@@ -727,6 +752,8 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   onDeleteRow(rowData: any, index: any, suplierInvoiceIndex: any): void {
+     if (this.formDisabled) return;
+
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
         message: 'האם אתה בטוח שברצונך למחוק?',
@@ -782,8 +809,20 @@ export class DeclarationFormComponent implements OnInit {
     dec.GovernmentProcedure = dec.GovernmentProcedure?.code
       ? dec.GovernmentProcedure.code
       : dec.GovernmentProcedure;
-    dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID');
+
     const consignments = dec.Consignments;
+
+    consignments.ImporterID =
+      consignments.ImporterID?.code ?? consignments.ImporterID;
+
+    consignments.GovernmentProcedure =
+      consignments.GovernmentProcedure?.code ??
+      consignments.GovernmentProcedure;
+
+    dec.ImporterID = consignments.ImporterID;
+    dec.GovernmentProcedure = consignments.GovernmentProcedure;
+
+    dec.AgentFileReferenceID = localStorage.getItem('AgentFileReferenceID');
 
     consignments.ExportationCountryCode =
       consignments.ExportationCountryCode?.code ??
@@ -879,7 +918,7 @@ export class DeclarationFormComponent implements OnInit {
     this.loading = true;
     const dec = this.generalDeclarationForm.value;
     const perfectDec = this.convertToDecObj(dec);
-    
+
     if (this.mode != 'e') {
       this.decService
         .sendDeclarationToInternal(perfectDec)
@@ -890,6 +929,7 @@ export class DeclarationFormComponent implements OnInit {
           localStorage.setItem('currentDecId', String(res.body?.Id ?? ''));
           localStorage.setItem('currentDec', JSON.stringify(res.body ?? {}));
           this.loading = false; // ✅ הוסף כאן
+          this.createEvent('OPEN');
 
           this.stepService.emitStepCompleted('+');
         });
@@ -920,6 +960,7 @@ export class DeclarationFormComponent implements OnInit {
         res = JSON.parse(res);
         console.log(res);
         if (res.responseField) {
+          this.createEvent('DRFT', false);
           if (res.responseField.statusField.nameCodeField.valueField == 13) {
             //תשלום קופה
           }
@@ -933,6 +974,7 @@ export class DeclarationFormComponent implements OnInit {
               res.responseField.declarationField.dMExtensionsField
                 .versionIDField.valueField,
             );
+            this.updateBrokerRoutingState();
 
           dec.DeclarationNumber =
             res.responseField.declarationField.idField.valueField;
@@ -994,6 +1036,9 @@ export class DeclarationFormComponent implements OnInit {
       }
 
       if (currentDec) {
+        const consignmentForm =
+          this.generalDeclarationForm.controls['Consignments'];
+
         // --general--
         this.generalDeclarationForm.patchValue({
           AgentFileReferenceID: currentDec?.AgentFileReferenceID,
@@ -1013,6 +1058,9 @@ export class DeclarationFormComponent implements OnInit {
         this.generalDeclarationForm.patchValue({
           ImporterID: currentDec?.ImporterID,
         });
+        consignmentForm.patchValue({
+          ImporterID: currentDec?.ImporterID,
+        });
         this.generalDeclarationForm.patchValue({
           CustomsStatus: currentDec?.CustomsStatus,
         });
@@ -1027,10 +1075,13 @@ export class DeclarationFormComponent implements OnInit {
             GovernmentProcedure: matchingElement1,
           });
         }
+        if (matchingElement1) {
+          consignmentForm.patchValue({
+            GovernmentProcedure: matchingElement1,
+          });
+        }
 
         // --consignment--
-        const consignmentForm =
-          this.generalDeclarationForm.controls['Consignments'];
 
         const currentConsignment =
           currentDec?.ConsignmentPackagesMeasures[0].Consignments;
@@ -1212,6 +1263,9 @@ export class DeclarationFormComponent implements OnInit {
         });
       }
 
+      this.updateBrokerRoutingState();
+this.deferFormErrorsMessageUpdate();
+
       this.loading = false; // ✅ כבה את ה-loading בסוף
     });
   }
@@ -1313,10 +1367,45 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   checkVersion(): boolean {
-    const version = +this.generalDeclarationForm.controls['VersionID'].value;
-
-    return version > 0.5;
+    // const version = +this.generalDeclarationForm.controls['VersionID'].value;
+    // console.log('Version number:', version);
+    // return version > 0.5;
+    const versionStr = String(
+      this.generalDeclarationForm.controls['VersionID'].value ?? '',
+    );
+    const parts = versionStr.split('.');
+    const version = parts.length > 1 ? Number(parts[1]) : 0;
+    return version > 5;
   }
+
+  private updateBrokerRoutingState(): void {
+  const versionStr = String(
+    this.generalDeclarationForm?.get('VersionID')?.value ?? ''
+  );
+
+  const parts = versionStr.split('.');
+  const version = parts.length > 1 ? Number(parts[1]) : 0;
+
+  this.isLockedByBrokerRouting = version > 5;
+
+  const shouldLockForm = this.isLockedByBrokerRouting;
+
+  this.isLocked = shouldLockForm;
+  this.formDisabled = shouldLockForm;
+
+  if (shouldLockForm) {
+    this.generalDeclarationForm.disable({ emitEvent: false });
+  } else {
+    this.generalDeclarationForm.enable({ emitEvent: false });
+    this.setChargingCountryControlStatus();
+  }
+}
+
+private deferFormErrorsMessageUpdate() {
+  Promise.resolve().then(() => {
+    this.formErrorsMessage = this.getFormErrors(false);
+  });
+}
 
   //get values by cargo Ids
   onCargoIDBlur(cargoIdNum: any) {
@@ -1794,6 +1883,101 @@ export class DeclarationFormComponent implements OnInit {
         return 'type-critical-warning';
       default:
         return 'type-error';
+    }
+  }
+
+  private createEvent(eventCode: string, showMessage: boolean = false) {
+    // קביעת EntityType לפי סוג ההצהרה
+    const decType = localStorage.getItem('decType');
+    const typeCode = this.generalDeclarationForm.get('TypeCode')?.value;
+
+    let entityType = '2'; // ברירת מחדל - שטעון
+
+    if (decType === 'regular' || typeCode === '1') {
+      entityType = '1'; // יבוא רגיל
+    } else if (decType === 'tr' || typeCode === '3') {
+      entityType = '2'; // שטעון
+    }
+
+    const userDataStr = localStorage.getItem('user');
+    let clientName = '';
+    let clientId = '';
+
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        clientName = userData.FirstName || '';
+        clientId = userData.Id || '';
+      } catch (e) {
+        console.error('Failed to parse user data', e);
+      }
+    }
+
+    // IP adress
+    fetch('https://api.ipify.org?format=json')
+      .then((response) => response.json())
+      .then((data) => {
+        const clientIP = data.ip;
+        const remarks = `שם לקוח: ${clientName}, ת.ז: ${clientId}, IP: ${clientIP}`;
+
+        const entityEvent = {
+          EntityKey: localStorage.getItem('currentDecId') || '',
+          EntityType: entityType,
+          EventCode: eventCode,
+          EventDate: new Date(),
+          RegistrationDate: new Date(),
+          // UserID: localStorage.getItem('userId') || '',
+          UserID: '19',
+          Remarks: remarks,
+          TimeZone: 0,
+          Valid: true,
+        };
+
+        this.customsDataService
+          .addEntityEvent$(entityEvent)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((res) => console.log(res));
+
+        if (showMessage) {
+          this.msgs1 = [
+            {
+              severity: 'info',
+              summary: '',
+              detail: 'התיק נשלח לסווג טרם שליחה למכס',
+            },
+          ];
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to get IP', err);
+        // שלח בלי IP במקרה של שגיאה
+        const remarks = `שם לקוח: ${clientName}, ת.ז: ${clientId}, IP: לא זמין`;
+
+        const entityEvent = {
+          EntityKey: localStorage.getItem('currentDecId') || '',
+          EntityType: '2',
+          EventCode: eventCode,
+          EventDate: new Date(),
+          RegistrationDate: new Date(),
+          UserID: '19',
+          Remarks: remarks,
+          TimeZone: 0,
+          Valid: true,
+        };
+
+        this.customsDataService
+          .addEntityEvent$(entityEvent)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((res) => console.log(res));
+      });
+    if (showMessage) {
+      this.msgs1 = [
+        {
+          severity: 'info',
+          summary: '',
+          detail: 'התיק נשלח לסווג טרם שליחה למכס',
+        },
+      ];
     }
   }
 }

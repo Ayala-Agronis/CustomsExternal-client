@@ -18,15 +18,19 @@
   <div class="title-container">
     <h2 class="form-title title">תהליך הזנת הצהרה</h2>
     <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value">
-      מספר הצהרה :{{
+      מספר הצהרה : {{
         generalDeclarationForm.get("DeclarationNumber")?.value
       }}</label
     >
     <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value"
-      >סטטוס הצהרה :{{
+      >סטטוס הצהרה : {{
         customStatusName(generalDeclarationForm.get("CustomsStatus")?.value)
       }}
     </label>
+<div class="broker-routing-message" *ngIf="isLockedByBrokerRouting">
+  {{ brokerRoutingMessage }}
+</div>
+    
   </div>
 
   <p-confirmDialog></p-confirmDialog>
@@ -223,6 +227,7 @@
         [header]="'חשבונית ' + (i + 1)"
       >
         <button
+          [disabled]="formDisabled"
           pButton
           pRipple
           icon="pi pi-plus"
@@ -230,6 +235,7 @@
           (click)="addSupplierInvoice()"
         ></button>
         <button
+          [disabled]="formDisabled"
           *ngIf="i"
           pButton
           pRipple
@@ -424,6 +430,7 @@
                   <tr [formGroupName]="rowIndex">
                     <td class="sCol">
                       <button
+                                [disabled]="formDisabled"
                         pButton
                         pRipple
                         icon="pi pi-minus"
@@ -518,6 +525,7 @@
                   <tr>
                     <td>
                       <button
+                                [disabled]="formDisabled"
                         pButton
                         pRipple
                         icon="pi pi-plus"
@@ -554,7 +562,8 @@
             העתק
         </button> -->
     <button
-      [ngClass]="{ disabled: generalDeclarationForm.invalid }"
+      [disabled]="generalDeclarationForm.invalid || checkVersion()"
+      [ngClass]="{ disabled: generalDeclarationForm.invalid || checkVersion()}"
       *ngIf="showBtnCustoms"
       class="button-primary"
       (click)="sendDeclaration()"
