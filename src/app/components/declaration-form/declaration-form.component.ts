@@ -29,6 +29,7 @@ import {
   forkJoin,
   map,
   min,
+  Observable,
   of,
   Subject,
   takeUntil,
@@ -44,6 +45,7 @@ import { CardModule } from 'primeng/card';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { PaymentService } from '../../shared/services/payment.service';
+import { shareReplay } from 'rxjs/operators';
 
 @Component({
   selector: 'app-declaration-form',
@@ -118,9 +120,13 @@ export class DeclarationFormComponent implements OnInit {
   formattedCustomsErrors: any[] = [];
 
   isLockedByBrokerRouting: boolean = false;
-brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
-formDisabled: boolean = false;
-formErrorsMessage: string = '';
+  brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
+  formDisabled: boolean = false;
+  formErrorsMessage: string = '';
+
+  private chargingCountryMap = new Map<string, any>();
+  private chargingCountryByCountryCache = new Map<string, Observable<any[]>>();
+  portsLoading: boolean = false;
 
   private destroy$ = new Subject<void>();
   secondCargoIDError: any;
@@ -230,18 +236,18 @@ formErrorsMessage: string = '';
 
     this.deferFormErrorsMessageUpdate();
 
-this.generalDeclarationForm.valueChanges
-  .pipe(takeUntil(this.destroy$))
-  .subscribe(() => {
-    this.deferFormErrorsMessageUpdate();
-  });
+    this.generalDeclarationForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.deferFormErrorsMessageUpdate();
+      });
 
-this.generalDeclarationForm
-  .get('VersionID')
-  ?.valueChanges.pipe(takeUntil(this.destroy$))
-  .subscribe(() => {
-    this.updateBrokerRoutingState();
-  });
+    this.generalDeclarationForm
+      .get('VersionID')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.updateBrokerRoutingState();
+      });
 
     //data from cargo query
     this.decService.packageData$
@@ -443,24 +449,24 @@ this.generalDeclarationForm
       }),
     ).pipe(map((res) => (this.declarationCountryOfExport = res)));
 
-    const customsChargingCountry$ = getCustomsData(
-      'customsChargingCountry',
-      '1344',
-      (item: { Value2: any; Value1: any }) => ({
-        name: item.Value1,
-        code: item.Value1,
-      }),
-    ).pipe(
-      map((res) => {
-        this.declarationChargingCountry = res;
-        this.loadingChargingCountrySubject.next(false);
-      }),
-      tap(() => {
-        // if (this.UpdateMode === 'e' || this.UpdateMode === 'p') {
-        //   this.filterChargingCountryByExportCode();
-        // }
-      }),
-    );
+    // const customsChargingCountry$ = getCustomsData(
+    //   'customsChargingCountry',
+    //   '1344',
+    //   (item: { Value2: any; Value1: any }) => ({
+    //     name: item.Value1,
+    //     code: item.Value1,
+    //   }),
+    // ).pipe(
+    //   map((res) => {
+    //     this.declarationChargingCountry = res;
+    //     this.loadingChargingCountrySubject.next(false);
+    //   }),
+    //   tap(() => {
+    //     // if (this.UpdateMode === 'e' || this.UpdateMode === 'p') {
+    //     //   this.filterChargingCountryByExportCode();
+    //     // }
+    //   }),
+    // );
 
     const customsUnpackingSite$ = getCustomsData(
       'customsUnpackingSite',
@@ -493,12 +499,13 @@ this.generalDeclarationForm
     // Use forkJoin to execute all requests or use cached data from Local Storage
     forkJoin([
       customsCountryExport$,
-      customsChargingCountry$,
+      // customsChargingCountry$,
       customsUnpackingSite$,
       customsCargoIDType$,
       customsFacilityID$,
     ]).subscribe(() => {
       this.loading = false;
+      this.loadingChargingCountrySubject.next(false);
       const exportationCountryControl = this.generalDeclarationForm.controls[
         'Consignments'
       ].get('ExportationCountryCode');
@@ -679,12 +686,12 @@ this.generalDeclarationForm
   }
 
   addSupplierInvoice(): void {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
     this.supplierInvoices.push(this.createSupplierInvoice());
   }
 
   removeSupplierInvoice(rowData: any, index: any) {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
@@ -706,7 +713,7 @@ this.generalDeclarationForm
   }
 
   addNewInvoiceItem(i: any): void {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     const invoiceItemsArray = this.GetSupplierInvoiceItems(i);
     invoiceItemsArray?.push(this.createSupplierInvoiceItem());
@@ -752,7 +759,7 @@ this.generalDeclarationForm
   }
 
   onDeleteRow(rowData: any, index: any, suplierInvoiceIndex: any): void {
-     if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
@@ -974,7 +981,7 @@ this.generalDeclarationForm
               res.responseField.declarationField.dMExtensionsField
                 .versionIDField.valueField,
             );
-            this.updateBrokerRoutingState();
+          this.updateBrokerRoutingState();
 
           dec.DeclarationNumber =
             res.responseField.declarationField.idField.valueField;
@@ -1097,17 +1104,67 @@ this.generalDeclarationForm
           });
         }
 
-        this.filterChargingCountryByExportCode();
+        // this.filterChargingCountryByExportCode();
 
-        const matchingChargingCountry = this.declarationChargingCountry.find(
-          (element: { code: any }) =>
-            element.code == currentConsignment?.LoadingLocation,
+        // const matchingChargingCountry = this.declarationChargingCountry.find(
+        //   (element: { code: any }) =>
+        //     element.code == currentConsignment?.LoadingLocation,
+        // );
+        // if (matchingChargingCountry) {
+        //   consignmentForm.patchValue({
+        //     LoadingLocation: matchingChargingCountry,
+        //   });
+        // }
+
+        const loadingLocationCode = currentConsignment?.LoadingLocation || '';
+
+        const immediateLoadingLocation = this.chargingCountryMap.get(
+          loadingLocationCode,
+        ) || {
+          code: loadingLocationCode,
+          name: loadingLocationCode,
+        };
+
+        consignmentForm.patchValue(
+          {
+            LoadingLocation: immediateLoadingLocation,
+          },
+          { emitEvent: false },
         );
-        if (matchingChargingCountry) {
-          consignmentForm.patchValue({
-            LoadingLocation: matchingChargingCountry,
+
+        this.exportationCountryControlError = false;
+        this.setChargingCountryControlStatus();
+
+        this.portsLoading = true;
+
+        this.getChargingPortsByCountry$(
+          currentConsignment?.ExportationCountryCode,
+        )
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((ports) => {
+            this.declarationChargingCountry = ports;
+            this.filteredChargingCountry = ports;
+            this.currentFilteredChargingCountry = ports;
+
+            const matchingChargingCountry = ports.find(
+              (element: { code: any }) =>
+                element.code == currentConsignment?.LoadingLocation,
+            ) || {
+              code: currentConsignment?.LoadingLocation,
+              name: currentConsignment?.LoadingLocation,
+            };
+
+            consignmentForm.patchValue(
+              {
+                LoadingLocation: matchingChargingCountry,
+              },
+              { emitEvent: false },
+            );
+
+            this.portsLoading = false;
+            this.exportationCountryControlError = false;
+            this.setChargingCountryControlStatus();
           });
-        }
 
         const matchingUnpackingSite = this.declarationUnpackingSite.find(
           (element: { code: any }) =>
@@ -1264,7 +1321,7 @@ this.generalDeclarationForm
       }
 
       this.updateBrokerRoutingState();
-this.deferFormErrorsMessageUpdate();
+      this.deferFormErrorsMessageUpdate();
 
       this.loading = false; // ✅ כבה את ה-loading בסוף
     });
@@ -1379,33 +1436,33 @@ this.deferFormErrorsMessageUpdate();
   }
 
   private updateBrokerRoutingState(): void {
-  const versionStr = String(
-    this.generalDeclarationForm?.get('VersionID')?.value ?? ''
-  );
+    const versionStr = String(
+      this.generalDeclarationForm?.get('VersionID')?.value ?? '',
+    );
 
-  const parts = versionStr.split('.');
-  const version = parts.length > 1 ? Number(parts[1]) : 0;
+    const parts = versionStr.split('.');
+    const version = parts.length > 1 ? Number(parts[1]) : 0;
 
-  this.isLockedByBrokerRouting = version > 5;
+    this.isLockedByBrokerRouting = version > 5;
 
-  const shouldLockForm = this.isLockedByBrokerRouting;
+    const shouldLockForm = this.isLockedByBrokerRouting;
 
-  this.isLocked = shouldLockForm;
-  this.formDisabled = shouldLockForm;
+    this.isLocked = shouldLockForm;
+    this.formDisabled = shouldLockForm;
 
-  if (shouldLockForm) {
-    this.generalDeclarationForm.disable({ emitEvent: false });
-  } else {
-    this.generalDeclarationForm.enable({ emitEvent: false });
-    this.setChargingCountryControlStatus();
+    if (shouldLockForm) {
+      this.generalDeclarationForm.disable({ emitEvent: false });
+    } else {
+      this.generalDeclarationForm.enable({ emitEvent: false });
+      this.setChargingCountryControlStatus();
+    }
   }
-}
 
-private deferFormErrorsMessageUpdate() {
-  Promise.resolve().then(() => {
-    this.formErrorsMessage = this.getFormErrors(false);
-  });
-}
+  private deferFormErrorsMessageUpdate() {
+    Promise.resolve().then(() => {
+      this.formErrorsMessage = this.getFormErrors(false);
+    });
+  }
 
   //get values by cargo Ids
   onCargoIDBlur(cargoIdNum: any) {
@@ -1413,8 +1470,10 @@ private deferFormErrorsMessageUpdate() {
       const consignment = this.generalDeclarationForm.controls[
         'Consignments'
       ] as FormGroup;
+
       let secondCargoID = consignment.controls['SecondCargoID'].value;
-      secondCargoID = secondCargoID.trim();
+      secondCargoID = secondCargoID.trim() || '';
+
       if (/^\d{11}$/.test(secondCargoID)) {
         secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
         consignment.controls['SecondCargoID'].setValue(secondCargoID);
@@ -1428,9 +1487,11 @@ private deferFormErrorsMessageUpdate() {
         this.secondCargoIDError = 'מבנה לא תקין';
       }
     }
+
     const consignment = this.generalDeclarationForm.controls[
       'Consignments'
     ] as FormGroup;
+
     const cargoType =
       consignment.controls['TransportContractDocumentTypeCode'].value?.code;
     const firstCargoID =
@@ -1438,58 +1499,212 @@ private deferFormErrorsMessageUpdate() {
     const secondCargoID = consignment.controls['SecondCargoID'].value;
     const thirdCargoID = consignment.controls['ThirdCargoID'].value;
 
-    if (cargoType && firstCargoID && secondCargoID) {
-      const params = { cargoType, firstCargoID, secondCargoID, thirdCargoID };
-      this.decService.getCagroQueryMessage$(params).subscribe((res: any) => {
-        console.log(res);
-        if (res.cargoField) {
-          const decId = localStorage.getItem('currentDecId') || '';
-
-          const createDateField = res?.cargosVersionField?.[0]?.createDateField;
-
-          this.decService.setCargoContext({
-            decId,
-            key: { cargoType, firstCargoID, secondCargoID, thirdCargoID },
-            createDate: createDateField, // ✅ זה השדה הנכון
-            receivedAtIso: new Date().toISOString(),
-          });
-
-          const totalNumberOfPackeges =
-            res.cargoField.totalNumberOfPackegesField;
-          const totalWeight = res.cargoField.totalWeightField;
-          const typeCode = res.cargoItemField[0].packingTypeField;
-          const unloadingLocation = {
-            code: res.cargoField.cargoAdditionalDataField[0]
-              .unloadingLocationIDField,
-            name: res.cargoField.cargoAdditionalDataField[0]
-              .unloadingLocationNameField,
-          };
-
-          this.decService.updatePackageData({
-            totalNumberOfPackeges,
-            totalWeight,
-            typeCode,
-            unloadingLocation,
-          });
-        }
-      });
+    if (!(cargoType && firstCargoID && secondCargoID)) {
+      return;
     }
+
+    const params = { cargoType, firstCargoID, secondCargoID, thirdCargoID };
+
+    this.decService
+      .getCagroQueryMessage$(params)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res: any) => {
+        console.log(res);
+
+        if (!res?.cargoField) {
+          return;
+        }
+
+        const decId = localStorage.getItem('currentDecId') || '';
+
+        const createDateField = res?.cargosVersionField?.[0]?.createDateField;
+
+        this.decService.setCargoContext({
+          decId,
+          key: { cargoType, firstCargoID, secondCargoID, thirdCargoID },
+          createDate: createDateField, // ✅ זה השדה הנכון
+          receivedAtIso: new Date().toISOString(),
+        });
+        const cargoAdditional = res?.cargoField?.cargoAdditionalDataField?.[0];
+        const totalNumberOfPackeges =
+          res?.cargoField?.totalNumberOfPackegesField ?? null;
+        const totalWeight = res?.cargoField?.totalWeightField ?? null;
+        const typeCode = res?.cargoItemField?.[0]?.packingTypeField ?? null;
+
+        const loadingSite = cargoAdditional?.loadingSiteField || '';
+        // const loadingCode = loadingSite.trim().split(' ')[0] || '';
+        const loadingCode = loadingSite?.substring(0, 5)?.toUpperCase() || '';
+        const exportCountryCode = loadingCode.substring(0, 2);
+
+        const exportCountry = this.declarationCountryOfExport?.find(
+          (element: any) => element.code === exportCountryCode,
+        );
+
+        const unloadingLocation = {
+          code: cargoAdditional?.unloadingLocationIDField || '',
+          name: cargoAdditional?.unloadingLocationNameField || '',
+        };
+
+        const acceptedArrivalSite = {
+          code: cargoAdditional?.acceptedArrivalSiteIDField || '',
+          name: cargoAdditional?.acceptedArrivalSiteNameField || '',
+        };
+
+        // this.getChargingPortsByCountry$(exportCountryCode)
+        //   .pipe(takeUntil(this.destroy$))
+        //   .subscribe((ports) => {
+        //     this.filteredChargingCountry = ports;
+        //     this.currentFilteredChargingCountry = ports;
+        //     const loadingPort = ports.find(
+        //       (p: any) => p.code === loadingCode,
+        //     ) || {
+        //       code: loadingCode,
+        //       name: loadingCode,
+        //     };
+
+        //     this.generalDeclarationForm.get('Consignments')?.patchValue(
+        //       {
+        //         ExportationCountryCode: {
+        //           code: exportCountryCode,
+        //           name: exportCountry?.name || exportCountryCode,
+        //         },
+        //         LoadingLocation: loadingPort,
+        //         UnloadingLocationID: unloadingLocation,
+        //         FacilityType: this.declarationFacilityID?.find(
+        //           (f: any) => f.code === acceptedArrivalSite.code,
+        //         ) || {
+        //           code: acceptedArrivalSite.code,
+        //           name: acceptedArrivalSite.name,
+        //         },
+        //       },
+        //       { emitEvent: false },
+        //     );
+
+        //     this.exportationCountryControlError = false;
+        //     this.setChargingCountryControlStatus();
+        //   });
+
+        const immediateLoadingLocation = this.chargingCountryMap.get(
+          loadingCode,
+        ) || {
+          code: loadingCode,
+          name: loadingCode,
+        };
+
+        this.generalDeclarationForm.get('Consignments')?.patchValue(
+          {
+            ExportationCountryCode: {
+              code: exportCountryCode,
+              name: exportCountry?.name || exportCountryCode,
+            },
+            LoadingLocation: immediateLoadingLocation,
+            UnloadingLocationID: unloadingLocation,
+            FacilityType: this.declarationFacilityID?.find(
+              (f: any) => f.code === acceptedArrivalSite.code,
+            ) || {
+              code: acceptedArrivalSite.code,
+              name: acceptedArrivalSite.name,
+            },
+          },
+          { emitEvent: false },
+        );
+
+        this.exportationCountryControlError = false;
+        this.setChargingCountryControlStatus();
+
+        this.portsLoading = true;
+
+        this.getChargingPortsByCountry$(exportCountryCode)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((ports) => {
+            this.filteredChargingCountry = ports;
+            this.currentFilteredChargingCountry = ports;
+            this.declarationChargingCountry = ports;
+
+            const loadingPort =
+              ports.find((p: any) => p.code === loadingCode) ||
+              immediateLoadingLocation;
+
+            this.generalDeclarationForm.get('Consignments')?.patchValue(
+              {
+                LoadingLocation: loadingPort,
+              },
+              { emitEvent: false },
+            );
+
+            this.portsLoading = false;
+            this.exportationCountryControlError = false;
+            this.setChargingCountryControlStatus();
+          });
+
+        this.decService.updatePackageData({
+          totalNumberOfPackeges,
+          totalWeight,
+          typeCode,
+          unloadingLocation,
+        });
+
+        (
+          this.generalDeclarationForm.controls[
+            'ConsignmentPackagesMeasures'
+          ] as FormGroup
+        ).patchValue(
+          {
+            TotalPackageQuantity: totalNumberOfPackeges,
+            GrossMassMeasure: totalWeight,
+            TypeCode: typeCode,
+          },
+          { emitEvent: false },
+        );
+      });
   }
 
   serchVendor() {
     this.router.navigateByUrl('/search-vendor');
   }
 
+  // onExportationCountrySelect(event: any) {
+  //   this.ExportationCountrySelect = event?.value.name;
+  //   this.loadingChargingCountry$.subscribe((loading) => {
+  //     if (!loading) {
+  //       this.filterChargingCountryByExportCode();
+  //     }
+  //   });
+  //   this.generalDeclarationForm
+  //     .get('Consignments.LoadingLocation')
+  //     ?.setValue('');
+  // }
+
   onExportationCountrySelect(event: any) {
-    this.ExportationCountrySelect = event?.value.name;
-    this.loadingChargingCountry$.subscribe((loading) => {
-      if (!loading) {
-        this.filterChargingCountryByExportCode();
-      }
-    });
+    const selectedCountryCode = event?.value?.code;
+    this.ExportationCountrySelect = event?.value?.name;
+
     this.generalDeclarationForm
       .get('Consignments.LoadingLocation')
-      ?.setValue('');
+      ?.setValue('', { emitEvent: false });
+
+    this.filteredChargingCountry = [];
+    this.currentFilteredChargingCountry = [];
+
+    if (!selectedCountryCode) {
+      return;
+    }
+
+    this.portsLoading = true;
+    this.loadingChargingCountrySubject.next(true);
+
+    this.getChargingPortsByCountry$(selectedCountryCode)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ports) => {
+        this.filteredChargingCountry = ports;
+        this.currentFilteredChargingCountry = ports;
+        this.declarationChargingCountry = ports;
+
+        this.portsLoading = false;
+        this.loadingChargingCountrySubject.next(false);
+        this.exportationCountryControlError = false;
+        this.setChargingCountryControlStatus();
+      });
   }
 
   onTradeTermsSelect(event: any, i: any) {
@@ -1543,15 +1758,43 @@ private deferFormErrorsMessageUpdate() {
     }
   }
 
+  // filterChargingCountryByExportCode() {
+  //   const exportCountryCode = this.generalDeclarationForm
+  //     .get('Consignments')
+  //     ?.get('ExportationCountryCode')?.value.code;
+  //   this.filteredChargingCountry = this.declarationChargingCountry.filter(
+  //     (site: any) => site.code.startsWith(exportCountryCode),
+  //   );
+  //   if (this.filteredChargingCountry.length)
+  //     this.isCustomsChargingCountry = true;
+  // }
+
   filterChargingCountryByExportCode() {
     const exportCountryCode = this.generalDeclarationForm
       .get('Consignments')
-      ?.get('ExportationCountryCode')?.value.code;
-    this.filteredChargingCountry = this.declarationChargingCountry.filter(
-      (site: any) => site.code.startsWith(exportCountryCode),
-    );
-    if (this.filteredChargingCountry.length)
-      this.isCustomsChargingCountry = true;
+      ?.get('ExportationCountryCode')?.value?.code;
+
+    if (!exportCountryCode) {
+      this.filteredChargingCountry = [];
+      this.currentFilteredChargingCountry = [];
+      return;
+    }
+
+    this.portsLoading = true;
+    this.loadingChargingCountrySubject.next(true);
+
+    this.getChargingPortsByCountry$(exportCountryCode)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((ports) => {
+        this.filteredChargingCountry = ports;
+        this.currentFilteredChargingCountry = ports;
+        this.declarationChargingCountry = ports;
+        this.isCustomsChargingCountry = ports.length > 0;
+
+        this.portsLoading = false;
+        this.loadingChargingCountrySubject.next(false);
+        this.setChargingCountryControlStatus();
+      });
   }
 
   filterCustomsProcess(event: any) {
@@ -1979,5 +2222,102 @@ private deferFormErrorsMessageUpdate() {
         },
       ];
     }
+  }
+
+  private getChargingPortsByCountry$(countryCode: string): Observable<any[]> {
+    const normalizedCode = String(countryCode || '')
+      .trim()
+      .toUpperCase();
+
+    if (!normalizedCode) {
+      return of([]);
+    }
+
+    const cacheKey = `chargingPorts_${normalizedCode}`;
+
+    if (this.chargingCountryByCountryCache.has(cacheKey)) {
+      return this.chargingCountryByCountryCache.get(cacheKey)!;
+    }
+
+    const fromLocalStorage = localStorage.getItem(cacheKey);
+    if (fromLocalStorage) {
+      const parsed = JSON.parse(fromLocalStorage);
+
+      parsed.forEach((item: any) =>
+        this.chargingCountryMap.set(item.code, item),
+      );
+
+      const obs$ = of(parsed).pipe(shareReplay(1));
+      this.chargingCountryByCountryCache.set(cacheKey, obs$);
+      return obs$;
+    }
+
+    const req$ = this.customsDataService
+      .getChargingPortsByCountry$(normalizedCode)
+      .pipe(
+        // map((res: any[]) =>
+        //   res
+        //     .map((item: any) => {
+        //       const raw = item.Value2 || item.Value1 || '';
+        //       const code = this.extractPortCode(raw);
+
+        //       return {
+        //         code,
+        //         name: code,
+        //         fullName: raw,
+        //       };
+        //     })
+        //     .filter((x: any) => x.code),
+        // ),
+        map((res: any[]) => {
+          const ports = res
+            .map((item: any) => {
+              const raw = item.Value2 ?? item.Value1 ?? '';
+              const code = this.extractPortCode(raw);
+
+              return {
+                code,
+                name: code,
+                fullName: raw,
+              };
+            })
+            .filter((x: any) => x.code);
+
+          return ports;
+        }),
+        tap((ports) => {
+          localStorage.setItem(cacheKey, JSON.stringify(ports));
+          ports.forEach((item: any) =>
+            this.chargingCountryMap.set(item.code, item),
+          );
+        }),
+        shareReplay(1),
+      );
+
+    this.chargingCountryByCountryCache.set(cacheKey, req$);
+    return req$;
+  }
+
+  // private extractPortCode(value: string): string {
+  //   if (!value) return '';
+
+  //   const parts = String(value).trim().split(/\s+/);
+  //   const codePart = parts.find((p) =>
+  //     /^[A-Z]{2}[A-Z0-9]{3}$/.test(p.toUpperCase()),
+  //   );
+
+  //   return codePart ? codePart.toUpperCase() : '';
+  // }
+
+  private extractPortCode(value: string): string {
+    if (!value) return '';
+
+    const code = value.substring(0, 5).toUpperCase();
+
+    if (/^[A-Z]{2}[A-Z0-9]{3}$/.test(code)) {
+      return code;
+    }
+
+    return '';
   }
 }

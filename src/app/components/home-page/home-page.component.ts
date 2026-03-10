@@ -159,8 +159,47 @@ export class HomePageComponent implements OnInit {
   }
 
   logout() {
-    localStorage.clear();
+    // localStorage.clear();
+    this.clearStorageOnLogout();
     this.isRegister = false;
     this.router.navigate(['/login']);
+  }
+
+  private clearStorageOnLogout(): void {
+    const keysToKeep = [
+      'customsCargoIDType',
+      'customsChargingCountry',
+      'customsCountryExport',
+      'customsFacilityID',
+      'customsUnpackingSite',
+    ];
+
+    const prefixesToKeep = ['chargingPorts_'];
+
+    const savedValues: Record<string, string> = {};
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+
+      if (!key) continue;
+
+      const shouldKeepByName = keysToKeep.includes(key);
+      const shouldKeepByPrefix = prefixesToKeep.some((prefix) =>
+        key.startsWith(prefix),
+      );
+
+      if (shouldKeepByName || shouldKeepByPrefix) {
+        const value = localStorage.getItem(key);
+        if (value !== null) {
+          savedValues[key] = value;
+        }
+      }
+    }
+
+    localStorage.clear();
+
+    for (const [key, value] of Object.entries(savedValues)) {
+      localStorage.setItem(key, value);
+    }
   }
 }
