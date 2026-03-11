@@ -36,9 +36,20 @@ export class DocumentService {
   // sendToCustoms$(formData: FormData): Observable<any> {
   //   return this.http.post(`${apiConfig.customsApiUrl}AddDocuments_2715`, formData);
   // }
+  // sendToCustoms$(formData: FormData): Observable<any> {
+  //   return this.http.post(
+  //     `${apiConfig.customsdocSendApiUrl}AddDocument`,
+  //     formData,
+  //   );
+  // }
+
   sendToCustoms$(formData: FormData): Observable<any> {
+    console.log(
+      'send url:',
+      `${apiConfig.customsdocSendApiUrl}AddDocument/SendUnsignedDocument`,
+    );
     return this.http.post(
-      `${apiConfig.customsdocSendApiUrl}AddDocument`,
+      `${apiConfig.customsdocSendApiUrl}AddDocument/SendUnsignedDocument`,
       formData,
     );
   }

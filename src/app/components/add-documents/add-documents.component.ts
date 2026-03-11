@@ -1136,6 +1136,7 @@ export class AddDocumentsComponent {
 
     const types = Object.keys(this.uploadedFilesByType);
     let pending = 0;
+    let hasError = false;
 
     // const finalizeIfDone = () => {
     //   if (pending === 0) {
@@ -1153,9 +1154,15 @@ export class AddDocumentsComponent {
         this.uploadedFilesByType = {};
         this.buildRequiredDocuments();
         this.loadDocuments();
-        this.msgs1 = [
-          { severity: 'success', summary: 'הצלחה', detail: 'המסמכים נשמרו' },
-        ];
+        if (!hasError) {
+          this.msgs1 = [
+            {
+              severity: 'success',
+              summary: 'הצלחה',
+              detail: 'המסמכים נשמרו',
+            },
+          ];
+        }
         this.loading = false;
       }
     };
@@ -1166,22 +1173,26 @@ export class AddDocumentsComponent {
       for (const file of files) {
         pending++;
 
-        const formData = new FormData();
-        formData.append('dtvalues', file);
-        formData.append('EntityID', this.currentDecId!);
-        formData.append('DocumentType', type);
-        formData.append('BlobName', file.name);
+        // שלב 1 - העלאה ל-Blob
+        const blobFormData = new FormData();
+        blobFormData.append('dtvalues', file);
+        blobFormData.append('EntityID', this.currentDecId!);
+        blobFormData.append('DocumentType', type);
+        blobFormData.append('BlobName', file.name);
 
-        this.documentsService.uploadDocument(formData).subscribe({
-          next: (res: any) => {
+        this.documentsService.uploadDocument(blobFormData).subscribe({
+          next: (blobRes: any) => {
+            // שלב 2 – שמירה ב-DB מיד לאחר העלאה ל-Blob
             const doc = {
               Id: 0,
               Code: type,
-              Url: res.url,
+              Url: blobRes.url,
               FileName: file.name,
               DocumentType: type,
-              CustomsId: 0,
-              CustomsStatus: 0,
+              CustomsId: 0, // לפני השליחה למכס
+              InternalID: null,
+              CustomsStatus: 0, // עדיין לא נשלח
+              ErrorDesc: null,
               RelatedEntity: 1055,
               RelatedID: this.currentDecId,
             };
@@ -1190,13 +1201,7 @@ export class AddDocumentsComponent {
               next: (createdDoc: any) => {
                 const attrsBase = this.buildAttributesForDoc(type);
 
-                // אין אטריביוטים לסוג הזה -> מסיימים מסמך
-                if (!attrsBase.length) {
-                  pending--;
-                  finalizeIfDone();
-                  return;
-                }
-
+                // שמירת האטריביוטים תמיד
                 const attrsToSave = attrsBase.map((a) => ({
                   DocID: createdDoc.Id,
                   PointerID: this.currentDecId,
@@ -1208,17 +1213,82 @@ export class AddDocumentsComponent {
                   .addDocumentAttributes$(attrsToSave)
                   .subscribe({
                     next: () => {
-                      pending--;
-                      finalizeIfDone();
+                      // שלב 3 – שליחה למכס, אם נכשל רק נעדכן סטטוס
+                      const customsFormData = new FormData();
+                      customsFormData.append('file', file, file.name);
+                      customsFormData.append('DocumentType', type);
+                      attrsBase.forEach((attr, index) => {
+                        customsFormData.append(
+                          `attributes[${index}]`,
+                          JSON.stringify({
+                            id: String(attr.Attribute),
+                            value: String(attr.Attribute_Vlaue),
+                          }),
+                        );
+                      });
+
+                      this.documentsService
+                        .sendToCustoms$(customsFormData)
+                        .subscribe({
+                          next: (customsRes: any) => {
+                            // עדכון המסמך הקיים במידע מהמכס
+                            // הכנת אובייקט מלא עבור update
+                            const updateDoc = {
+                              Id: createdDoc.Id,
+                              Code: createdDoc.Code,
+                              URL: createdDoc.URL,
+                              FileName: createdDoc.FileName,
+                              DocumentType: createdDoc.DocumentType,
+                              CustomsId: customsRes.CustomsId ?? 0,
+                              InternalID: customsRes.InternalId ?? null,
+                              CustomsStatus: customsRes.Success ? 1 : 0,
+                              ErrorDesc: customsRes.ErrorMessage ?? null,
+                              RelatedEntity: createdDoc.RelatedEntity,
+                              RelatedID: createdDoc.RelatedID,
+                            };
+                            this.documentsService
+                              .updateDocument$(createdDoc.Id, updateDoc)
+                              .subscribe({
+                                next: () => {
+                                  pending--;
+                                  finalizeIfDone();
+                                },
+                                error: () => {
+                                  hasError = true;
+                                  pending--;
+                                  this.msgs1 = [
+                                    {
+                                      severity: 'error',
+                                      summary: 'שגיאה',
+                                      detail: 'עדכון סטטוס למכס נכשל',
+                                    },
+                                  ];
+                                  finalizeIfDone();
+                                },
+                              });
+                          },
+                          error: () => {
+                            hasError = true;
+                            pending--;
+                            this.msgs1 = [
+                              {
+                                severity: 'warn',
+                                summary: 'שליחה למכס נכשלה',
+                                detail: `המסמך ${file.name} נשמר אך לא נשלח למכס`,
+                              },
+                            ];
+                            finalizeIfDone();
+                          },
+                        });
                     },
                     error: () => {
-                      // המסמך נשמר, אבל האטריביוטים נכשלו
+                      hasError = true;
                       pending--;
                       this.msgs1 = [
                         {
                           severity: 'error',
                           summary: 'שגיאה',
-                          detail: 'המסמך נשמר אבל שמירת האטריביוט נכשלה',
+                          detail: 'שמירת האטריביוטים נכשלה',
                         },
                       ];
                       finalizeIfDone();
@@ -1226,34 +1296,35 @@ export class AddDocumentsComponent {
                   });
               },
               error: () => {
+                hasError = true;
                 pending--;
-                this.loading = false;
                 this.msgs1 = [
                   {
                     severity: 'error',
                     summary: 'שגיאה',
-                    detail: 'שמירת מסמך נכשלה',
+                    detail: 'שמירת המסמך ב-DB נכשלה',
                   },
                 ];
+                finalizeIfDone();
               },
             });
           },
           error: () => {
+            hasError = true;
             pending--;
-            this.loading = false;
             this.msgs1 = [
               {
                 severity: 'error',
                 summary: 'שגיאה',
-                detail: 'העלאת המסמך נכשלה',
+                detail: `העלאת המסמך ${file.name} ל-Blob נכשלה`,
               },
             ];
+            finalizeIfDone();
           },
         });
       }
     }
 
-    // אם לא היו בכלל קבצים (רק ליתר ביטחון)
     finalizeIfDone();
   }
 
