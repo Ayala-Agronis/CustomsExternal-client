@@ -124,6 +124,9 @@ export class DeclarationFormComponent implements OnInit {
   formDisabled: boolean = false;
   formErrorsMessage: string = '';
 
+  isLockedBySbtEvent: boolean = false;
+  sbtLockMessage: string = 'ההצהרה הועברה להמשך טיפול. ניתן לצפות בלבד';
+
   private chargingCountryMap = new Map<string, any>();
   private chargingCountryByCountryCache = new Map<string, Observable<any[]>>();
   portsLoading: boolean = false;
@@ -195,6 +198,7 @@ export class DeclarationFormComponent implements OnInit {
       }
 
       if (this.mode !== 'e') {
+        this.isLockedBySbtEvent = false;
         this.initForm();
         this.customsError = '';
         this.customsErrorsContent = '';
@@ -1321,6 +1325,7 @@ export class DeclarationFormComponent implements OnInit {
       }
 
       this.updateBrokerRoutingState();
+      this.checkIfLockedBySbtEvent();
       this.deferFormErrorsMessageUpdate();
 
       this.loading = false; // ✅ כבה את ה-loading בסוף
@@ -1435,6 +1440,29 @@ export class DeclarationFormComponent implements OnInit {
     return version > 5;
   }
 
+  // private updateBrokerRoutingState(): void {
+  //   const versionStr = String(
+  //     this.generalDeclarationForm?.get('VersionID')?.value ?? '',
+  //   );
+
+  //   const parts = versionStr.split('.');
+  //   const version = parts.length > 1 ? Number(parts[1]) : 0;
+
+  //   this.isLockedByBrokerRouting = version > 5;
+
+  //   const shouldLockForm = this.isLockedByBrokerRouting;
+
+  //   this.isLocked = shouldLockForm;
+  //   this.formDisabled = shouldLockForm;
+
+  //   if (shouldLockForm) {
+  //     this.generalDeclarationForm.disable({ emitEvent: false });
+  //   } else {
+  //     this.generalDeclarationForm.enable({ emitEvent: false });
+  //     this.setChargingCountryControlStatus();
+  //   }
+  // }
+
   private updateBrokerRoutingState(): void {
     const versionStr = String(
       this.generalDeclarationForm?.get('VersionID')?.value ?? '',
@@ -1444,18 +1472,7 @@ export class DeclarationFormComponent implements OnInit {
     const version = parts.length > 1 ? Number(parts[1]) : 0;
 
     this.isLockedByBrokerRouting = version > 5;
-
-    const shouldLockForm = this.isLockedByBrokerRouting;
-
-    this.isLocked = shouldLockForm;
-    this.formDisabled = shouldLockForm;
-
-    if (shouldLockForm) {
-      this.generalDeclarationForm.disable({ emitEvent: false });
-    } else {
-      this.generalDeclarationForm.enable({ emitEvent: false });
-      this.setChargingCountryControlStatus();
-    }
+    this.applyCombinedLockState();
   }
 
   private deferFormErrorsMessageUpdate() {
@@ -1660,6 +1677,7 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   serchVendor() {
+    if (this.formDisabled) return;
     this.router.navigateByUrl('/search-vendor');
   }
 
@@ -2043,6 +2061,9 @@ export class DeclarationFormComponent implements OnInit {
 
     this.mode = 'n';
 
+    this.isLockedBySbtEvent = false;
+    this.applyCombinedLockState();
+
     // צור מספר תיק חדש מהשרת
     this.customsDataService.GetSeq$('Customs').subscribe((res) => {
       localStorage.setItem('AgentFileReferenceID', res);
@@ -2278,7 +2299,7 @@ export class DeclarationFormComponent implements OnInit {
               return {
                 code,
                 name: code,
-                fullName: raw,
+                // fullName: raw,
               };
             })
             .filter((x: any) => x.code);
@@ -2319,5 +2340,48 @@ export class DeclarationFormComponent implements OnInit {
     }
 
     return '';
+  }
+
+  private checkIfLockedBySbtEvent(): void {
+    const decId = localStorage.getItem('currentDecId');
+    if (!decId) {
+      this.isLockedBySbtEvent = false;
+      this.applyCombinedLockState();
+      return;
+    }
+
+    this.customsDataService
+      .hasValidSbtEvent$('1', decId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.isLockedBySbtEvent = res?.isLocked === true;
+          this.applyCombinedLockState();
+        },
+        error: () => {
+          this.isLockedBySbtEvent = false;
+          this.applyCombinedLockState();
+        },
+      });
+  }
+
+  private applyCombinedLockState(): void {
+    const currentCustomsStatus =
+      this.generalDeclarationForm?.get('CustomsStatus')?.value;
+
+    const shouldLock =
+      this.isLockedByBrokerRouting ||
+      this.isLockedBySbtEvent ||
+      currentCustomsStatus === 3;
+
+    this.isLocked = shouldLock;
+    this.formDisabled = shouldLock;
+
+    if (shouldLock) {
+      this.generalDeclarationForm.disable({ emitEvent: false });
+    } else {
+      this.generalDeclarationForm.enable({ emitEvent: false });
+      this.setChargingCountryControlStatus();
+    }
   }
 }

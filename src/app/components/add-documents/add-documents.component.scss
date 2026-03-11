@@ -267,3 +267,15 @@
 .send-tooltip-wrapper .send-customs-btn {
   height: 100%;
 }
+
+.disabled-link {
+  pointer-events: none; /* מונע לחיצה */
+  color: #9ca3af; /* גוון אפור */
+  text-decoration: none; /* מסיר הדגשה */
+  cursor: not-allowed;
+}
+
+button[disabled] {
+  opacity: 0.6; /* מדגיש שהכפתור מושבת */
+  cursor: not-allowed;
+}

@@ -44,7 +44,8 @@
               <button
                 type="button"
                 class="remove-file-btn"
-                (click)="removeFile(doc.code, i)"
+                (click)="!isDocumentsLockedBySbt && removeFile(doc.code, i)"
+                [disabled]="isDocumentsLockedBySbt"
               >
                 הסר
               </button>
@@ -58,6 +59,7 @@
           type="button"
           class="button-add-file"
           (click)="openFilePicker(doc.code)"
+          [disabled]="isDocumentsLockedBySbt"
         >
           <i class="pi pi-plus"></i>
         </button>
@@ -115,6 +117,7 @@
             pButton
             label="מחק"
             (click)="deleteDocument(rowData.Id)"
+            [disabled]="isDocumentsLockedBySbt"
           ></button>
         </td>
       </tr>
@@ -145,7 +148,11 @@
     </div>
 
     <div class="form-group">
-      <button class="button-add-file" (click)="fileInput.click()">
+      <button
+        class="button-add-file"
+        (click)="fileInput.click()"
+        [disabled]="isDocumentsLockedBySbt"
+      >
         <i class="pi pi-plus"></i>
       </button>
       <input
@@ -181,7 +188,12 @@
         <!-- <span>{{ file.name }}</span> -->
         <!-- <button (click)="removeFile(entry.key, i)">X</button> -->
         <!-- <button (click)="viewNewFile(file)">צפה</button> -->
-        <a class="file-link" (click)="viewNewFile(file)">{{ file.name }}</a>
+        <a
+          class="file-link"
+          (click)="!isDocumentsLockedBySbt && viewNewFile(file)"
+          [class.disabled-link]="isDocumentsLockedBySbt"
+          >{{ file.name }}</a
+        >
       </li>
     </ul>
   </div>
@@ -196,28 +208,27 @@
   <div class="btns">
     <button
       class="button-primary"
-      [disabled]="!canUpload()"
+      [disabled]="!canUpload() || isDocumentsLockedBySbt"
       (click)="saveDocument()"
     >
       שמור
     </button>
     <!-- <button class="button-secondary" (click)="goBack()">חזור</button> -->
     <span
-  [pTooltip]="getSendToCustomsTooltip()"
-  tooltipPosition="top"
-  [tooltipDisabled]="canSendToCustoms()"
-    class="send-tooltip-wrapper"
-
->
-    <button
-      pButton
-      type="button"
-      label="שלח למכס"
-      icon="pi pi-send"
-      class="p-button-success"
-      (click)="sendDecToCustoms()"
-      [disabled]="!canSendToCustoms()"
-    ></button>
+      [pTooltip]="getSendToCustomsTooltip()"
+      tooltipPosition="top"
+      [tooltipDisabled]="canSendToCustoms() && !isDocumentsLockedBySbt"
+      class="send-tooltip-wrapper"
+    >
+      <button
+        pButton
+        type="button"
+        label="שלח למכס"
+        icon="pi pi-send"
+        class="p-button-success"
+        (click)="sendDecToCustoms()"
+        [disabled]="!canSendToCustoms() || isDocumentsLockedBySbt"
+      ></button>
     </span>
     <button class="button-secondary" (click)="previousStep()">חזור</button>
   </div>

@@ -18,19 +18,19 @@
   <div class="title-container">
     <h2 class="form-title title">תהליך הזנת הצהרה</h2>
     <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value">
-      מספר הצהרה : {{
-        generalDeclarationForm.get("DeclarationNumber")?.value
-      }}</label
+      מספר הצהרה :
+      {{ generalDeclarationForm.get("DeclarationNumber")?.value }}</label
     >
     <label *ngIf="generalDeclarationForm.get('CustomsStatus')?.value"
-      >סטטוס הצהרה : {{
-        customStatusName(generalDeclarationForm.get("CustomsStatus")?.value)
-      }}
+      >סטטוס הצהרה :
+      {{ customStatusName(generalDeclarationForm.get("CustomsStatus")?.value) }}
     </label>
-<div class="broker-routing-message" *ngIf="isLockedByBrokerRouting">
-  {{ brokerRoutingMessage }}
-</div>
-    
+    <div
+      class="broker-routing-message"
+      *ngIf="isLockedByBrokerRouting || isLockedBySbtEvent"
+    >
+      {{ isLockedBySbtEvent ? sbtLockMessage : brokerRoutingMessage }}
+    </div>
   </div>
 
   <p-confirmDialog></p-confirmDialog>
@@ -260,6 +260,7 @@
                   <label class="vendor-label"
                     >שם ספק <span class="required">*</span>
                     <button
+                      [disabled]="formDisabled"
                       pButton
                       pRipple
                       icon="pi pi-plus"
@@ -430,7 +431,7 @@
                   <tr [formGroupName]="rowIndex">
                     <td class="sCol">
                       <button
-                                [disabled]="formDisabled"
+                        [disabled]="formDisabled"
                         pButton
                         pRipple
                         icon="pi pi-minus"
@@ -525,7 +526,7 @@
                   <tr>
                     <td>
                       <button
-                                [disabled]="formDisabled"
+                        [disabled]="formDisabled"
                         pButton
                         pRipple
                         icon="pi pi-plus"
@@ -549,12 +550,20 @@
   <div class="btns">
     <!-- [ngClass]="{'disabled':generalDeclarationForm.invalid || checkVersion()}"  -->
     <button
-      [disabled]="generalDeclarationForm.invalid || suplierErrorExist"
+      [disabled]="
+        generalDeclarationForm.invalid || suplierErrorExist || formDisabled
+      "
+      [ngClass]="{
+        disabled:
+          generalDeclarationForm.invalid || suplierErrorExist || formDisabled,
+      }"
       class="button-primary"
       (click)="saveDeclaration()"
-      pTooltip="{{ getFormErrors(false) }}"
+      pTooltip="{{ formErrorsMessage }}"
       tooltipPosition="top"
-      [tooltipDisabled]="!generalDeclarationForm.invalid && !suplierErrorExist"
+      [tooltipDisabled]="
+        !(generalDeclarationForm.invalid || suplierErrorExist || formDisabled)
+      "
     >
       המשך
     </button>
@@ -562,8 +571,8 @@
             העתק
         </button> -->
     <button
-      [disabled]="generalDeclarationForm.invalid || checkVersion()"
-      [ngClass]="{ disabled: generalDeclarationForm.invalid || checkVersion()}"
+      [disabled]="generalDeclarationForm.invalid || checkVersion()|| formDisabled"
+      [ngClass]="{ disabled: generalDeclarationForm.invalid || checkVersion() || formDisabled }"
       *ngIf="showBtnCustoms"
       class="button-primary"
       (click)="sendDeclaration()"

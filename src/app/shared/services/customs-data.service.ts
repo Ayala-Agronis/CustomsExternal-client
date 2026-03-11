@@ -1,14 +1,18 @@
-import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders,
+  HttpParams,
+  HttpResponse,
+} from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { apiConfig } from '../../config/api-endpoints';
 import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CustomsDataService {
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getCustomsTableValues$(id: string): Observable<any> {
     const url = `${apiConfig.customsdbApiUrl}/Sys`;
@@ -16,11 +20,11 @@ export class CustomsDataService {
   }
 
   getChargingPortsByCountry$(countryCode: string): Observable<any> {
-  const url = `${apiConfig.customsdbApiUrl}/Sys/charging-ports`;
-  return this.http.get<any>(url, {
-    params: { countryCode },
-  });
-}
+    const url = `${apiConfig.customsdbApiUrl}/Sys/charging-ports`;
+    return this.http.get<any>(url, {
+      params: { countryCode },
+    });
+  }
 
   getVendor$(): Observable<any> {
     const url = `${apiConfig.customsdbApiUrl}/vendors`;
@@ -46,17 +50,17 @@ export class CustomsDataService {
   // }
 
   GetClient$(ID: any): Observable<any> {
-    let body = new HttpParams()
-      .set('Id', ID)
-      .set('Passport', '')
+    let body = new HttpParams().set('Id', ID).set('Passport', '');
 
     return this.http.post(
       `${apiConfig.customsApiUrl}ImporterDetails/ImporterDetailsAsync`,
       body.toString(),
       {
-        headers: new HttpHeaders()
-          .set('Content-Type', 'application/x-www-form-urlencoded')
-      }
+        headers: new HttpHeaders().set(
+          'Content-Type',
+          'application/x-www-form-urlencoded',
+        ),
+      },
     );
   }
 
@@ -65,8 +69,17 @@ export class CustomsDataService {
       `${apiConfig.customsdbApiUrl}Events/AddEntityEvent`,
       event,
       {
-        headers: new HttpHeaders().set('Content-Type', 'application/json')
-      }
+        headers: new HttpHeaders().set('Content-Type', 'application/json'),
+      },
+    );
+  }
+
+  hasValidSbtEvent$(entityTypeId: string, entityKey: string): Observable<any> {
+    return this.http.get<any>(
+      `${apiConfig.customsdbApiUrl}Events/HasValidSbtEvent`,
+      {
+        params: { entityTypeId, entityKey },
+      },
     );
   }
 }

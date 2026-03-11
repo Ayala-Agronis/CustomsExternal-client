@@ -169,6 +169,9 @@ export class DeclarationFormTsComponent implements OnInit {
   isLockedByBrokerRouting: boolean = false;
   brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
 
+  isLockedBySbtEvent: boolean = false;
+  sbtLockMessage: string = 'ההצהרה הועברה להמשך טיפול. ניתן לצפות בלבד';
+
   private errorTypesMap: { [key: string]: string } = {};
   formattedCustomsErrors: any[] = [];
 
@@ -971,10 +974,10 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.CustomsStatus = currentDec.CustomsStatus;
 
-    if (this.CustomsStatus === 3) {
-      this.formDisabled = true;
-      this.generalDeclarationForm.disable();
-    }
+    // if (this.CustomsStatus === 3) {
+    //   this.formDisabled = true;
+    //   this.generalDeclarationForm.disable();
+    // }
 
     this.declarationCountryOfExport?.forEach((item: any) =>
       this.countryMap.set(item.code, item),
@@ -1254,6 +1257,7 @@ export class DeclarationFormTsComponent implements OnInit {
     }
 
     this.updateBrokerRoutingState();
+    this.checkIfLockedBySbtEvent();
 
     console.timeEnd('📝 Populate Form');
 
@@ -1835,10 +1839,14 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   addSupplierInvoice(): void {
+      if (this.formDisabled) return;
+
     this.supplierInvoices.push(this.createSupplierInvoice());
   }
 
   removeSupplierInvoice(rowData: any, index: any) {
+      if (this.formDisabled) return;
+
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
         message: 'האם אתה בטוח שברצונך למחוק?',
@@ -1859,6 +1867,8 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   addNewInvoiceItem(i: any): void {
+      if (this.formDisabled) return;
+
     const invoiceItemsArray = this.GetSupplierInvoiceItems(i);
     invoiceItemsArray?.push(this.createSupplierInvoiceItem());
   }
@@ -1902,6 +1912,8 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   onDeleteRow(rowData: any, index: any, suplierInvoiceIndex: any): void {
+      if (this.formDisabled) return;
+
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
         message: 'האם אתה בטוח שברצונך למחוק?',
@@ -1956,6 +1968,8 @@ export class DeclarationFormTsComponent implements OnInit {
   // }
 
   onDestinationCountrySelect(event: any, code: any) {
+      if (this.formDisabled) return;
+
     const countryCode = event?.value?.code || code;
     if (!countryCode) return;
 
@@ -2708,6 +2722,33 @@ export class DeclarationFormTsComponent implements OnInit {
     return version > 5;
   }
 
+  // private updateBrokerRoutingState(): void {
+  //   const versionStr = String(
+  //     this.generalDeclarationForm?.get('VersionID')?.value ?? '',
+  //   );
+
+  //   const parts = versionStr.split('.');
+  //   const version = parts.length > 1 ? Number(parts[1]) : 0;
+
+  //   this.isLockedByBrokerRouting = version > 5;
+
+  //   if (this.isLockedByBrokerRouting) {
+  //     this.isLocked = true;
+  //     this.formDisabled = true;
+  //     this.generalDeclarationForm.disable({ emitEvent: false });
+  //   } else {
+  //     this.isLocked = false;
+  //     this.formDisabled = false;
+  //     this.generalDeclarationForm.enable({ emitEvent: false });
+
+  //     this.setChargingCountryControlStatus('import');
+  //     this.setChargingCountryControlStatus('export');
+  //   }
+
+  //   console.log('Version number:', version);
+  //   console.log('isLockedByBrokerRouting:', this.isLockedByBrokerRouting);
+  // }
+
   private updateBrokerRoutingState(): void {
     const versionStr = String(
       this.generalDeclarationForm?.get('VersionID')?.value ?? '',
@@ -2718,18 +2759,7 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.isLockedByBrokerRouting = version > 5;
 
-    if (this.isLockedByBrokerRouting) {
-      this.isLocked = true;
-      this.formDisabled = true;
-      this.generalDeclarationForm.disable({ emitEvent: false });
-    } else {
-      this.isLocked = false;
-      this.formDisabled = false;
-      this.generalDeclarationForm.enable({ emitEvent: false });
-
-      this.setChargingCountryControlStatus('import');
-      this.setChargingCountryControlStatus('export');
-    }
+    this.applyCombinedLockState();
 
     console.log('Version number:', version);
     console.log('isLockedByBrokerRouting:', this.isLockedByBrokerRouting);
@@ -2883,6 +2913,8 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   serchVendor() {
+      if (this.formDisabled) return;
+
     this.router.navigateByUrl('/search-vendor');
   }
 
@@ -2924,6 +2956,8 @@ export class DeclarationFormTsComponent implements OnInit {
   // }
 
   onExportationCountrySelect(event: any) {
+      if (this.formDisabled) return;
+
     const supplierInvoicesFormArray = this.generalDeclarationForm.get(
       'SupplierInvoices',
     ) as FormArray;
@@ -3672,7 +3706,7 @@ export class DeclarationFormTsComponent implements OnInit {
               return {
                 code,
                 name: code,
-                fullName: raw,
+                // fullName: raw,
               };
             })
             .filter((x: any) => x.code),
@@ -3699,5 +3733,42 @@ export class DeclarationFormTsComponent implements OnInit {
       /^[A-Z]{2}[A-Z0-9]{3}$/.test(p.toUpperCase()),
     );
     return codePart ? codePart.toUpperCase() : '';
+  }
+
+  private checkIfLockedBySbtEvent(): void {
+    const decId = localStorage.getItem('currentDecId');
+    if (!decId) return;
+
+    this.customsDataService
+      .hasValidSbtEvent$('2', decId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.isLockedBySbtEvent = res?.isLocked === true;
+          this.applyCombinedLockState();
+        },
+        error: () => {
+          this.isLockedBySbtEvent = false;
+          this.applyCombinedLockState();
+        },
+      });
+  }
+
+  private applyCombinedLockState(): void {
+    const shouldLock =
+      this.isLockedByBrokerRouting ||
+      this.isLockedBySbtEvent ||
+      this.CustomsStatus === 3;
+
+    this.isLocked = shouldLock;
+    this.formDisabled = shouldLock;
+
+    if (shouldLock) {
+      this.generalDeclarationForm.disable({ emitEvent: false });
+    } else {
+      this.generalDeclarationForm.enable({ emitEvent: false });
+      this.setChargingCountryControlStatus('import');
+      this.setChargingCountryControlStatus('export');
+    }
   }
 }

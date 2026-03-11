@@ -820,7 +820,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { switchMap } from 'rxjs';
 import { DeclarationService } from '../../shared/services/declaration.service';
 import { CargoKey } from '../../shared/models/cargo-context.model';
-
+import { CustomsDataService } from '../../shared/services/customs-data.service';
 @Component({
   selector: 'app-add-documents',
   standalone: true,
@@ -859,6 +859,8 @@ export class AddDocumentsComponent {
   selectedDocumentCode: any = null;
   selectedFile: File | null = null;
 
+  isDocumentsLockedBySbt: boolean = false;
+
   uploadedFilesByType: { [key: string]: File[] } = {};
   requiredDocuments: {
     code: string;
@@ -883,6 +885,7 @@ export class AddDocumentsComponent {
     private stepService: StepService,
     private router: Router,
     private decService: DeclarationService, // ✅ חדש
+    private customsDataService: CustomsDataService,
   ) {}
 
   ngOnInit(): void {
@@ -894,6 +897,7 @@ export class AddDocumentsComponent {
     ];
 
     this.loadDocuments();
+    this.checkIfDocumentsLockedBySbt();
 
     if (this.currentDecId) {
       this.decService.loadCargoContextFromStorage(this.currentDecId);
@@ -1010,6 +1014,8 @@ export class AddDocumentsComponent {
   // }
 
   canSendToCustoms(): boolean {
+    if (this.isDocumentsLockedBySbt) return false;
+
     const requiredCodes = this.getRequiredDocumentCodes();
 
     const allRequiredExist = requiredCodes.every((code) =>
@@ -1072,6 +1078,10 @@ export class AddDocumentsComponent {
   // }
 
   getSendToCustomsTooltip(): string {
+    if (this.isDocumentsLockedBySbt) {
+      return 'ההצהרה הועברה להמשך טיפול. ניתן לצפות במסמכים בלבד.';
+    }
+
     if (this.isVersionTooHigh()) {
       return 'ניתן לשלוח למכס עד 6 טיוטות';
     }
@@ -1107,6 +1117,8 @@ export class AddDocumentsComponent {
   // }
 
   onFileSelect(event: any) {
+    if (this.isDocumentsLockedBySbt) return;
+
     const file = event.target.files?.[0];
     if (file && this.selectedDocumentCode) {
       const code = this.selectedDocumentCode.code;
@@ -1120,6 +1132,8 @@ export class AddDocumentsComponent {
   }
 
   canUpload(): boolean {
+    if (this.isDocumentsLockedBySbt) return false;
+
     // return !!this.selectedFile || Object.keys(this.uploadedFilesByType).length > 0;
     return Object.keys(this.uploadedFilesByType).length > 0;
   }
@@ -1129,6 +1143,8 @@ export class AddDocumentsComponent {
   // =========================
 
   saveDocument() {
+    if (this.isDocumentsLockedBySbt) return;
+
     if (!this.canUpload()) return;
 
     this.loading = true;
@@ -1338,6 +1354,8 @@ export class AddDocumentsComponent {
   // }
 
   deleteDocument(id: string) {
+    if (this.isDocumentsLockedBySbt) return;
+
     this.loading = true;
     this.msgs1 = [];
 
@@ -1409,6 +1427,8 @@ export class AddDocumentsComponent {
   // }
 
   removeFile(type: string, index: number) {
+    if (this.isDocumentsLockedBySbt) return;
+
     this.uploadedFilesByType[type].splice(index, 1);
     if (this.uploadedFilesByType[type].length === 0) {
       delete this.uploadedFilesByType[type];
@@ -1707,11 +1727,15 @@ export class AddDocumentsComponent {
   }
 
   openFilePicker(code: string): void {
+    if (this.isDocumentsLockedBySbt) return;
+
     this.pendingDocumentCode = code;
     this.hiddenFileInput.nativeElement.click();
   }
 
   onRequiredFileSelect(event: any): void {
+    if (this.isDocumentsLockedBySbt) return;
+
     const file = event.target.files?.[0];
     const code = this.pendingDocumentCode;
 
@@ -1741,5 +1765,34 @@ export class AddDocumentsComponent {
     } catch {
       return false;
     }
+  }
+
+  private checkIfDocumentsLockedBySbt(): void {
+    if (!this.currentDecId) {
+      this.isDocumentsLockedBySbt = false;
+      return;
+    }
+    const entityType = this.getCurrentEntityType();
+
+    this.customsDataService
+      .hasValidSbtEvent$(entityType, this.currentDecId)
+      .subscribe({
+        next: (res) => {
+          this.isDocumentsLockedBySbt = res?.isLocked === true;
+        },
+        error: () => {
+          this.isDocumentsLockedBySbt = false;
+        },
+      });
+  }
+
+  private getCurrentEntityType(): string {
+    const decType = (localStorage.getItem('decType') ?? '').toLowerCase();
+
+    if (decType === 'tr') {
+      return '2'; // שטעון
+    }
+
+    return '1'; // הצהרה רגילה
   }
 }
