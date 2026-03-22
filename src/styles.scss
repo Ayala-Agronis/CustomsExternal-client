@@ -1,3 +1,4 @@
+
 $color-1: #373737;
 $color-2: #d0d0d0;
 $color-3: #ededed;
@@ -9,6 +10,8 @@ $color-8: #092857;
 $color-9: #eca305;
 $color-10: #b9e0ff;
 $color-11: #0066ff;
+$color-12: #E6EDFF;
+$color-13: #002966;
 
 // ::ng-deep:root {
 //     --primary-color: $color8;
@@ -167,12 +170,15 @@ button:not(.p-button) {
 .fc-1 {
   color: #7b1fa2;
 }
+
 .fc-2 {
   color: #1976d2;
 }
+
 .fc-3 {
   color: #d32f2f;
 }
+
 .fc-4 {
   color: #f57c00;
 }

@@ -1,22 +1,8 @@
-<header>
-    <nav class="navbar">
-        <!-- <ul class="nav-links">
-            <li><a href="#">מי אנחנו</a></li>
-            <li><a href="#">שירות לעסקים</a></li>
-            <li><a href="#">שירות ומחירים </a></li>
-            <li><a href="#">דברו איתנו</a></li>
-            <li *ngIf="isRegister">
-                <p-menu [model]="menuItems"></p-menu>
-            </li>
-        </ul> -->
-        <p-menubar [model]="menuItems"></p-menubar>
-
-        <div class="content">
+<!-- <div class="content">
             <button class="gray-button" *ngIf="!isRegister" (click)="navigate('register')">הרשמה </button>
             <button class="gray-button" *ngIf="!isRegister" (click)="navigate('login')">התחברות </button>
             <div *ngIf="isRegister" class="user-info">
                 <span>שלום, {{ user?.FirstName }} {{ user?.LastName }}</span>
-                <!-- <button class="black-button" (click)="navigate('declaration-main')">הצהרה חדשה ></button> -->
                 <div class="dropdown-container">
                     <button class="black-button" (click)="toggleButtonMenu()">
                         הצהרה חדשה >
@@ -38,32 +24,242 @@
                     class="power-of-attorney-link">יפוי כח</a>
                 <i class="pi pi-exclamation-circle" style="margin-right: 10px;"></i>
             </span>
-            <!-- <span class="power-of-attorney-message" *ngIf="!isClientAuthorized">יש למלא יפוי כח</span>  -->
-        </div>
+        </div> -->
+<header>
+    <nav class="navbar">
+        <button class="btn-login" *ngIf="isRegister" (click)="navigate('login')">התחברות </button>
+
+        <p-menubar [model]="menuItems"></p-menubar>
+
     </nav>
 </header>
 <p-messages class="ui-ltr" dir="ltr" [(value)]="msg" [enableService]="false"></p-messages>
 
-<div class="text-section">
-    <p>
-        רשות המסים השיקה בשנת 2018 מערכת מידע חדשנית - שער עולמי, המאפשרת לשחרר טובין מהמכס הישראלי ללא תהליכים ידניים.
-        שינוי זה יוצר הזדמנות נהדרת ליבואן הישראלי לבצע שחרור טובין באופן עצמאי, ובכך להוזיל את עלויות עמלות שחרור
-        הטובין באופן משמעותי.
-    </p>
-    <p>
-        מטרת המיזם שלנו היא להנגיש את תהליך שחרור הטובין לכלל הציבור הישראלי (גופים עסקיים ופרטיים), וכמובן להוזיל את
-        עלויות שחרור הטובין. התהליך מורכב מ-5 שלבים ברורים, ובסופו תוכלו לקבל התרת מכס ותדפיס הצהרה ישירות לתיבת המייל
-        שלכם.
-    </p>
-    <button class="black-button">קרא עוד</button>
-</div>
+<header class="hero-section">
+    <div class="hero-container">
 
+        <div class="hero-image">
+            <img src="assets/home-page/Frame1.png" alt="Illustration">
+        </div>
+
+        <div class="hero-text">
+            <h1 class="main-title">
+                שחרור ממכס <br>
+                דיגיטלי ועצמאי.
+            </h1>
+            <p class="sub-text">
+                עידן חדש בתהליכי עמילות המכס בישראל - שער עולמי.<br>
+                המכס בידיים שלכם. שחרור חבילות בדיגיטל - פשוט, עצמאי, עכשיו.<br>
+                פלטפורמה דיגיטלית חכמה לשחרור עצמאי מהמכס -
+                בקלות, במהירות ובזמן שלך.
+            </p>
+            <button class="btn-cta">איך זה עובד?</button>
+        </div>
+
+    </div>
+</header>
+<section id="aboutSection" class="about-section">
+    <div class="about-container">
+        <div class="about-text">
+            <h2 class="mid-title">אודות</h2>
+            <p>
+                רשות המסים השיקה בשנת 2018 מערכת מידע חדשנית - <strong>"שער עולמי"</strong>, המאפשרת לשחרר טובין מהמכס
+                הישראלי ללא תהליכים ידניים. שינוי זה יוצר הזדמנות נהדרת ליבואן הישראלי לבצע שחרור טובין באופן עצמאי,
+                ובכך להוזיל את עלויות עמלות השחרור באופן משמעותי.
+            </p>
+
+            <p>
+                מטרת המיזם שלנו היא להנגיש את התהליך לכלל הציבור הישראלי – גופים עסקיים ופרטיים כאחד. השירות מופעל על
+                ידי חברת <strong>ס.י.מ.ג שחרור עצמי בע"מ</strong>, סוכן מכס מורשה, המעמידה לרשותכם את הניסיון והסמכות
+                המקצועית הנדרשים מול רשויות המכס.
+            </p>
+
+            <p>
+                בזכות השילוב בין הטכנולוגיה המתקדמת לליווי המקצועי שלנו, התהליך מורכב מ-5 שלבים ברורים בלבד. בסיומם,
+                תקבלו את התרת המכס ותדפיס ההצהרה ישירות לתיבת המייל שלכם – במהירות, בביטחון מלא ובמינימום עלויות.
+            </p>
+        </div>
+
+        <div class="about-image">
+            <img src="assets/home-page/Frame2.png" alt="About Illustration">
+        </div>
+
+    </div>
+</section>
 
 <div class="video-section">
+    <h2 class="mid-title">לראות כמה זה פשוט</h2>
+
     <video class="video" controls>
         <!-- <source src="url.mp4" type="video/mp4"> -->
         הדפדפן שלך אינו תומך בנגן וידאו.
     </video>
-
-    <button *ngIf="isRegister" (click)="navigate('declaration-main')" class="black-button">רוצים להתחיל?</button>
 </div>
+
+<section class="process-section">
+    <div class="process-container">
+        <div class="visual-side">
+            <img src="assets/home-page/Frame3.png" alt="תהליך מעגלי" class="img-fluid">
+        </div>
+
+        <div class="steps-side">
+            <img src="assets/home-page/Frame4.png" alt="שלבי התהליך" class="img-fluid">
+
+            <div class="button-wrapper">
+                <button class="btn-orange-start" (click)="navigate('start')">
+                    אני רוצה להתחיל!
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="benefits-section">
+    <!-- <h2 class="benefits-main-title">למה לבחור ב- CUSTOMSIL</h2> -->
+    <h2 class="benefits-main-title">
+        <span>למה לבחור ב-</span>
+        <img src="assets/logo2.png" alt="CUSTOMSIL" class="inline-logo">
+    </h2>
+
+    <div class="benefits-grid">
+        <div class="benefit-item">
+            <div class="icon-wrapper">
+                <img src="assets/home-page/Frame5/benefit1.png" class="benefit-icon">
+            </div>
+            <h3 class="benefit-title">חיסכון עלויות</h3>
+            <p class="benefit-desc">ביצוע השחרור באופן עצמאי בעלות נמוכה יותר.</p>
+        </div>
+
+        <div class="benefit-item">
+            <div class="icon-wrapper">
+                <img src="assets/home-page/Frame5/benefit2.png" class="benefit-icon">
+            </div>
+            <h3 class="benefit-title">זמינות מלאה</h3>
+            <p class="benefit-desc">המערכת זמינה 24/7 מכל מקום.</p>
+        </div>
+
+        <div class="benefit-item">
+            <div class="icon-wrapper">
+                <img src="assets/home-page/Frame5/benefit3.png" class="benefit-icon">
+            </div>
+            <h3 class="benefit-title">תהליך פשוט</h3>
+            <p class="benefit-desc">ממשק ידידותי שמנחה אתכם שלב אחר שלב.</p>
+        </div>
+
+        <div class="benefit-item">
+            <div class="icon-wrapper">
+                <img src="assets/home-page/Frame5/benefit4.png" class="benefit-icon">
+            </div>
+            <h3 class="benefit-title">דיגיטלי, ללא בירוקרטיה</h3>
+            <p class="benefit-desc">כל התהליך מתבצע בצורה דיגיטלית.</p>
+        </div>
+    </div>
+
+    <div class="button-center">
+        <button class="btn-orange-action" (click)="navigate('start')">אני רוצה להתחיל!</button>
+    </div>
+</section>
+
+<section class="products-section">
+    <h2 class="products-main-title">המוצרים שלנו</h2>
+
+    <div class="products-grid">
+        <div class="product-card">
+            <div class="check-icon">
+                <img src="assets/home-page/check.png">
+            </div>
+            <h3 class="product-title">הצהרת יבוא</h3>
+            <p class="product-desc">שחרור טובין המגיעים לישראל.</p>
+            <button class="btn-product-blue">התחילו עכשיו!</button>
+        </div>
+
+        <div class="product-card">
+            <div class="check-icon">
+                <img src="assets/home-page/check.png">
+            </div>
+            <h3 class="product-title">הצהרת ייצוא</h3>
+            <p class="product-desc">הצהרות עבור טובין היוצאים מהארץ.</p>
+            <button class="btn-product-blue">בקרוב!</button>
+        </div>
+
+        <div class="product-card">
+            <div class="check-icon">
+                <img src="assets/home-page/check.png">
+            </div>
+            <h3 class="product-title">שיטעון</h3>
+            <p class="product-desc">מטענים העוברים דרך ישראל ליעד אחר.</p>
+            <button class="btn-product-blue">התחילו עכשיו!</button>
+        </div>
+    </div>
+</section>
+
+<section class="faq-section">
+    <h2 class="faq-title">שאלות ותשובות</h2>
+
+    <div class="faq-container">
+        <p-accordion [multiple]="false" expandIcon="pi pi-chevron-left" collapseIcon="pi pi-chevron-down">
+
+            <p-accordionTab header="כמה זמן לוקח לבצע שחרור מהמכס?">
+                <p>
+                    משך התהליך תלוי בפרטי המשלוח ובנתונים הנדרשים, אך המערכת מאפשרת לבצע את ההצהרה במהירות וביעילות.
+                </p>
+            </p-accordionTab>
+
+            <p-accordionTab header="האם צריך ידע מוקדם במכס כדי להשתמש במערכת?">
+                <p></p>
+            </p-accordionTab>
+
+            <p-accordionTab header="מה קורה אם טעיתי בנתונים?">
+                <p></p>
+            </p-accordionTab>
+
+            <p-accordionTab header="האם המידע שאני מזין במערכת מאובטח?">
+                <p></p>
+            </p-accordionTab>
+
+            <p-accordionTab header="האם השירות מחליף עמיל מכס?">
+                <p></p>
+            </p-accordionTab>
+
+        </p-accordion>
+    </div>
+</section>
+
+<footer id="footerSection" class="main-footer">
+    <div class="footer-container">
+
+        <div class="footer-column">
+            <h4 class="column-title">יצירת קשר</h4>
+            <div class="column-divider"></div>
+            <p class="contact-info">03-6055555</p>
+            <a href="mailto:office&#64;customsil.co.il" class="contact-link">office&#64;customsil.co.il</a>
+        </div>
+
+        <div class="footer-column">
+            <h4 class="column-title">תפריט</h4>
+            <div class="column-divider"></div>
+            <ul class="footer-links">
+                <li><a (click)="navigate('about')">אודות</a></li>
+                <li><a (click)="navigate('book')">ספר המכס</a></li>
+                <li><a (click)="navigate('products')">המוצרים שלנו</a></li>
+                <li><a (click)="navigate('contact')">יצירת קשר</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column">
+            <h4 class="column-title">כללי</h4>
+            <div class="column-divider"></div>
+            <ul class="footer-links">
+                <li><a (click)="navigate('privacy')">מדיניות פרטיות</a></li>
+                <li><a (click)="navigate('terms')">תנאי שימוש</a></li>
+                <li><a (click)="navigate('accessibility')">הצהרת נגישות</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-column logo-column">
+            <img src="assets/logo.png" class="footer-logo">
+            <button class="btn-footer-orange" (click)="navigate('login')">התחברות</button>
+        </div>
+
+    </div>
+</footer>

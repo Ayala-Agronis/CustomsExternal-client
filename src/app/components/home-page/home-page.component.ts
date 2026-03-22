@@ -1,3 +1,5 @@
+
+
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../shared/services/user.service';
@@ -7,11 +9,12 @@ import { MessagesModule } from 'primeng/messages';
 import { MenuModule } from 'primeng/menu';
 import { MenubarModule } from 'primeng/menubar';
 import { StepService } from '../../shared/services/step.service';
+import { AccordionModule } from 'primeng/accordion';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, MessagesModule, MenuModule, MenubarModule],
+  imports: [CommonModule, MessagesModule, MenuModule, MenubarModule, AccordionModule],
   providers: [MessageService],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss',
@@ -29,7 +32,7 @@ export class HomePageComponent implements OnInit {
     private route: ActivatedRoute,
     private userService: UserService,
     private stepService: StepService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
@@ -65,51 +68,103 @@ export class HomePageComponent implements OnInit {
     this.isRegister = isRegisterValue === 'true';
     this.menuItems = [
       {
-        label: 'מי אנחנו',
-        icon: 'pi pi-info-circle',
-        command: () => this.navigate('about-us'),
-        // iconClass:'menu-item-spacing',
-        // styleClass :'menu-item-spacing'
+        label: 'אודות',
+        command: () => this.scrollToSection('aboutSection'),
       },
       {
         label: 'שירות לעסקים',
-        icon: 'pi pi-briefcase',
         command: () => this.navigate('business-service'),
       },
       {
-        label: 'שירות ומחירים',
-        icon: 'pi pi-dollar',
+        label: 'מחירון',
         command: () => this.navigate('pricing'),
       },
       {
         label: 'ספר מכס',
-        icon: 'pi pi-book',
         command: () => this.navigate('customs-book-query'),
+      },
+      {
+        label: 'דברו איתנו',
+        command: () => this.scrollToSection('footerSection'),
       },
       ...(this.isRegister
         ? [
-            {
-              label: 'משתמש ',
-              icon: 'pi pi-user',
-              items: [
-                {
-                  label: 'פרטים אישיים',
-                  icon: 'pi pi-user',
-                  command: () =>
-                    this.router.navigate(['personal-details'], {
-                      queryParams: { personalDetails: true },
-                    }),
-                },
-                {
-                  label: 'התנתקות',
-                  icon: 'pi pi-sign-out',
-                  command: () => this.logout(),
-                },
-              ],
-            },
-          ]
+          {
+            label: 'אזור אישי',
+            icon: 'pi pi-user',
+            items: [
+              {
+                label: 'פרטים אישיים',
+                icon: 'pi pi-user-edit',
+                command: () =>
+                  this.router.navigate(['personal-details'], {
+                    queryParams: { personalDetails: true },
+                  }),
+              },
+              {
+                label: 'התנתקות',
+                icon: 'pi pi-power-off',
+                command: () => this.logout(),
+              },
+            ],
+          },
+        ]
         : []),
     ];
+    // this.menuItems = [
+    //   {
+    //     label: 'מי אנחנו',
+    //     icon: 'pi pi-info-circle',
+    //     command: () => this.navigate('about-us'),
+    //     // iconClass:'menu-item-spacing',
+    //     // styleClass :'menu-item-spacing'
+    //   },
+    //   {
+    //     label: 'שירות לעסקים',
+    //     icon: 'pi pi-briefcase',
+    //     command: () => this.navigate('business-service'),
+    //   },
+    //   {
+    //     label: 'שירות ומחירים',
+    //     icon: 'pi pi-dollar',
+    //     command: () => this.navigate('pricing'),
+    //   },
+    //   {
+    //     label: 'ספר מכס',
+    //     icon: 'pi pi-book',
+    //     command: () => this.navigate('customs-book-query'),
+    //   },
+    //   ...(this.isRegister
+    //     ? [
+    //         {
+    //           label: 'משתמש ',
+    //           icon: 'pi pi-user',
+    //           items: [
+    //             {
+    //               label: 'פרטים אישיים',
+    //               icon: 'pi pi-user',
+    //               command: () =>
+    //                 this.router.navigate(['personal-details'], {
+    //                   queryParams: { personalDetails: true },
+    //                 }),
+    //             },
+    //             {
+    //               label: 'התנתקות',
+    //               icon: 'pi pi-sign-out',
+    //               command: () => this.logout(),
+    //             },
+    //           ],
+    //         },
+    //       ]
+    //     : []),
+    // ];
+  }
+
+  scrollToSection(sectionId: string) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 
   toggleButtonMenu() {
