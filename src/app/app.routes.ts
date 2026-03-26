@@ -9,7 +9,8 @@ export const routes: Routes = [
         (c) => c.HomePageComponent,
       ),
     pathMatch: 'full',
-    data: { title: 'דף ראשי' },
+    // data: { title: 'דף ראשי' },
+    data: { title: 'customsil' },
   },
   {
     path: 'home-page',
@@ -17,7 +18,8 @@ export const routes: Routes = [
       import('./components/home-page/home-page.component').then(
         (c) => c.HomePageComponent,
       ),
-    data: { title: 'דף הבית' },
+    // data: { title: 'דף הבית' },
+    data: { title: 'customsil' },
   },
   {
     path: 'register',

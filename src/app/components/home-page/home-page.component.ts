@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../shared/services/user.service';
@@ -14,7 +12,13 @@ import { AccordionModule } from 'primeng/accordion';
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, MessagesModule, MenuModule, MenubarModule, AccordionModule],
+  imports: [
+    CommonModule,
+    MessagesModule,
+    MenuModule,
+    MenubarModule,
+    AccordionModule,
+  ],
   providers: [MessageService],
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss',
@@ -32,7 +36,7 @@ export class HomePageComponent implements OnInit {
     private route: ActivatedRoute,
     private userService: UserService,
     private stepService: StepService,
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
@@ -66,6 +70,7 @@ export class HomePageComponent implements OnInit {
 
     const isRegisterValue = localStorage.getItem('isRegister');
     this.isRegister = isRegisterValue === 'true';
+
     this.menuItems = [
       {
         label: 'אודות',
@@ -81,7 +86,8 @@ export class HomePageComponent implements OnInit {
       },
       {
         label: 'ספר מכס',
-        command: () => this.navigate('customs-book-query'),
+        // command: () => this.navigate('customs-book-query'),
+        command: () => this.openCustomsBookInNewTab(),
       },
       {
         label: 'דברו איתנו',
@@ -89,26 +95,26 @@ export class HomePageComponent implements OnInit {
       },
       ...(this.isRegister
         ? [
-          {
-            label: 'אזור אישי',
-            icon: 'pi pi-user',
-            items: [
-              {
-                label: 'פרטים אישיים',
-                icon: 'pi pi-user-edit',
-                command: () =>
-                  this.router.navigate(['personal-details'], {
-                    queryParams: { personalDetails: true },
-                  }),
-              },
-              {
-                label: 'התנתקות',
-                icon: 'pi pi-power-off',
-                command: () => this.logout(),
-              },
-            ],
-          },
-        ]
+            {
+              label: 'אזור אישי',
+              icon: 'pi pi-user',
+              items: [
+                {
+                  label: 'פרטים אישיים',
+                  icon: 'pi pi-user-edit',
+                  command: () =>
+                    this.router.navigate(['personal-details'], {
+                      queryParams: { personalDetails: true },
+                    }),
+                },
+                {
+                  label: 'התנתקות',
+                  icon: 'pi pi-power-off',
+                  command: () => this.logout(),
+                },
+              ],
+            },
+          ]
         : []),
     ];
     // this.menuItems = [
@@ -167,6 +173,54 @@ export class HomePageComponent implements OnInit {
     }
   }
 
+  scrollToVideoSection() {
+    this.scrollToSection('videoSection');
+  }
+
+  openCustomsBookInNewTab() {
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/customs-book-query']),
+    );
+    window.open(url, '_blank');
+  }
+
+  openMail() {
+    const gmailUrl =
+      'https://mail.google.com/mail/?view=cm&fs=1&to=office@customsil.co.il';
+
+    const newWindow = window.open(gmailUrl, '_blank');
+
+    // fallback אם נחסם / לא נפתח
+    if (!newWindow) {
+      window.location.href = 'mailto:office@customsil.co.il';
+    }
+  }
+
+  goToLogin() {
+    this.router.navigate(['/login']);
+  }
+
+  goToStart() {
+    this.router.navigate(['/login']);
+  }
+
+  footerNavigate(destination: string) {
+    switch (destination) {
+      case 'about':
+        this.scrollToSection('aboutSection');
+        break;
+      case 'book':
+        this.openCustomsBookInNewTab();
+        break;
+      case 'products':
+        this.scrollToSection('productsSection');
+        break;
+      default:
+        this.navigate(destination);
+        break;
+    }
+  }
+
   toggleButtonMenu() {
     this.showButtonMenu = !this.showButtonMenu;
   }
@@ -205,6 +259,7 @@ export class HomePageComponent implements OnInit {
     });
     // this.router.navigateByUrl(`/declaration-main/${path}?type=${type}`);
   }
+
   navigate(destination: string) {
     if (destination == 'declaration-main') {
       localStorage.setItem('currentDecId', '');
