@@ -75,21 +75,23 @@ const isLocalhost = window.location.hostname.includes('localhost');
 export const apiConfig = {
   azureBlobsUrl: isLocalhost
     ? "https://localhost:7203/api/"
-    : "https://customsil.co.il/azureblobs/api/",
+    : "https://api.customsil.co.il/azureblobs/api/",
 
   customsApiUrl: isLocalhost
     ? "http://localhost:63012/api/"
-    : "https://customsil.co.il/customsapi/api/",
+    : "https://api.customsil.co.il/customsapi/api/",
 
  customsExternalApiUrl: isLocalhost
   ? "https://localhost:44308/api/"
-  : "https://customsexternalserver-cbbngvescma9awbh.westeurope-01.azurewebsites.net/api/",
-  
+  // : "https://customsexternalserver-cbbngvescma9awbh.westeurope-01.azurewebsites.net/api/",
+    : "https://sapi.customsil.co.il/api/",
+
+
   customsdbApiUrl: isLocalhost
     ? "http://localhost:54748/api/"
-    : "https://customsil.co.il/customsdbapi/api/",
+    : "https://api.customsil.co.il/customsdbapi/api/",
 
   customsdocSendApiUrl: isLocalhost
     ? "https://localhost:44363/api/"
-    : "https://customsil.co.il/customsdocsend/api/"
+    : "https://api.customsil.co.il/customsdocsend/api/"
 };
