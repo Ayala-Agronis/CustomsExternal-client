@@ -83,7 +83,7 @@ export const routes: Routes = [
       import('./components/customs-book-query/customs-book-query.component').then(
         (c) => c.CustomsBookQueryComponent,
       ),
-    data: { title: 'שאילתת ספר מכס' },
+    data: { title: 'תעריף מכס' },
   },
 
   {

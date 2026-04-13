@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component , OnInit} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import {
@@ -19,6 +19,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessagesModule } from 'primeng/messages';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { TopNavbarComponent } from '../../shared/components/top-navbar/top-navbar.component';
 
 import {
   CustomsBookApiService,
@@ -45,11 +46,14 @@ import {
     MessagesModule,
     ButtonModule,
     InputTextModule,
+    TopNavbarComponent,
   ],
 })
-export class CustomsBookQueryComponent {
+export class CustomsBookQueryComponent implements OnInit {
   loading = false;
   msgs: Message[] = [];
+
+  lastUpdateDate: string | null = null;
 
   bookTypes = [
     { name: 'יבוא', id: 1, color: 'import' },
@@ -97,6 +101,17 @@ export class CustomsBookQueryComponent {
       .subscribe((res) => (this.suggestions = res || []));
   }
 
+   ngOnInit(): void {
+    this.api.getLastUpdateDate().subscribe({
+      next: (res) => {
+        this.lastUpdateDate = res?.CustomsBookUpdateDate ?? null;
+      },
+      error: () => {
+        this.lastUpdateDate = null;
+      },
+    });
+  }
+
   // // PrimeNG AutoComplete completeMethod
   // onSearch(event: any) {
   //   this.term$.next(event?.query ?? '');
@@ -119,10 +134,14 @@ export class CustomsBookQueryComponent {
     this.loadDetails();
   }
 
+  // setLawFilter(f: LawFilter) {
+  //   if (!this.selectedItem) return;
+  //   this.lawFilter = f;
+  //   this.loadDetails();
+  // }
+
   setLawFilter(f: LawFilter) {
-    if (!this.selectedItem) return;
     this.lawFilter = f;
-    this.loadDetails();
   }
 
   onContextChanged() {
@@ -212,34 +231,51 @@ export class CustomsBookQueryComponent {
   //     .join(' ');
   // }
 
-  formatClassification(full: string | null | undefined): string {
-    const raw = (full ?? '').trim();
-    if (!raw) return '';
+  // formatClassification(full: string | null | undefined): string {
+  //   const raw = (full ?? '').trim();
+  //   if (!raw) return '';
 
-    // בודקים אם יש מינוס בהתחלה
-    const isNegative = raw.startsWith('-');
-    // מפרידים את חלק המספר מה-suffix
-    const [mainWithMinus, suffix] = raw.split('/');
-    const main = isNegative ? mainWithMinus.substring(1) : mainWithMinus;
+  //   // בודקים אם יש מינוס בהתחלה
+  //   const isNegative = raw.startsWith('-');
+  //   // מפרידים את חלק המספר מה-suffix
+  //   const [mainWithMinus, suffix] = raw.split('/');
+  //   const main = isNegative ? mainWithMinus.substring(1) : mainWithMinus;
 
-    // משאירים רק ספרות
-    const digits = main.replace(/\D/g, '');
+  //   // משאירים רק ספרות
+  //   const digits = main.replace(/\D/g, '');
 
-    // חלוקה כל 2 תווים
-    const parts = digits.match(/.{1,2}/g) || [];
+  //   // חלוקה כל 2 תווים
+  //   const parts = digits.match(/.{1,2}/g) || [];
 
-    // צבעים מחזוריים
-    const colored = parts
-      .map(
-        (p, i) =>
-          `<span class="fc-part fc-${(i % 4) + 1}">${this.escapeHtml(p)}</span>`,
-      )
-      .join(' ');
+  //   // צבעים מחזוריים
+  //   const colored = parts
+  //     .map(
+  //       (p, i) =>
+  //         `<span class="fc-part fc-${(i % 4) + 1}">${this.escapeHtml(p)}</span>`,
+  //     )
+  //     .join(' ');
 
-    // מחזירים מינוס אם צריך + סיומת אם קיימת
-    return `${isNegative ? '-' : ''}${colored}${
-      suffix ? `<span class="fc-part">/${this.escapeHtml(suffix)}</span>` : ''
-    }`;
+  //   // מחזירים מינוס אם צריך + סיומת אם קיימת
+  //   return `${isNegative ? '-' : ''}${colored}${
+  //     suffix ? `<span class="fc-part">/${this.escapeHtml(suffix)}</span>` : ''
+  //   }`;
+  // }
+
+  formatClassification(value: string): string {
+    if (!value) return '';
+
+    const clean = value.replace(/\s+/g, '');
+
+    const slashIndex = clean.indexOf('/');
+    const mainPart = slashIndex >= 0 ? clean.slice(0, slashIndex) : clean;
+    const suffix = slashIndex >= 0 ? clean.slice(slashIndex + 1) : '';
+
+    const startsWithDash = mainPart.startsWith('-');
+    const numericPart = startsWithDash ? mainPart.slice(1) : mainPart;
+
+    const grouped = numericPart.match(/.{1,2}/g)?.join(' ') ?? numericPart;
+
+    return `${startsWithDash ? '-' : ''}${grouped}${slashIndex >= 0 ? ' /' + suffix : ''}`;
   }
 
   loadMock() {
@@ -309,5 +345,19 @@ export class CustomsBookQueryComponent {
         },
       ],
     } as any;
+  }
+
+  get filteredRegularities() {
+    const all = this.details?.Regularities ?? [];
+
+    if (this.lawFilter === 'personal') {
+      return all.filter((r) => r.ImportType === 'personal');
+    }
+
+    if (this.lawFilter === 'commercial') {
+      return all.filter((r) => r.ImportType === 'commercial');
+    }
+
+    return all;
   }
 }

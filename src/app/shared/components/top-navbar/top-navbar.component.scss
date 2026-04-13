@@ -1,0 +1,99 @@
+@import "./../../../../styles.scss";
+
+
+@mixin button-base {
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: clamp(16px, 1.5vw, 18px);
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* חשוב מאוד */
+:host {
+  display: block;
+  direction: rtl;
+}
+
+/* זהה לדף הבית */
+header {
+  height: 7vh;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  margin-top: -45px;
+  // padding: 0 24px;
+  width: 100%;
+}
+
+/* זה כבר קיים אצלך בקובץ */
+// .btn-login {
+//   border: none;
+//   border-radius: 4px;
+//   font-weight: bold;
+//   cursor: pointer;
+//   transition: all 0.2s ease-in-out;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   text-align: center;
+//   font-size: 15px;
+//   background-color: $color-13;
+//   color: $color-4;
+//   padding: 10px 24px;
+
+//   &:hover {
+//     background-color: $color-8;
+//   }
+// }
+
+.btn-login {
+  @include button-base;
+  background-color: $color-13;
+  color: $color-4;
+  padding: 10px 24px;
+  font-size: 15px;
+
+  &:hover {
+    background-color: $color-8;
+  }
+}
+
+
+/* קריטי ליישור נכון */
+:host ::ng-deep .p-menubar {
+  background: transparent;
+  border: none;
+  width: 100%;
+  direction: rtl;
+}
+
+/* זה מה שחסר לך! */
+// :host ::ng-deep .p-menubar-root-list {
+//   display: flex;
+//   flex-direction: row;
+//   align-items: center;
+//   gap: 20px;
+//   width: 100%;
+// }
+
+/* טקסט */
+:host ::ng-deep .p-menuitem-text {
+  color: $color-13;
+}

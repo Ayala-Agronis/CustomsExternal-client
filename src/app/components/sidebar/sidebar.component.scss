@@ -112,3 +112,9 @@
 .submenu li:hover {
   background-color: $color-9;
 }
+
+
+.no-click {
+  pointer-events: none;
+  cursor: not-allowed;
+}

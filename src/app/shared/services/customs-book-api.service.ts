@@ -5,6 +5,7 @@ import { apiConfig } from '../../config/api-endpoints';
 import {
   CustomsBookDetails,
   CustomsBookSearchResult,
+  CustomsBookLastUpdate
 } from '../models/customs-book.models';
 
 export type LawFilter = 'all' | 'personal' | 'commercial';
@@ -16,6 +17,12 @@ export class CustomsBookApiService {
   private readonly baseUrl = `${apiConfig.customsdbApiUrl}CustomsBook`;
 
   constructor(private http: HttpClient) {}
+
+  getLastUpdateDate(): Observable<CustomsBookLastUpdate> {
+    return this.http.get<CustomsBookLastUpdate>(
+      `${this.baseUrl}/last-update-date`,
+    );
+  }
 
   search(
     term: string,

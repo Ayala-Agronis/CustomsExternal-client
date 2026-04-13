@@ -1,7 +1,15 @@
+export interface CustomsBookLastUpdate {
+  CustomsBookUpdateDate: string | null;
+}
+
 export interface CustomsBookSearchResult {
   CustomsItemID: number;
   FullClassification: string;
   GoodsDescription: string;
+
+  MeasurementUnitName?: string;
+  CalculationReference?: string;
+  OptionalTaxAddition?: number;
 }
 
 export interface TariffLine {

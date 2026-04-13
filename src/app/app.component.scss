@@ -6,11 +6,21 @@
 }
 
 /* התוכן הראשי */
+// .main-content {
+//   flex-grow: 1;
+//   padding-right: 80px;
+//   direction: rtl;
+//   background-color: white;
+// }
+
 .main-content {
   flex-grow: 1;
-  padding-right: 80px; // להשאיר מקום לצד הסרגל (מותאם לרוחבו)
   direction: rtl;
-  background-color: white; // אפשר לשנות לפי הצורך
+  background-color: white;
+}
+
+.main-content.with-sidebar {
+  padding-right: 80px;
 }
 
 /* כיווניות */

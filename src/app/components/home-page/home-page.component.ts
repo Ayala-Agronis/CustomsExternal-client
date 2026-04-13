@@ -8,6 +8,7 @@ import { MenuModule } from 'primeng/menu';
 import { MenubarModule } from 'primeng/menubar';
 import { StepService } from '../../shared/services/step.service';
 import { AccordionModule } from 'primeng/accordion';
+import { TopNavbarComponent } from '../../shared/components/top-navbar/top-navbar.component';
 
 @Component({
   selector: 'app-home-page',
@@ -18,6 +19,7 @@ import { AccordionModule } from 'primeng/accordion';
     MenuModule,
     MenubarModule,
     AccordionModule,
+    TopNavbarComponent,
   ],
   providers: [MessageService],
   templateUrl: './home-page.component.html',
@@ -41,7 +43,10 @@ export class HomePageComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       const code = params['code'];
+      const sectionId = params['scrollTo'];
+
       console.log(code);
+      console.log(sectionId);
 
       if (code)
         this.userService.getDetails(code).subscribe((res) => {
@@ -58,6 +63,11 @@ export class HomePageComponent implements OnInit {
             ];
           });
         });
+      if (sectionId) {
+        setTimeout(() => {
+          this.scrollToSection(sectionId);
+        }, 300);
+      }
     });
 
     const userData = localStorage.getItem('user');
@@ -85,7 +95,7 @@ export class HomePageComponent implements OnInit {
         command: () => this.navigate('pricing'),
       },
       {
-        label: 'ספר מכס',
+        label: 'תעריף מכס',
         // command: () => this.navigate('customs-book-query'),
         command: () => this.openCustomsBookInNewTab(),
       },

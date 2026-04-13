@@ -1,243 +1,362 @@
+<app-top-navbar pageType="inner"></app-top-navbar>
+
 <div class="loading-overlay" *ngIf="loading">
   <p-progressSpinner></p-progressSpinner>
 </div>
 
-<p-card class="ui-rtl" dir="rtl">
-  <div class="header">
-    <h3>שאילתת ספר מכס</h3>
-  </div>
-
-  <p-messages
-    class="ui-ltr"
-    dir="ltr"
-    [(value)]="msgs"
-    [enableService]="false"
-  ></p-messages>
-
-  <div class="filters">
-    <div class="form-group">
-      <label>ספר מכס</label>
-      <!-- <p-dropdown [options]="bookTypes" [(ngModel)]="bookTypeId" optionLabel="name" optionValue="id"
-                (onChange)="onContextChanged()" placeholder="בחר" >
-            </p-dropdown> -->
-      <p-dropdown
-        [options]="bookTypes"
-        [(ngModel)]="bookTypeId"
-        optionLabel="name"
-        optionValue="id"
-        placeholder="בחר"
-        styleClass="book-type-dropdown"
-        (onChange)="onContextChanged()"
-      >
-        <!-- ✅ מה שמוצג כשהדרופדאון סגור -->
-        <ng-template pTemplate="selectedItem" let-item>
-          <div class="book-row" [ngClass]="item?.color">
-            {{ item?.name }}
-          </div>
-        </ng-template>
-
-        <!-- ✅ מה שמוצג ברשימה שנפתחת -->
-        <ng-template pTemplate="item" let-item>
-          <div class="book-row" [ngClass]="item?.color">
-            {{ item?.name }}
-          </div>
-        </ng-template>
-      </p-dropdown>
+<section class="customs-book-page">
+  <div class="customs-book-hero" [class.details-mode]="details">
+    <div class="page-logo" *ngIf="!details">
+      <img src="assets/logo4.png" alt="Customsil logo" />
     </div>
 
-    <div class="form-group wide">
-      <label>חפש פרט מכס או ביטוי</label>
-      <!-- <p-autoComplete
-        [(ngModel)]="term"
-        [suggestions]="suggestions"
-        (completeMethod)="onSearch($event)"
-        [minLength]="4"
-        field="FullClassification"
-        placeholder="הקלד לפחות 4 תווים..."
-        (onSelect)="onPick($event.value)"
-      >
-        <ng-template let-item pTemplate="item">
-          <div class="ac-main">{{ item.FullClassification }}</div>
-          <div class="ac-sub">{{ item.GoodsDescription }}</div>
-        </ng-template>
-      </p-autoComplete> -->
-      <input
-        pInputText
-        type="text"
-        class="search-input"
-        [(ngModel)]="term"
-        (ngModelChange)="onTermChange($event)"
-        placeholder="הקלד לפחות 3 תווים..."
-      />
-    </div>
-  </div>
-
-  <!-- תוצאות מתחת לשדות (כמו באפיון) -->
-  <!-- <div class="results-panel full" *ngIf="term?.trim().length >= 4"> -->
-  <div class="results-panel full" *ngIf="(term || '').trim().length >= 3 &&  !selectedItem">
-    <div class="results-title" *ngIf="suggestions?.length">תוצאות</div>
-
-    <div
-      class="results-empty"
-      *ngIf="!loading && (!suggestions || suggestions.length === 0)"
-    >
-      לא נמצאו תוצאות.
-    </div>
-
-    <div class="results-list" *ngIf="suggestions?.length">
-      <button
-        type="button"
-        class="result-row"
-        *ngFor="let item of suggestions"
-        (click)="onPick(item)"
-      >
-        <div class="result-top">
-          <!-- צבעוניות במספר -->
-          <div
-            class="fc"
-            [innerHTML]="formatClassification(item.FullClassification)"
-          ></div>
-        </div>
-
-        <!-- הדגשת מילת חיפוש בתוך התיאור -->
-        <div
-          class="result-sub"
-          [innerHTML]="highlight(item.GoodsDescription, term || '')"
-        ></div>
-      </button>
-    </div>
-  </div>
-  <!-- </div>
-  </div> -->
-  <!-- <button pButton type="button" label="הדמיה" (click)="loadMock()"></button> -->
-
-  <ng-container *ngIf="details; else emptyState">
-    <h4 class="title">
-      פרט מכס: {{ details.FullClassification }} – {{ details.GoodsDescription }}
-    </h4>
-
-    <div class="kv">
-      <div><b>ספר מכס:</b> {{ details.CustomsBookTypeName }}</div>
-      <div><b>חלק:</b> {{ details.PartDescription }}</div>
-      <div><b>פרק:</b> {{ details.ChapterDescription }}</div>
-      <div><b>יחידת מידה:</b> {{ details.MeasurementUnitName }}</div>
-    </div>
-
-    <hr />
-
-    <div class="law-header">
-      <h4>חוקיות יבוא</h4>
-      <div class="law-buttons" dir="ltr">
-        <button
-          pButton
-          type="button"
-          label="הכל"
-          (click)="setLawFilter('all')"
-          [class.active]="lawFilter === 'all'"
-        ></button>
-        <button
-          pButton
-          type="button"
-          label="אישי"
-          (click)="setLawFilter('personal')"
-          [class.active]="lawFilter === 'personal'"
-        ></button>
-        <button
-          pButton
-          type="button"
-          label="מסחרי"
-          (click)="setLawFilter('commercial')"
-          [class.active]="lawFilter === 'commercial'"
-        ></button>
+    <div class="details-page-header" *ngIf="details" dir="rtl">
+      <h1>תעריף מכס</h1>
+      <div class="last-update">
+        תאריך עדכון אחרון:
+        <!-- 14/07/2026 -->
+        {{ lastUpdateDate ? (lastUpdateDate | date: "dd/MM/yyyy") : "-" }}
       </div>
     </div>
 
-    <p-table
-      [value]="details.Regularities"
-      [paginator]="true"
-      [rows]="8"
-      dir="rtl"
-      class="ui-rtl"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th>תאריך התחלה</th>
-          <th>תאריך סיום</th>
-          <th>מקור דרישת חוקיות</th>
-          <th>תיאור טובין בדרישת חוקיות</th>
-          <th>סוג רישיון/אישור</th>
-          <th>גורם מאשר</th>
-          <th>תיאור תנאים</th>
-          <th>מספר תקן רשמי</th>
-          <th>פרסום</th>
-        </tr>
-      </ng-template>
+    <div class="search-card" dir="rtl" *ngIf="!details">
+      <div class="search-card-header" *ngIf="!details">
+        <h1>תעריף מכס</h1>
+        <div class="last-update">תאריך עדכון אחרון:
+  {{ lastUpdateDate ? (lastUpdateDate | date:'dd/MM/yyyy') : '-' }}
+          </div>
+      </div>
 
-      <ng-template pTemplate="body" let-r>
-        <tr>
-          <td>{{ fmtDate(r.StartDate) }}</td>
-          <td>{{ fmtDate(r.EndDate) }}</td>
-          <td>{{ r.RegularitySourceName }}</td>
-          <td>{{ r.RequirementGoodsDescription }}</td>
-          <td>{{ r.ConfirmationTypeName }}</td>
-          <td>{{ r.AuthorityName }}</td>
-          <td>{{ r.TextualCondition }}</td>
-          <td>{{ r.TrNumber }}</td>
-          <td>{{ r.RegularityPublicationName }}</td>
-        </tr>
-      </ng-template>
+      <div class="filters">
+        <div class="form-group type-field">
+          <label>תעריף מכס</label>
+          <p-dropdown
+            [options]="bookTypes"
+            [(ngModel)]="bookTypeId"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="בחר ספר מכס"
+            styleClass="book-type-dropdown"
+            (onChange)="onContextChanged()"
+            appendTo="body"
+          >
+            <ng-template pTemplate="selectedItem" let-item>
+              <div class="book-row" [ngClass]="item?.color">
+                {{ item?.name }}
+              </div>
+            </ng-template>
 
-      <ng-template pTemplate="empty">
-        <div class="empty">לא נמצאו דרישות חוקיות.</div>
-      </ng-template>
-    </p-table>
+            <ng-template pTemplate="item" let-item>
+              <div class="book-row" [ngClass]="item?.color">
+                {{ item?.name }}
+              </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
 
-    <hr />
+        <div class="form-group wide search-input-field">
+          <label>חפש פרט מכס או ביטוי</label>
+          <input
+            pInputText
+            type="text"
+            class="search-input"
+            [(ngModel)]="term"
+            (ngModelChange)="onTermChange($event)"
+            placeholder="הקלד לפחות 3 תווים כדי לראות פרטים."
+          />
+        </div>
+      </div>
 
-    <h4>מכס (בהסכמי סחר ומכסות)</h4>
+      <div
+        class="results-list-wrapper"
+        *ngIf="(term || '').trim().length >= 3 && suggestions?.length"
+      >
+        <button
+          type="button"
+          class="result-row"
+          *ngFor="let item of suggestions"
+          (click)="onPick(item)"
+        >
+          <div class="result-top">
+            <div class="code-col">
+              <span class="code-text">{{
+                formatClassification(item.FullClassification)
+              }}</span>
+            </div>
 
-    <p-table
-      [value]="details.Tariffs"
-      [paginator]="true"
-      [rows]="8"
-      dir="rtl"
-      class="ui-rtl"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th>הסכם</th>
-          <th>מכסה</th>
-          <th>מכס (ללא מכסה)</th>
-          <th>תמ״א (ללא מכסה)</th>
-          <th>מכס (במכסה)</th>
-          <th>תמ״א (במכסה)</th>
-          <th>תחילה</th>
-          <th>סיום</th>
-        </tr>
-      </ng-template>
+            <div class="copy-col">
+              <img src="assets/copy.png" alt="copy" class="copy-img" />
+            </div>
+          </div>
 
-      <ng-template pTemplate="body" let-t>
-        <tr>
-          <td>{{ t.TradeAgreementTitle }}</td>
-          <td>{{ t.QuotaTitle }}</td>
-          <td>{{ t.WithoutQuota_CalculationReference }}</td>
-          <td>{{ t.WithoutQuota_OptionalTaxAddition }}</td>
-          <td>{{ t.WithinQuota_CalculationReference }}</td>
-          <td>{{ t.WithinQuota_OptionalTaxAddition }}</td>
-          <td>{{ fmtDate(t.StartDate) }}</td>
-          <td>{{ fmtDate(t.EndDate) }}</td>
-        </tr>
-      </ng-template>
+          <div class="result-bottom">
+            <div class="description-col">
+              <span class="desc-label">פרט מכס:</span>
+              <span class="desc-value">{{ item.GoodsDescription }}</span>
+            </div>
 
-      <ng-template pTemplate="empty">
-        <div class="empty">לא נמצאו תעריפים.</div>
-      </ng-template>
-    </p-table> 
-  </ng-container>
+            <div class="stats-col">
+              <div class="stat-item">
+                <span class="label">יחידת מידה:</span>
+                <span class="value">{{ item.MeasurementUnitName }}</span>
+              </div>
 
-  <ng-template #emptyState>
-    <div class="empty big">
-      הקלד לפחות 3 תווים ובחר פרט מכס כדי לראות פרטים.
+              <div class="stat-item">
+                <span class="label">מס קניה:</span>
+                <span class="value">{{ item.CalculationReference }}</span>
+              </div>
+
+              <div class="stat-item">
+                <span class="label">תמ״א:</span>
+                <span class="value">{{ item.OptionalTaxAddition }}</span>
+              </div>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div
+        class="results-empty"
+        *ngIf="
+          !loading &&
+          !details &&
+          (term || '').trim().length >= 3 &&
+          (!suggestions || suggestions.length === 0)
+        "
+      >
+        לא נמצאו תוצאות.
+      </div>
     </div>
-  </ng-template>
-</p-card>
+    <ng-container *ngIf="details">
+      <section class="details-section" dir="rtl">
+        <div class="details-top-layout">
+          <aside class="customs-side-card">
+            <div class="customs-side-card-inner">
+              <img
+                src="assets/box2.png"
+                alt="שחרור חבילה מהמכס"
+                class="customs-side-card-image"
+              />
+
+              <div class="customs-side-card-text">
+                <div>לשחרר חבילה מהמכס?</div>
+                <div>עכשיו זה פשוט</div>
+              </div>
+
+              <button
+                class="btn-orange-start"
+                type="button"
+                onclick="window.location.href = '/login'"
+              >
+                מעניין אותי!
+              </button>
+            </div>
+          </aside>
+
+          <div class="details-top-content">
+            <div class="search-card details-mode" dir="rtl">
+              <div class="filters">
+                <div class="form-group type-field">
+                  <label>תעריף מכס</label>
+                  <p-dropdown
+                    [options]="bookTypes"
+                    [(ngModel)]="bookTypeId"
+                    optionLabel="name"
+                    optionValue="id"
+                    placeholder="בחר ספר מכס"
+                    styleClass="book-type-dropdown"
+                    (onChange)="onContextChanged()"
+                    appendTo="body"
+                  >
+                    <ng-template pTemplate="selectedItem" let-item>
+                      <div class="book-row" [ngClass]="item?.color">
+                        {{ item?.name }}
+                      </div>
+                    </ng-template>
+
+                    <ng-template pTemplate="item" let-item>
+                      <div class="book-row" [ngClass]="item?.color">
+                        {{ item?.name }}
+                      </div>
+                    </ng-template>
+                  </p-dropdown>
+                </div>
+
+                <div class="form-group wide search-input-field">
+                  <label>חפש פרט מכס או ביטוי</label>
+                  <input
+                    pInputText
+                    type="text"
+                    class="search-input"
+                    [(ngModel)]="term"
+                    (ngModelChange)="onTermChange($event)"
+                    placeholder="הקלד לפחות 3 תווים כדי לראות פרטים."
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="selected-item-card">
+              <div class="selected-top-meta">
+                <div class="top-meta-row">
+                  <span class="top-meta-label">חלק:</span>
+                  <span class="top-meta-value">{{
+                    details.PartDescription
+                  }}</span>
+                </div>
+
+                <div class="top-meta-row">
+                  <span class="top-meta-label">פרק:</span>
+                  <span class="top-meta-value">{{
+                    details.ChapterDescription
+                  }}</span>
+                </div>
+              </div>
+
+              <div class="selected-main-strip">
+                <div class="selected-main-inline">
+                  <div class="selected-main-title">
+                    <span class="selected-main-label">תיאור טובין:</span>
+                    <span class="selected-main-text">{{
+                      details.GoodsDescription
+                    }}</span>
+                  </div>
+
+                  <div class="selected-main-stats">
+                    <div class="main-stat-item">
+                      <span class="main-stat-label">יחידת מידה:</span>
+                      <span class="main-stat-value">{{
+                        selectedItem?.MeasurementUnitName
+                      }}</span>
+                    </div>
+
+                    <div class="main-stat-item">
+                      <span class="main-stat-label">מס קניה:</span>
+                      <span class="main-stat-value">{{
+                        selectedItem?.CalculationReference
+                      }}</span>
+                    </div>
+
+                    <div class="main-stat-item">
+                      <span class="main-stat-label">תמ״א:</span>
+                      <span class="main-stat-value">{{
+                        selectedItem?.OptionalTaxAddition
+                      }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="details-card">
+          <div class="section-header">
+            <h3>חוקיות יבוא</h3>
+
+            <div class="filter-tabs" dir="rtl">
+              <button
+                type="button"
+                class="filter-tab"
+                [class.active]="lawFilter === 'all'"
+                (click)="setLawFilter('all')"
+              >
+                הכל
+              </button>
+              <button
+                type="button"
+                class="filter-tab"
+                [class.active]="lawFilter === 'personal'"
+                (click)="setLawFilter('personal')"
+              >
+                אישי
+              </button>
+              <button
+                type="button"
+                class="filter-tab"
+                [class.active]="lawFilter === 'commercial'"
+                (click)="setLawFilter('commercial')"
+              >
+                מסחרי
+              </button>
+            </div>
+          </div>
+
+          <p-table
+            [value]="filteredRegularities"
+            [scrollable]="true"
+            scrollHeight="420px"
+            dir="rtl"
+            class="customs-table customs-table-scroll"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>תאריך התחלה</th>
+                <th>תאריך סיום</th>
+                <th>מקור דרישת חוקיות</th>
+                <th>תיאור טובין בדרישת חוקיות</th>
+                <th>סוג רישיון/אישור</th>
+                <th>גורם מאשר</th>
+                <th>תיאור תנאים</th>
+                <th>מספר תקן רשמי</th>
+                <th>פרסום</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-r>
+              <tr>
+                <td>{{ fmtDate(r.StartDate) }}</td>
+                <td>{{ fmtDate(r.EndDate) }}</td>
+                <td>{{ r.RegularitySourceName || "-" }}</td>
+                <td>{{ r.RequirementGoodsDescription || "-" }}</td>
+                <td>{{ r.ConfirmationTypeName || "-" }}</td>
+                <td>{{ r.AuthorityName || "-" }}</td>
+                <td>{{ r.TextualCondition || "-" }}</td>
+                <td>{{ r.TrNumber || "-" }}</td>
+                <td>{{ r.RegularityPublicationName || "-" }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <div class="details-card">
+          <div class="section-header">
+            <h3>מכס (בהסכמי סחר ומכסות)</h3>
+          </div>
+
+          <p-table
+            [value]="details.Tariffs"
+            [scrollable]="true"
+            scrollHeight="420px"
+            dir="rtl"
+            class="customs-table customs-table-scroll"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>הסכם</th>
+                <th>מכסה</th>
+                <th>מכס (ללא מכסה)</th>
+                <th>תמ״א (ללא מכסה)</th>
+                <th>מכס (במכסה)</th>
+                <th>תמ״א (במכסה)</th>
+                <th>תחילה</th>
+                <th>סיום</th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-t>
+              <tr>
+                <td>{{ t.TradeAgreementTitle || "-" }}</td>
+                <td>{{ t.QuotaTitle || "-" }}</td>
+                <td>{{ t.WithoutQuota_CalculationReference || "-" }}</td>
+                <td>{{ t.WithoutQuota_OptionalTaxAddition || "-" }}</td>
+                <td>{{ t.WithinQuota_CalculationReference || "-" }}</td>
+                <td>{{ t.WithinQuota_OptionalTaxAddition || "-" }}</td>
+                <td>{{ fmtDate(t.StartDate) }}</td>
+                <td>{{ fmtDate(t.EndDate) }}</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      </section>
+    </ng-container>
+  </div>
+</section>
