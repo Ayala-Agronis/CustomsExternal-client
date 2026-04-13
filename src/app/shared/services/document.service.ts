@@ -43,17 +43,27 @@ export class DocumentService {
   //   );
   // }
 
+  // sendToCustoms$(formData: FormData): Observable<any> {
+  //   console.log(
+  //     'send url:',
+  //     `${apiConfig.customsdocSendApiUrl}AddDocument/SendUnsignedDocument`,
+  //   );
+  //   return this.http.post(
+  //     `${apiConfig.customsdocSendApiUrl}AddDocument/SendUnsignedDocument`,
+  //     formData,
+  //   );
+  // }
+
   sendToCustoms$(formData: FormData): Observable<any> {
     console.log(
       'send url:',
-      `${apiConfig.customsdocSendApiUrl}AddDocument/SendUnsignedDocument`,
+      `${apiConfig.customsApiUrl}AddDocuments_2715/SendUnsignedDocument`,
     );
     return this.http.post(
-      `${apiConfig.customsdocSendApiUrl}AddDocument/SendUnsignedDocument`,
+      `${apiConfig.customsApiUrl}AddDocuments_2715/SendUnsignedDocument`,
       formData,
     );
   }
-
   // deleteDocumetAttributes$(docId: string): Observable<any> {
   //   return this.http.delete(`${environment.customsExternalApiUrl}DocumentAttribute/${docId}`)
   // }
