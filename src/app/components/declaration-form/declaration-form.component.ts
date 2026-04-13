@@ -46,6 +46,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { PaymentService } from '../../shared/services/payment.service';
 import { shareReplay } from 'rxjs/operators';
+import { DocumentService } from '../../shared/services/document.service';
+
 
 @Component({
   selector: 'app-declaration-form',
@@ -110,7 +112,7 @@ export class DeclarationFormComponent implements OnInit {
   customStatus: any;
   customsStatuses: any;
 
-  showBtnCustoms = true;
+  showBtnCustoms = false;
   loading: boolean = false;
   isLocked: boolean = false;
   msgs1: Message[] = [];
@@ -175,6 +177,7 @@ export class DeclarationFormComponent implements OnInit {
     private confirmationService: ConfirmationService,
     private customsDataService: CustomsDataService,
     private decService: DeclarationService,
+    private documentsService: DocumentService,
     private stepService: StepService,
     private paymentService: PaymentService,
   ) {}
@@ -203,15 +206,15 @@ export class DeclarationFormComponent implements OnInit {
         this.customsError = '';
         this.customsErrorsContent = '';
         const decId = localStorage.getItem('currentDecId');
-        this.paymentService.isDecPaid(decId).subscribe((res) => {
-          console.log(res);
-          // if (!decId) this.showBtnCustoms = false
-          if (res?.isPaid) {
-            this.showBtnCustoms = true;
-          } else {
-            // this.showBtnCustoms = false
-          }
-        });
+        // this.paymentService.isDecPaid(decId).subscribe((res) => {
+        //   console.log(res);
+        //   // if (!decId) this.showBtnCustoms = false
+        //   if (res?.isPaid) {
+        //     this.showBtnCustoms = true;
+        //   } else {
+        //     // this.showBtnCustoms = false
+        //   }
+        // });
         this.customsDataService
           .GetSeq$('Customs')
           .pipe(
@@ -376,12 +379,12 @@ export class DeclarationFormComponent implements OnInit {
         this.initElements();
         //check if declaration is paid
         const decId = localStorage.getItem('currentDecId');
-        this.paymentService.isDecPaid(decId).subscribe((res) => {
-          console.log(res);
-          if (res?.isPaid) {
-            this.showBtnCustoms = true;
-          }
-        });
+        // this.paymentService.isDecPaid(decId).subscribe((res) => {
+        //   console.log(res);
+        //   if (res?.isPaid) {
+        //     this.showBtnCustoms = true;
+        //   }
+        // });
       }
     });
 
@@ -1326,6 +1329,8 @@ export class DeclarationFormComponent implements OnInit {
 
       this.updateBrokerRoutingState();
       this.checkIfLockedBySbtEvent();
+      this.refreshSendButtonVisibility(currentDec?.Id ?? null);
+
       this.deferFormErrorsMessageUpdate();
 
       this.loading = false; // ✅ כבה את ה-loading בסוף
@@ -2384,4 +2389,18 @@ export class DeclarationFormComponent implements OnInit {
       this.setChargingCountryControlStatus();
     }
   }
+
+  private refreshSendButtonVisibility(declarationId: string | null): void {
+  if (!declarationId) {
+    this.showBtnCustoms = false;
+    return;
+  }
+
+  this.documentsService
+    .hasDocumentsForDeclaration$(declarationId)
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((hasDocs) => {
+      this.showBtnCustoms = hasDocs;
+    });
+}
 }

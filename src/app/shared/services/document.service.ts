@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable,map,of,catchError } from 'rxjs';
 import { apiConfig } from '../../config/api-endpoints';
 
 @Injectable({
@@ -102,4 +102,16 @@ export class DocumentService {
   // sendDocToInternalDB(document: any): Observable<any> {
   //   return this.http.post<any>(`${environment.customsdbApiUrl}Documents`, document);
   // }
+
+  hasDocumentsForDeclaration$(declarationId: string): Observable<boolean> {
+    return this.getDocumentsByEntityId$(declarationId).pipe(
+      map((docs: any[]) => Array.isArray(docs) && docs.length > 0),
+      catchError((err) => {
+        if (err?.status === 404 || err?.status === 204) {
+          return of(false);
+        }
+        return of(false);
+      }),
+    );
+  }
 }

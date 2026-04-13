@@ -158,7 +158,7 @@ export class DeclarationFormTsComponent implements OnInit {
   customStatus: any;
   customsStatuses: any;
 
-  showBtnCustoms = true;
+  showBtnCustoms = false;
   loading: boolean = false;
   isLocked: boolean = false;
   msgs1: Message[] = [];
@@ -1259,6 +1259,9 @@ export class DeclarationFormTsComponent implements OnInit {
     this.updateBrokerRoutingState();
     this.checkIfLockedBySbtEvent();
 
+    // 👇 הוסיפי כאן
+    this.refreshSendButtonVisibility(currentDec?.Id ?? null);
+
     console.timeEnd('📝 Populate Form');
 
     this.loading = false;
@@ -1839,13 +1842,13 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   addSupplierInvoice(): void {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     this.supplierInvoices.push(this.createSupplierInvoice());
   }
 
   removeSupplierInvoice(rowData: any, index: any) {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
@@ -1867,7 +1870,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   addNewInvoiceItem(i: any): void {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     const invoiceItemsArray = this.GetSupplierInvoiceItems(i);
     invoiceItemsArray?.push(this.createSupplierInvoiceItem());
@@ -1912,7 +1915,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   onDeleteRow(rowData: any, index: any, suplierInvoiceIndex: any): void {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     if (rowData?.controls?.Id?.value) {
       this.confirmationService.confirm({
@@ -1968,7 +1971,7 @@ export class DeclarationFormTsComponent implements OnInit {
   // }
 
   onDestinationCountrySelect(event: any, code: any) {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     const countryCode = event?.value?.code || code;
     if (!countryCode) return;
@@ -2913,7 +2916,7 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   serchVendor() {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     this.router.navigateByUrl('/search-vendor');
   }
@@ -2956,7 +2959,7 @@ export class DeclarationFormTsComponent implements OnInit {
   // }
 
   onExportationCountrySelect(event: any) {
-      if (this.formDisabled) return;
+    if (this.formDisabled) return;
 
     const supplierInvoicesFormArray = this.generalDeclarationForm.get(
       'SupplierInvoices',
@@ -3770,5 +3773,36 @@ export class DeclarationFormTsComponent implements OnInit {
       this.setChargingCountryControlStatus('import');
       this.setChargingCountryControlStatus('export');
     }
+  }
+
+  private refreshSendButtonVisibility(declarationId: string | null): void {
+    if (!declarationId) {
+      this.showBtnCustoms = false;
+      return;
+    }
+
+    this.documentsService
+      .hasDocumentsForDeclaration$(declarationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((hasDocs) => {
+        this.showBtnCustoms = hasDocs;
+      });
+
+    // this.documentsService
+    //   .getDocumentsByEntityId$(declarationId)
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe({
+    //     next: (docs: any[]) => {
+    //       this.showBtnCustoms = Array.isArray(docs) && docs.length > 0;
+    //     },
+    //     error: (err: any) => {
+    //       if (err?.status === 404 || err?.status === 204) {
+    //         this.showBtnCustoms = false;
+    //         return;
+    //       }
+
+    //       this.showBtnCustoms = false;
+    //     },
+    //   });
   }
 }
