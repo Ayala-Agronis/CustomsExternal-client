@@ -351,9 +351,14 @@ export class DeclarationQueryComponent {
           this.stepService.emitStepCompleted('dec-form-ts');
         } else {
           this.router.navigate(['declaration-main/dec-form'], {
+            // queryParams: {
+            //   Mode: 'copy', // ✅ מצב העתקה במקום עריכה
+            //   type: 'import',
+            // },
             queryParams: {
-              Mode: 'copy', // ✅ מצב העתקה במקום עריכה
+              Mode: 'e',
               type: 'import',
+              copyMode: 'true',
             },
           });
           this.stepService.emitStepCompleted('dec-form');

@@ -102,7 +102,7 @@ export class DeclarationMainComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       const code = params['code'];
-      console.log(code);
+      console.log('code from',code);
 
       if (code) {
         this.userService.getDetails(code).subscribe(res => {
