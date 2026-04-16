@@ -34,6 +34,13 @@ import {
   Subject,
   takeUntil,
   tap,
+  combineLatest,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  switchMap,
+  catchError,
+  startWith,
 } from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
@@ -47,7 +54,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { PaymentService } from '../../shared/services/payment.service';
 import { shareReplay } from 'rxjs/operators';
 import { DocumentService } from '../../shared/services/document.service';
-
+import { CourierService } from '../../shared/services/courier.service';
 
 @Component({
   selector: 'app-declaration-form',
@@ -95,6 +102,53 @@ export class DeclarationFormComponent implements OnInit {
   declarationSupplierID: any;
   declarationInvoiceTypeCode: any;
   declarationFacilityID: any;
+
+  private readonly allowedCargoIDTypeCodes = ['1', '11', '17', '2', '3'];
+
+  cargoFieldLabelsMap: {
+    [key: string]: { year: string; main: string; inner: string };
+  } = {
+    '1': {
+      year: 'שנה',
+      main: '	מס שט"מ ישיר/ מאסטר',
+      inner: 'שט"מ פנימי',
+    },
+    '11': {
+      year: "מס' מצהר",
+      main: "מס' עסקה",
+      inner: '???',
+    },
+    '17': {
+      year: 'ח.פ. בלדר',
+      main: 'מס\' שט"מ בלדר',
+      inner: 'תאריך הקמה',
+    },
+    '2': {
+      year: "מס' חבילה",
+      main: 'שנה',
+      inner: '???',
+    },
+    '3': {
+      year: "מס' חבילה",
+      main: 'תאריך יצירה',
+      inner: '???',
+    },
+  };
+
+  // cargoCompanyOptionsForCode17 = [
+  //   { name: 'UPS', code: '511919896' },
+  //   { name: 'DHL', code: '510569379' },
+  //   { name: 'FEDEX', code: '515929552' },
+  //   { name: 'געש', code: '515308906' },
+  // ];
+
+  cargoCompanyOptionsForCode17: any[] = [];
+
+  filteredCargoCompanyOptionsForCode17: any[] = [];
+
+  courierLookupLoading = false;
+  private lastCourierLookupKey = '';
+  private isInitializingDeclaration = false;
 
   ExportationCountrySelect: any;
 
@@ -180,6 +234,7 @@ export class DeclarationFormComponent implements OnInit {
     private documentsService: DocumentService,
     private stepService: StepService,
     private paymentService: PaymentService,
+    private courierService: CourierService,
   ) {}
 
   ngOnInit(): void {
@@ -241,6 +296,20 @@ export class DeclarationFormComponent implements OnInit {
 
     this.initForm();
 
+    // this.loadCourierCompanies();
+
+    const initialCargoType = this.generalDeclarationForm.get(
+      'Consignments.TransportContractDocumentTypeCode',
+    )?.value;
+
+    this.updateThirdCargoFieldState(initialCargoType);
+
+    const initialCargoTypeCode = this.generalDeclarationForm.get(
+      'Consignments.TransportContractDocumentTypeCode',
+    )?.value?.code;
+
+    this.updateSecondCargoIDValidators(initialCargoTypeCode);
+
     this.deferFormErrorsMessageUpdate();
 
     this.generalDeclarationForm.valueChanges
@@ -256,6 +325,56 @@ export class DeclarationFormComponent implements OnInit {
         this.updateBrokerRoutingState();
       });
 
+    this.generalDeclarationForm
+      .get('Consignments.TransportContractDocumentTypeCode')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((value) => {
+        const consignmentsGroup = this.generalDeclarationForm.get(
+          'Consignments',
+        ) as FormGroup;
+
+        const firstControl = consignmentsGroup.get(
+          'TransportContractDocumentID',
+        );
+        const secondControl = consignmentsGroup.get('SecondCargoID');
+        const thirdControl = consignmentsGroup.get('ThirdCargoID');
+
+        if (value?.code === '17') {
+          firstControl?.setValue(null);
+        } else {
+          firstControl?.setValue('');
+        }
+
+        secondControl?.setValue('');
+        // thirdControl?.setValue('');
+
+        // thirdControl?.enable({ emitEvent: false });
+        thirdControl?.setValue('', { emitEvent: false });
+        this.updateThirdCargoFieldState(value);
+
+        firstControl?.setErrors(null);
+        // secondControl?.setErrors(null);
+        thirdControl?.setErrors(null);
+
+        firstControl?.markAsPristine();
+        secondControl?.markAsPristine();
+        thirdControl?.markAsPristine();
+
+        firstControl?.markAsUntouched();
+        secondControl?.markAsUntouched();
+        thirdControl?.markAsUntouched();
+
+        firstControl?.updateValueAndValidity({ emitEvent: false });
+        secondControl?.updateValueAndValidity({ emitEvent: false });
+        thirdControl?.updateValueAndValidity({ emitEvent: false });
+
+        this.updateSecondCargoIDValidators(value?.code);
+
+        this.filteredCargoCompanyOptionsForCode17 = [];
+        this.secondCargoIDError = '';
+        this.lastCourierLookupKey = '';
+        this.courierLookupLoading = false;
+      });
     //data from cargo query
     this.decService.packageData$
       .pipe(takeUntil(this.destroy$))
@@ -278,6 +397,17 @@ export class DeclarationFormComponent implements OnInit {
       });
 
     forkJoin([
+      this.courierService.getCourierCompanies$().pipe(
+        map(
+          (res) =>
+            (this.cargoCompanyOptionsForCode17 = (res || []).map(
+              (company: any) => ({
+                name: company.Name,
+                code: company.Code,
+              }),
+            )),
+        ),
+      ),
       this.customsDataService.getCustomsTableValues$('1354').pipe(
         map(
           (res) =>
@@ -304,15 +434,28 @@ export class DeclarationFormComponent implements OnInit {
       //   map(res => this.declarationUnpackingSite = res.map((item: { Value2: any; Value1: any; }) => ({ name: item.Value2, code: item.Value1 })))
       // ),
 
+      // this.customsDataService.getCustomsTableValues$('1259').pipe(
+      //   map(
+      //     (res) =>
+      //       (this.declarationCargoIDType = res.map(
+      //         (item: { Value2: any; Value1: any }) => ({
+      //           name: item.Value2,
+      //           code: item.Value1,
+      //         }),
+      //       )),
+      //   ),
+      // ),
       this.customsDataService.getCustomsTableValues$('1259').pipe(
         map(
           (res) =>
-            (this.declarationCargoIDType = res.map(
-              (item: { Value2: any; Value1: any }) => ({
+            (this.declarationCargoIDType = res
+              .map((item: { Value2: any; Value1: any }) => ({
                 name: item.Value2,
                 code: item.Value1,
-              }),
-            )),
+              }))
+              .filter((item: any) =>
+                this.allowedCargoIDTypeCodes.includes(String(item.code)),
+              )),
         ),
       ),
       this.customsDataService.getCustomsTableValues$('1144').pipe(
@@ -495,6 +638,14 @@ export class DeclarationFormComponent implements OnInit {
       }),
     ).pipe(map((res) => (this.declarationFacilityID = res)));
 
+    // const customsCargoIDType$ = getCustomsData(
+    //   'customsCargoIDType',
+    //   '1259',
+    //   (item: { Value2: any; Value1: any }) => ({
+    //     name: item.Value2,
+    //     code: item.Value1,
+    //   }),
+    // ).pipe(map((res) => (this.declarationCargoIDType = res)));
     const customsCargoIDType$ = getCustomsData(
       'customsCargoIDType',
       '1259',
@@ -502,7 +653,14 @@ export class DeclarationFormComponent implements OnInit {
         name: item.Value2,
         code: item.Value1,
       }),
-    ).pipe(map((res) => (this.declarationCargoIDType = res)));
+    ).pipe(
+      map(
+        (res) =>
+          (this.declarationCargoIDType = res.filter((item: any) =>
+            this.allowedCargoIDTypeCodes.includes(String(item.code)),
+          )),
+      ),
+    );
     // Use forkJoin to execute all requests or use cached data from Local Storage
     forkJoin([
       customsCountryExport$,
@@ -601,8 +759,12 @@ export class DeclarationFormComponent implements OnInit {
           new Date(),
           Validators.required,
         ),
+        // TransportContractDocumentID: this.formBuilder.control(
+        //   new Date().getFullYear().toString(),
+        //   Validators.required,
+        // ),
         TransportContractDocumentID: this.formBuilder.control(
-          new Date().getFullYear().toString(),
+          '',
           Validators.required,
         ),
         SecondCargoID: this.formBuilder.control('', Validators.required),
@@ -850,6 +1012,13 @@ export class DeclarationFormComponent implements OnInit {
       consignments.TransportContractDocumentTypeCode?.code ??
       consignments.TransportContractDocumentTypeCode;
 
+    consignments.TransportContractDocumentID =
+      consignments.TransportContractDocumentID?.code ??
+      consignments.TransportContractDocumentID;
+
+    consignments.SecondCargoID =
+      consignments.SecondCargoID?.code ?? consignments.SecondCargoID;
+
     const ConsignmentRegisteredFacilitiesList = [];
 
     const facility1 = {
@@ -930,7 +1099,7 @@ export class DeclarationFormComponent implements OnInit {
     }
 
     this.loading = true;
-    const dec = this.generalDeclarationForm.value;
+    const dec = this.generalDeclarationForm.getRawValue();
     const perfectDec = this.convertToDecObj(dec);
 
     if (this.mode != 'e') {
@@ -963,7 +1132,7 @@ export class DeclarationFormComponent implements OnInit {
     debugger;
     this.loading = true;
     const id = localStorage.getItem('currentDecId');
-    const dec = this.generalDeclarationForm.value;
+    const dec = this.generalDeclarationForm.getRawValue();
     const perfectDec = this.convertToDecObj(dec);
     console.log(perfectDec);
 
@@ -1037,6 +1206,7 @@ export class DeclarationFormComponent implements OnInit {
     this.decService.getDeclaration(decId).subscribe((res) => {
       console.log(res);
       currentDec = res;
+      this.isInitializingDeclaration = true;
 
       localStorage.setItem(
         'currentDecId',
@@ -1188,10 +1358,18 @@ export class DeclarationFormComponent implements OnInit {
             element.code ==
             currentConsignment?.TransportContractDocumentTypeCode,
         );
+        // if (matchingCargoIDType) {
+        //   consignmentForm.patchValue({
+        //     TransportContractDocumentTypeCode: matchingCargoIDType,
+        //   });
+        // }
         if (matchingCargoIDType) {
-          consignmentForm.patchValue({
-            TransportContractDocumentTypeCode: matchingCargoIDType,
-          });
+          consignmentForm.patchValue(
+            {
+              TransportContractDocumentTypeCode: matchingCargoIDType,
+            },
+            { emitEvent: false },
+          );
         }
 
         const item =
@@ -1206,14 +1384,62 @@ export class DeclarationFormComponent implements OnInit {
           consignmentForm.patchValue({ FacilityType: matchingFacilityID });
         }
 
-        consignmentForm.patchValue({
-          CargoDescription: currentConsignment?.CargoDescription,
-          TransportContractDocumentID:
-            currentConsignment?.TransportContractDocumentID,
-          SecondCargoID: currentConsignment?.SecondCargoID,
-          ThirdCargoID: currentConsignment?.ThirdCargoID,
-          ArrivalDateTime: new Date(currentConsignment?.ArrivalDateTime),
-        });
+        // const transportContractDocumentTypeCode =
+        //   currentConsignment?.TransportContractDocumentTypeCode;
+
+        // const transportContractDocumentIdValue =
+        //   String(transportContractDocumentTypeCode) === '17'
+        //     ? this.cargoYearOptionsForCode17.find(
+        //         (item: any) =>
+        //           String(item.code) ===
+        //           String(currentConsignment?.TransportContractDocumentID),
+        //       ) || null
+        //     : currentConsignment?.TransportContractDocumentID;
+
+        // consignmentForm.patchValue({
+        //   CargoDescription: currentConsignment?.CargoDescription,
+        //   TransportContractDocumentID: transportContractDocumentIdValue,
+        //   SecondCargoID: currentConsignment?.SecondCargoID,
+        //   ThirdCargoID: currentConsignment?.ThirdCargoID,
+        //   ArrivalDateTime: new Date(currentConsignment?.ArrivalDateTime),
+        // });
+
+        const transportContractDocumentTypeCode =
+          currentConsignment?.TransportContractDocumentTypeCode;
+
+        const secondCargoIdValue =
+          String(transportContractDocumentTypeCode) === '17'
+            ? this.cargoCompanyOptionsForCode17.find(
+                (item: any) =>
+                  String(item.code) ===
+                  String(currentConsignment?.SecondCargoID),
+              ) || null
+            : currentConsignment?.SecondCargoID;
+
+        // consignmentForm.patchValue({
+        //   CargoDescription: currentConsignment?.CargoDescription,
+        //   TransportContractDocumentID:
+        //     currentConsignment?.TransportContractDocumentID,
+        //   SecondCargoID: secondCargoIdValue,
+        //   ThirdCargoID: currentConsignment?.ThirdCargoID,
+        //   ArrivalDateTime: new Date(currentConsignment?.ArrivalDateTime),
+        // });
+
+        consignmentForm.patchValue(
+          {
+            CargoDescription: currentConsignment?.CargoDescription,
+            TransportContractDocumentID:
+              currentConsignment?.TransportContractDocumentID,
+            SecondCargoID: secondCargoIdValue,
+            ThirdCargoID: currentConsignment?.ThirdCargoID,
+            ArrivalDateTime: new Date(currentConsignment?.ArrivalDateTime),
+          },
+          { emitEvent: false },
+        );
+
+        this.updateThirdCargoFieldState(
+          consignmentForm.get('TransportContractDocumentTypeCode')?.value,
+        );
 
         // --ConsignmentPackagesMeasures--
         const consignmentPackagesMeasuresForm =
@@ -1332,6 +1558,8 @@ export class DeclarationFormComponent implements OnInit {
       this.refreshSendButtonVisibility(currentDec?.Id ?? null);
 
       this.deferFormErrorsMessageUpdate();
+
+      this.isInitializingDeclaration = false;
 
       this.loading = false; // ✅ כבה את ה-loading בסוף
     });
@@ -1488,25 +1716,57 @@ export class DeclarationFormComponent implements OnInit {
 
   //get values by cargo Ids
   onCargoIDBlur(cargoIdNum: any) {
+    // if (cargoIdNum == 2) {
+    //   const consignment = this.generalDeclarationForm.controls[
+    //     'Consignments'
+    //   ] as FormGroup;
+
+    //   let secondCargoID = consignment.controls['SecondCargoID'].value;
+    //   secondCargoID = secondCargoID.trim() || '';
+
+    //   if (/^\d{11}$/.test(secondCargoID)) {
+    //     secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
+    //     consignment.controls['SecondCargoID'].setValue(secondCargoID);
+    //     this.secondCargoIDError = '';
+    //   } else if (/^\d{11,12}$/.test(secondCargoID.replace('-', ''))) {
+    //     secondCargoID = secondCargoID.replace('-', '');
+    //     secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
+    //     consignment.controls['SecondCargoID'].setValue(secondCargoID);
+    //     this.secondCargoIDError = '';
+    //   } else {
+    //     this.secondCargoIDError = 'מבנה לא תקין';
+    //   }
+    // }
     if (cargoIdNum == 2) {
       const consignment = this.generalDeclarationForm.controls[
         'Consignments'
       ] as FormGroup;
 
-      let secondCargoID = consignment.controls['SecondCargoID'].value;
-      secondCargoID = secondCargoID.trim() || '';
+      const cargoTypeCode =
+        consignment.controls['TransportContractDocumentTypeCode'].value?.code;
 
-      if (/^\d{11}$/.test(secondCargoID)) {
-        secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
-        consignment.controls['SecondCargoID'].setValue(secondCargoID);
-        this.secondCargoIDError = '';
-      } else if (/^\d{11,12}$/.test(secondCargoID.replace('-', ''))) {
-        secondCargoID = secondCargoID.replace('-', '');
-        secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
-        consignment.controls['SecondCargoID'].setValue(secondCargoID);
-        this.secondCargoIDError = '';
+      // let secondCargoID = consignment.controls['SecondCargoID'].value;
+      // secondCargoID = (secondCargoID || '').trim();
+
+      let secondCargoID = consignment.controls['SecondCargoID'].value;
+      secondCargoID = secondCargoID?.code ?? secondCargoID;
+      secondCargoID = String(secondCargoID || '').trim();
+
+      if (cargoTypeCode === '1') {
+        if (/^\d{11}$/.test(secondCargoID)) {
+          secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
+          consignment.controls['SecondCargoID'].setValue(secondCargoID);
+          this.secondCargoIDError = '';
+        } else if (/^\d{11,12}$/.test(secondCargoID.replace('-', ''))) {
+          secondCargoID = secondCargoID.replace('-', '');
+          secondCargoID = `${secondCargoID.substring(0, 3)}-${secondCargoID.substring(3)}`;
+          consignment.controls['SecondCargoID'].setValue(secondCargoID);
+          this.secondCargoIDError = '';
+        } else {
+          this.secondCargoIDError = 'מבנה לא תקין';
+        }
       } else {
-        this.secondCargoIDError = 'מבנה לא תקין';
+        this.secondCargoIDError = '';
       }
     }
 
@@ -1516,9 +1776,15 @@ export class DeclarationFormComponent implements OnInit {
 
     const cargoType =
       consignment.controls['TransportContractDocumentTypeCode'].value?.code;
+    // const firstCargoID =
+    //   consignment.controls['TransportContractDocumentID'].value;
     const firstCargoID =
+      consignment.controls['TransportContractDocumentID'].value?.code ??
       consignment.controls['TransportContractDocumentID'].value;
-    const secondCargoID = consignment.controls['SecondCargoID'].value;
+    // const secondCargoID = consignment.controls['SecondCargoID'].value;
+    const secondCargoID =
+      consignment.controls['SecondCargoID'].value?.code ??
+      consignment.controls['SecondCargoID'].value;
     const thirdCargoID = consignment.controls['ThirdCargoID'].value;
 
     if (!(cargoType && firstCargoID && secondCargoID)) {
@@ -2391,16 +2657,227 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   private refreshSendButtonVisibility(declarationId: string | null): void {
-  if (!declarationId) {
-    this.showBtnCustoms = false;
-    return;
+    if (!declarationId) {
+      this.showBtnCustoms = false;
+      return;
+    }
+
+    this.documentsService
+      .hasDocumentsForDeclaration$(declarationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((hasDocs) => {
+        this.showBtnCustoms = hasDocs;
+      });
   }
 
-  this.documentsService
-    .hasDocumentsForDeclaration$(declarationId)
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((hasDocs) => {
-      this.showBtnCustoms = hasDocs;
+  get selectedCargoFieldLabels() {
+    const selectedCode = this.generalDeclarationForm.get(
+      'Consignments.TransportContractDocumentTypeCode',
+    )?.value?.code;
+
+    return (
+      this.cargoFieldLabelsMap[selectedCode] || {
+        year: 'שנה',
+        main: 'מזהה מטען ראשי',
+        inner: 'מזהה מטען פנימי',
+      }
+    );
+  }
+
+  get isCargoType17(): boolean {
+    return (
+      this.generalDeclarationForm.get(
+        'Consignments.TransportContractDocumentTypeCode',
+      )?.value?.code === '17'
+    );
+  }
+
+  filterCargoYearOptionsForCode17(event: any) {
+    const query = (event.query || '').toLowerCase();
+
+    this.filteredCargoCompanyOptionsForCode17 =
+      this.cargoCompanyOptionsForCode17.filter(
+        (item) => item.name && item.name.toLowerCase().includes(query),
+      );
+  }
+
+  private updateSecondCargoIDValidators(
+    cargoTypeCode: string | undefined,
+  ): void {
+    const secondControl = this.generalDeclarationForm.get(
+      'Consignments.SecondCargoID',
+    );
+
+    if (!secondControl) return;
+
+    if (cargoTypeCode === '1') {
+      secondControl.setValidators([
+        Validators.required,
+        Validators.minLength(11),
+        Validators.maxLength(12),
+      ]);
+    } else {
+      secondControl.setValidators([Validators.required]);
+    }
+
+    secondControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  get showThirdCargoField(): boolean {
+    const cargoTypeCode = this.generalDeclarationForm?.get(
+      'Consignments.TransportContractDocumentTypeCode',
+    )?.value?.code;
+
+    return !['11', '2', '3'].includes(String(cargoTypeCode));
+  }
+
+  filterCargoCompanyOptionsForCode17(event: any) {
+    const query = (event.query || '').toLowerCase();
+
+    this.filteredCargoCompanyOptionsForCode17 =
+      this.cargoCompanyOptionsForCode17.filter(
+        (item) => item.name && item.name.toLowerCase().includes(query),
+      );
+  }
+  private buildCourierLookupKey(
+    cargoType: string,
+    waybillNumber: string,
+    courierId: string,
+  ): string {
+    return `${cargoType}|${waybillNumber}|${courierId}`;
+  }
+
+  private updateThirdCargoFieldState(cargoTypeValue: any): void {
+    const cargoTypeCode = cargoTypeValue?.code ?? cargoTypeValue;
+
+    const thirdControl = this.generalDeclarationForm.get(
+      'Consignments.ThirdCargoID',
+    );
+
+    if (!thirdControl) return;
+
+    if (String(cargoTypeCode) === '17') {
+      thirdControl.disable({ emitEvent: false });
+    } else {
+      thirdControl.enable({ emitEvent: false });
+    }
+
+    thirdControl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  triggerCourierLookupIfNeeded(): void {
+    if (this.isInitializingDeclaration) {
+      return;
+    }
+
+    const consignments = this.generalDeclarationForm.get(
+      'Consignments',
+    ) as FormGroup;
+
+    if (!consignments) return;
+
+    const cargoType =
+      consignments.get('TransportContractDocumentTypeCode')?.value?.code ??
+      consignments.get('TransportContractDocumentTypeCode')?.value;
+
+    if (String(cargoType) !== '17') {
+      return;
+    }
+
+    const waybillNumber =
+      consignments.get('TransportContractDocumentID')?.value?.code ??
+      consignments.get('TransportContractDocumentID')?.value;
+
+    const courierId =
+      consignments.get('SecondCargoID')?.value?.code ??
+      consignments.get('SecondCargoID')?.value;
+
+    const thirdKeyControl = consignments.get('ThirdCargoID');
+
+    const normalizedWaybill = String(waybillNumber || '').trim();
+    const normalizedCourierId = String(courierId || '').trim();
+
+    if (!normalizedWaybill || !normalizedCourierId || !thirdKeyControl) {
+      return;
+    }
+
+    const lookupKey = this.buildCourierLookupKey(
+      String(cargoType),
+      normalizedWaybill,
+      normalizedCourierId,
+    );
+
+    if (lookupKey === this.lastCourierLookupKey) {
+      return;
+    }
+
+    this.lastCourierLookupKey = lookupKey;
+    this.courierLookupLoading = true;
+
+    thirdKeyControl.enable({ emitEvent: false });
+    thirdKeyControl.setValue('', { emitEvent: false });
+
+    this.courierService
+      .getThirdKey$(normalizedWaybill, normalizedCourierId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.courierLookupLoading = false;
+
+          if (res?.responseContentHeaderField?.exceptionField?.length) {
+            thirdKeyControl.enable({ emitEvent: false });
+            thirdKeyControl.setValue('', { emitEvent: false });
+            return;
+          }
+
+          const returnedDate =
+            res?.courierCargosField?.[0]?.cargoIdentifierKey3Field ??
+            res?.courierCargosField?.[0]?.cargoIdentifierKey3 ??
+            '';
+
+          if (returnedDate) {
+            thirdKeyControl.setValue(returnedDate, { emitEvent: false });
+            thirdKeyControl.disable({ emitEvent: false });
+          } else {
+            thirdKeyControl.enable({ emitEvent: false });
+            thirdKeyControl.setValue('', { emitEvent: false });
+          }
+        },
+        error: (error) => {
+          console.error('Courier lookup failed', error);
+          this.courierLookupLoading = false;
+          thirdKeyControl.enable({ emitEvent: false });
+          thirdKeyControl.setValue('', { emitEvent: false });
+        },
+      });
+  }
+
+  formatCourierCreationDate(value: string | null | undefined): string {
+    const raw = String(value || '').trim();
+
+    if (!/^\d{6}$/.test(raw)) {
+      return raw;
+    }
+
+    const day = raw.substring(0, 2);
+    const month = raw.substring(2, 4);
+    const year = raw.substring(4, 6);
+
+    return `${day}/${month}/${year}`;
+  }
+
+  loadCourierCompanies(): void {
+    this.courierService.getCourierCompanies$().subscribe({
+      next: (res: any[]) => {
+        this.cargoCompanyOptionsForCode17 = (res || []).map((company: any) => ({
+          name: company.Name,
+          code: company.Code,
+        }));
+      },
+      error: (err) => {
+        console.error('Failed to load courier companies', err);
+        this.cargoCompanyOptionsForCode17 = [];
+      },
     });
-}
+  }
 }

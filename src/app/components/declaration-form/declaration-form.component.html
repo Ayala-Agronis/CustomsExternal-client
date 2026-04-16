@@ -78,33 +78,119 @@
         </div>
 
         <div class="form-item">
-          <label> שנה <span class="required">*</span></label>
+          <label> סוג מזהה מטען <span class="required">*</span></label>
+          <p-autoComplete
+            [forceSelection]="true"
+            id="TransportContractDocument_TypeCode"
+            formControlName="TransportContractDocumentTypeCode"
+            inputId="autocomplete"
+            [suggestions]="filteredCargoIDType"
+            (completeMethod)="filterCargoIDType($event)"
+            field="name"
+            [dropdown]="true"
+          >
+          </p-autoComplete>
+        </div>
+
+        <!-- <div class="form-item">
+          <label>
+            {{ selectedCargoFieldLabels.year }}
+            <span class="required">*</span></label
+          >
           <input
             pInputText
             formControlName="TransportContractDocumentID"
             (blur)="onCargoIDBlur(1)"
           />
-        </div>
+        </div> -->
         <div class="form-item">
-          <label> מזהה מטען ראשי <span class="required">*</span></label>
-          <input
+          <label>
+            {{ selectedCargoFieldLabels.year }}
+            <span class="required">*</span>
+          </label>
+
+          <ng-container *ngIf="isCargoType17; else regularFirstField">
+            <p-autoComplete
+              [forceSelection]="true"
+              formControlName="SecondCargoID"
+              inputId="autocomplete"
+              [suggestions]="filteredCargoCompanyOptionsForCode17"
+              (completeMethod)="filterCargoCompanyOptionsForCode17($event)"
+              (onSelect)="triggerCourierLookupIfNeeded()"
+              field="name"
+              [dropdown]="true"
+            >
+            </p-autoComplete>
+          </ng-container>
+
+          <ng-template #regularFirstField>
+            <input
+              pInputText
+              formControlName="TransportContractDocumentID"
+              (blur)="onCargoIDBlur(1)"
+            />
+          </ng-template>
+        </div>
+        <!-- <div class="form-item">
+          <label>
+            {{ selectedCargoFieldLabels.main }}
+            <span class="required">*</span></label
+          > -->
+        <!-- <input
             pInputText
             formControlName="SecondCargoID"
             (blur)="onCargoIDBlur(2)"
             maxlength="12"
             minlength="11"
-          />
+          /> -->
+        <div class="form-item">
+          <label>
+            {{ selectedCargoFieldLabels.main }}
+            <span class="required">*</span>
+          </label>
+
+          <ng-container *ngIf="isCargoType17; else regularSecondField">
+            <input
+              pInputText
+              formControlName="TransportContractDocumentID"
+              (blur)="onCargoIDBlur(2); triggerCourierLookupIfNeeded()"
+            />
+          </ng-container>
+
+          <ng-template #regularSecondField>
+            <input
+              pInputText
+              formControlName="SecondCargoID"
+              (blur)="onCargoIDBlur(2)"
+            />
+          </ng-template>
         </div>
+
         <div class="error" *ngIf="secondCargoIDError">
           {{ secondCargoIDError }}
         </div>
-        <div class="form-item">
-          <label>מזהה מטען פנימי</label>
-          <input
-            pInputText
-            formControlName="ThirdCargoID"
-            (blur)="onCargoIDBlur(3)"
-          />
+        <div class="form-item" *ngIf="showThirdCargoField">
+          <label>{{ selectedCargoFieldLabels.inner }}</label>
+
+          <ng-container *ngIf="isCargoType17; else regularThirdField">
+            <input
+              pInputText
+              [value]="
+                formatCourierCreationDate(
+                  generalDeclarationForm.get('Consignments.ThirdCargoID')?.value
+                )
+              "
+              readonly
+            />
+          </ng-container>
+
+          <ng-template #regularThirdField>
+            <input
+              pInputText
+              formControlName="ThirdCargoID"
+              (blur)="onCargoIDBlur(3)"
+            />
+          </ng-template>
         </div>
       </div>
 
@@ -161,7 +247,7 @@
             dateFormat="dd/mm/yy"
           ></p-calendar>
         </div>
-        <div class="form-item">
+        <!-- <div class="form-item">
           <label> סוג מזהה מטען <span class="required">*</span></label>
           <p-autoComplete
             [forceSelection]="true"
@@ -174,7 +260,7 @@
             [dropdown]="true"
           >
           </p-autoComplete>
-        </div>
+        </div> -->
         <div class="form-item">
           <label>תיאור טובין <span class="required">*</span></label>
           <input pInputText formControlName="CargoDescription" />
@@ -507,6 +593,7 @@
                               (completeMethod)="filterCountryOfExport($event)"
                               field="name"
                               [dropdown]="true"
+                              appendTo="body"
                             >
                             </p-autoComplete>
                           </div>
@@ -571,8 +658,13 @@
             העתק
         </button> -->
     <button
-      [disabled]="generalDeclarationForm.invalid || checkVersion()|| formDisabled"
-      [ngClass]="{ disabled: generalDeclarationForm.invalid || checkVersion() || formDisabled }"
+      [disabled]="
+        generalDeclarationForm.invalid || checkVersion() || formDisabled
+      "
+      [ngClass]="{
+        disabled:
+          generalDeclarationForm.invalid || checkVersion() || formDisabled,
+      }"
       *ngIf="showBtnCustoms"
       class="button-primary"
       (click)="sendDeclaration()"
