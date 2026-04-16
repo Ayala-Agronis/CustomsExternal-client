@@ -728,7 +728,7 @@
                         (click)="onDeleteRow(rowData, rowIndex, i)"
                       ></button>
                     </td>
-                    <td pEditableColumn>
+                    <!-- <td pEditableColumn>
                       <p-cellEditor>
                         <ng-template pTemplate="input">
                           <p-autoComplete
@@ -752,7 +752,7 @@
                           }}
                         </ng-template>
                       </p-cellEditor>
-                    </td>
+                    </td> -->
 
                     <!-- <td pEditableColumn>
                                             <p-cellEditor>
@@ -766,7 +766,7 @@
                                             </p-cellEditor>
                                         </td> -->
 
-                    <td pEditableColumn>
+                    <!-- <td pEditableColumn>
                       <p-cellEditor>
                         <ng-template pTemplate="input">
                           <input
@@ -827,6 +827,231 @@
                           }}
                         </ng-template>
                       </p-cellEditor>
+                    </td> -->
+                    <!-- <td pEditableColumn>
+                      <ng-container
+                        *ngIf="
+                          isInvoiceItemFieldEmpty(
+                            i,
+                            rowIndex,
+                            'ClassificationID'
+                          ); else classificationEditor
+                        "
+                      >
+                        <p-autoComplete
+                          [forceSelection]="true"
+                          [appendTo]="'body'"
+                          (onSelect)="selectClassification($event)"
+                          formControlName="ClassificationID"
+                          [suggestions]="filteredClassification"
+                          (completeMethod)="filterClassification($event)"
+                          field="name"
+                          [dropdown]="true"
+                          placeholder="בחר מוצר"
+                        >
+                        </p-autoComplete>
+                      </ng-container>
+
+                      <ng-template #classificationEditor>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <p-autoComplete
+                              [forceSelection]="true"
+                              [appendTo]="'body'"
+                              (onSelect)="selectClassification($event)"
+                              formControlName="ClassificationID"
+                              [suggestions]="filteredClassification"
+                              (completeMethod)="filterClassification($event)"
+                              field="name"
+                              [dropdown]="true"
+                              placeholder="בחר מוצר"
+                            >
+                            </p-autoComplete>
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{
+                              GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                                "ClassificationID"
+                              )?.value?.name
+                            }}
+                          </ng-template>
+                        </p-cellEditor>
+                      </ng-template>
+                    </td>
+
+                    <td pEditableColumn>
+                      <ng-container
+                        *ngIf="
+                          isInvoiceItemFieldEmpty(i, rowIndex, 'AmountType'); else amountTypeEditor"
+                      >
+                        <input
+                          pInputText
+                          type="text"
+                          formControlName="AmountType"
+                          placeholder="הזן כמות"
+                        />
+                      </ng-container>
+
+                      <ng-template #amountTypeEditor>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <input
+                              pInputText
+                              type="text"
+                              formControlName="AmountType"
+                              placeholder="הזן כמות"
+                            />
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{
+                              GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                                "AmountType"
+                              )?.value
+                            }}
+                          </ng-template>
+                        </p-cellEditor>
+                      </ng-template>
+                    </td>
+
+                    <td pEditableColumn>
+                      <ng-container
+                        *ngIf="
+                          isInvoiceItemFieldEmpty(
+                            i,
+                            rowIndex,
+                            'CustomsValueAmount'
+                          )else customsValueEditor
+                        "
+                      >
+                        <input
+                          (blur)="getFormErrors(true)"
+                          pInputText
+                          type="text"
+                          formControlName="CustomsValueAmount"
+                          placeholder="הזן ערך טובין"
+                        />
+                      </ng-container>
+
+                      <ng-template #customsValueEditor>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <input
+                              (blur)="getFormErrors(true)"
+                              pInputText
+                              type="text"
+                              formControlName="CustomsValueAmount"
+                              placeholder="הזן ערך טובין"
+                            />
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{
+                              GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                                "CustomsValueAmount"
+                              )?.value | number: "1.0-0"
+                            }}
+                          </ng-template>
+                        </p-cellEditor>
+                      </ng-template>
+                    </td>
+
+                    <td pEditableColumn>
+                      <ng-container
+                        *ngIf="
+                          isInvoiceItemFieldEmpty(
+                            i,
+                            rowIndex,
+                            'OriginCountryCode'
+                          ); else originCountryEditor
+                        "
+                      >
+                        <div class="ui-ltr" dir="rtl">
+                          <p-autoComplete
+                            formControlName="OriginCountryCode"
+                            [forceSelection]="true"
+                            [suggestions]="filteredCountryOfExport"
+                            (completeMethod)="filterCountryOfExport($event)"
+                            field="name"
+                            [dropdown]="true"
+                            [appendTo]="'body'"
+                            placeholder="בחר ארץ מקור"
+                          >
+                          </p-autoComplete>
+                        </div>
+                      </ng-container>
+
+                      <ng-template #originCountryEditor>
+                        <p-cellEditor>
+                          <ng-template pTemplate="input">
+                            <div class="ui-ltr" dir="ltr">
+                              <p-autoComplete
+                                formControlName="OriginCountryCode"
+                                [forceSelection]="true"
+                                [suggestions]="filteredCountryOfExport"
+                                (completeMethod)="filterCountryOfExport($event)"
+                                field="name"
+                                [dropdown]="true"
+                                [appendTo]="'body'"
+                                placeholder="בחר ארץ מקור"
+                              >
+                              </p-autoComplete>
+                            </div>
+                          </ng-template>
+                          <ng-template pTemplate="output">
+                            {{
+                              GetSupplierInvoiceItems(i).controls[rowIndex].get(
+                                "OriginCountryCode"
+                              )?.value?.name
+                            }}
+                          </ng-template>
+                        </p-cellEditor>
+                      </ng-template>
+                    </td> -->
+                    <td>
+                      <p-autoComplete
+                        [forceSelection]="true"
+                        [appendTo]="'body'"
+                        (onSelect)="selectClassification($event)"
+                        formControlName="ClassificationID"
+                        [suggestions]="filteredClassification"
+                        (completeMethod)="filterClassification($event)"
+                        field="name"
+                        [dropdown]="true"
+                        placeholder="בחר מוצר"
+                      >
+                      </p-autoComplete>
+                    </td>
+
+                    <td>
+                      <input
+                        pInputText
+                        type="text"
+                        formControlName="AmountType"
+                        placeholder="הזן כמות"
+                      />
+                    </td>
+
+                    <td>
+                      <input
+                        (blur)="getFormErrors(true)"
+                        pInputText
+                        type="text"
+                        formControlName="CustomsValueAmount"
+                        placeholder="הזן ערך טובין"
+                      />
+                    </td>
+
+                    <td>
+                      <p-autoComplete
+                        formControlName="OriginCountryCode"
+                        [forceSelection]="true"
+                        [suggestions]="filteredCountryOfExport"
+                        (completeMethod)="filterCountryOfExport($event)"
+                        field="name"
+                        [dropdown]="true"
+                        [appendTo]="'body'"
+                        placeholder="בחר ארץ מקור"
+                      >
+                      </p-autoComplete>
                     </td>
                   </tr>
                 </ng-template>

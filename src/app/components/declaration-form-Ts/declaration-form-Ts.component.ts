@@ -1869,6 +1869,29 @@ export class DeclarationFormTsComponent implements OnInit {
     ).controls[index].get('SupplierInvoiceItems') as FormArray;
   }
 
+  // isInvoiceItemFieldEmpty(
+  //   invoiceIndex: number,
+  //   rowIndex: number,
+  //   fieldName: string,
+  // ): boolean {
+  //   const row = this.GetSupplierInvoiceItems(invoiceIndex).at(rowIndex);
+  //   const value = row.get(fieldName)?.value;
+
+  //   if (value === null || value === undefined) {
+  //     return true;
+  //   }
+
+  //   if (typeof value === 'string') {
+  //     return value.trim() === '';
+  //   }
+
+  //   if (typeof value === 'object') {
+  //     return !value.code && !value.name;
+  //   }
+
+  //   return false;
+  // }
+
   addNewInvoiceItem(i: any): void {
     if (this.formDisabled) return;
 
