@@ -17,8 +17,8 @@ header button {
     margin-right: 1rem;
 }
 
-::ng-deep.p-button {
-    color: #ffffff;
-    background: $color-8;
-    border: none;
+:host ::ng-deep .createBtn.p-button {
+  color: #ffffff;
+  background: $color-8;
+  border: none;
 }

@@ -351,7 +351,7 @@
                       pRipple
                       icon="pi pi-plus"
                       class="p-button-raised p-button-text"
-                      (click)="serchVendor()"
+                      (click)="serchVendor(i)"
                       title="הוסף ספק"
                     ></button
                   ></label>
@@ -564,6 +564,7 @@
                         [dropdown]="true"
                         appendTo="body"
                         placeholder="בחר ארץ מקור"
+  [panelStyleClass]="'origin-country-panel'"
                       >
                       </p-autoComplete>
                     </td>
@@ -859,4 +860,20 @@
       </ul>
     </div>
   </p-card>
+  <p-dialog
+    header="חיפוש ספק"
+    [(visible)]="displayVendorDialog"
+    [modal]="true"
+    [style]="{ width: '80vw', height: '85vh' }"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <app-search-vendor
+      [isDialog]="true"
+      (vendorSelected)="onVendorSelected($event)"
+      (dialogClosed)="displayVendorDialog = false"
+    >
+    </app-search-vendor>
+  </p-dialog>
 </form>

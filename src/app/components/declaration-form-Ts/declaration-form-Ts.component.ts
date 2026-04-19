@@ -24,6 +24,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
+import { DialogModule } from 'primeng/dialog';
 import {
   BehaviorSubject,
   forkJoin,
@@ -50,6 +51,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ClientClassificationService } from '../../shared/services/client-classification.service';
 import { DocumentService } from '../../shared/services/document.service';
 import { CargoContext } from '../../shared/models/cargo-context.model';
+import { SearchVendorComponent } from '../search-vendor/search-vendor.component';
 
 @Component({
   selector: 'app-declaration-form-Ts',
@@ -70,6 +72,8 @@ import { CargoContext } from '../../shared/models/cargo-context.model';
     AutoCompleteModule,
     TableModule,
     ConfirmDialogModule,
+    SearchVendorComponent,
+    DialogModule,
   ],
   templateUrl: './declaration-form-Ts.component.html',
   styleUrl: './declaration-form-Ts.component.scss',
@@ -140,6 +144,9 @@ export class DeclarationFormTsComponent implements OnInit {
   declarationRoleCode: any;
 
   ExportationCountrySelect: any;
+
+  displayVendorDialog = false;
+  currentVendorInvoiceIndex: number | null = null;
 
   columns: any;
   classificationOptions: { name: string; value: string }[] = [];
@@ -2938,10 +2945,11 @@ export class DeclarationFormTsComponent implements OnInit {
     }
   }
 
-  serchVendor() {
+  serchVendor(index: number) {
     if (this.formDisabled) return;
 
-    this.router.navigateByUrl('/search-vendor');
+    this.currentVendorInvoiceIndex = index;
+    this.displayVendorDialog = true;
   }
 
   // onExportationCountrySelect(event: any) {
@@ -3827,5 +3835,33 @@ export class DeclarationFormTsComponent implements OnInit {
     //       this.showBtnCustoms = false;
     //     },
     //   });
+  }
+
+  onVendorSelected(vendor: any) {
+    if (this.currentVendorInvoiceIndex === null) return;
+
+    const selectedVendor = {
+      name: vendor.VendorName,
+      code: String(vendor.VendorID),
+    };
+
+    const invoiceGroup = this.supplierInvoices.at(
+      this.currentVendorInvoiceIndex,
+    ) as FormGroup;
+    invoiceGroup.get('SupplierID')?.patchValue(selectedVendor);
+
+    const exists = (this.declarationSupplierID || []).some(
+      (x: any) => String(x.code) === String(selectedVendor.code),
+    );
+
+    if (!exists) {
+      this.declarationSupplierID = [
+        ...(this.declarationSupplierID || []),
+        selectedVendor,
+      ];
+    }
+
+    this.displayVendorDialog = false;
+    this.currentVendorInvoiceIndex = null;
   }
 }

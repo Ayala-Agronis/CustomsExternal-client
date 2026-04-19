@@ -55,6 +55,8 @@ import { PaymentService } from '../../shared/services/payment.service';
 import { shareReplay } from 'rxjs/operators';
 import { DocumentService } from '../../shared/services/document.service';
 import { CourierService } from '../../shared/services/courier.service';
+import { SearchVendorComponent } from '../search-vendor/search-vendor.component';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
   selector: 'app-declaration-form',
@@ -74,6 +76,8 @@ import { CourierService } from '../../shared/services/courier.service';
     AutoCompleteModule,
     TableModule,
     ConfirmDialogModule,
+    SearchVendorComponent,
+    DialogModule,
   ],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss',
@@ -185,6 +189,9 @@ export class DeclarationFormComponent implements OnInit {
 
   isLockedBySbtEvent: boolean = false;
   sbtLockMessage: string = 'ההצהרה הועברה להמשך טיפול. ניתן לצפות בלבד';
+
+  displayVendorDialog = false;
+  currentVendorInvoiceIndex: number | null = null;
 
   private chargingCountryMap = new Map<string, any>();
   private chargingCountryByCountryCache = new Map<string, Observable<any[]>>();
@@ -1983,9 +1990,39 @@ export class DeclarationFormComponent implements OnInit {
       });
   }
 
-  serchVendor() {
+  serchVendor(index: number) {
     if (this.formDisabled) return;
-    this.router.navigateByUrl('/search-vendor');
+
+    this.currentVendorInvoiceIndex = index;
+    this.displayVendorDialog = true;
+  }
+
+  onVendorSelected(vendor: any) {
+    if (this.currentVendorInvoiceIndex === null) return;
+
+    const selectedVendor = {
+      name: vendor.VendorName,
+      code: String(vendor.VendorID),
+    };
+
+    const invoiceGroup = this.supplierInvoices.at(
+      this.currentVendorInvoiceIndex,
+    ) as FormGroup;
+    invoiceGroup.get('SupplierID')?.patchValue(selectedVendor);
+
+    const exists = (this.declarationSupplierID || []).some(
+      (x: any) => String(x.code) === String(selectedVendor.code),
+    );
+
+    if (!exists) {
+      this.declarationSupplierID = [
+        ...(this.declarationSupplierID || []),
+        selectedVendor,
+      ];
+    }
+
+    this.displayVendorDialog = false;
+    this.currentVendorInvoiceIndex = null;
   }
 
   // onExportationCountrySelect(event: any) {

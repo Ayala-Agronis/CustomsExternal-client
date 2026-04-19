@@ -475,3 +475,8 @@ input {
 .broker-routing-message{
   font-weight: bold;
 }
+
+::ng-deep .origin-country-panel {
+  direction: rtl !important;
+  text-align: right !important;
+}
