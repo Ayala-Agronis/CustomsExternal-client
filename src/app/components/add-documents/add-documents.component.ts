@@ -1215,101 +1215,205 @@ export class AddDocumentsComponent {
 
             this.documentsService.postDocuments$(doc).subscribe({
               next: (createdDoc: any) => {
-                const attrsBase = this.buildAttributesForDoc(type);
+                // const attrsBase = this.buildAttributesForDoc(type);
 
-                // שמירת האטריביוטים תמיד
-                const attrsToSave = attrsBase.map((a) => ({
-                  DocID: createdDoc.Id,
-                  PointerID: this.currentDecId,
-                  Attribute: a.Attribute,
-                  Attribute_Vlaue: a.Attribute_Vlaue,
-                }));
+                // // שמירת האטריביוטים תמיד
+                // const attrsToSave = attrsBase.map((a) => ({
+                //   DocID: createdDoc.Id,
+                //   PointerID: this.currentDecId,
+                //   Attribute: a.Attribute,
+                //   Attribute_Vlaue: a.Attribute_Vlaue,
+                // }));
 
-                this.documentsService
-                  .addDocumentAttributes$(attrsToSave)
-                  .subscribe({
-                    next: () => {
-                      // שלב 3 – שליחה למכס, אם נכשל רק נעדכן סטטוס
-                      const customsFormData = new FormData();
-                      customsFormData.append('file', file, file.name);
-                      customsFormData.append('DocumentType', type);
-                      attrsBase.forEach((attr, index) => {
-                        customsFormData.append(
-                          `attributes[${index}]`,
-                          JSON.stringify({
-                            id: String(attr.Attribute),
-                            value: String(attr.Attribute_Vlaue),
-                          }),
-                        );
-                      });
+                // this.documentsService
+                //   .addDocumentAttributes$(attrsToSave)
+                //   .subscribe({
+                //     next: () => {
+                //       // שלב 3 – שליחה למכס, אם נכשל רק נעדכן סטטוס
+                //       const customsFormData = new FormData();
+                //       customsFormData.append('file', file, file.name);
+                //       customsFormData.append('DocumentType', type);
+                //       attrsBase.forEach((attr, index) => {
+                //         customsFormData.append(
+                //           `attributes[${index}]`,
+                //           JSON.stringify({
+                //             id: String(attr.Attribute),
+                //             value: String(attr.Attribute_Vlaue),
+                //           }),
+                //         );
+                //       });
 
-                      this.documentsService
-                        .sendToCustoms$(customsFormData)
-                        .subscribe({
-                          next: (customsRes: any) => {
-                            // עדכון המסמך הקיים במידע מהמכס
-                            // הכנת אובייקט מלא עבור update
-                            const updateDoc = {
-                              Id: createdDoc.Id,
-                              Code: createdDoc.Code,
-                              URL: createdDoc.URL,
-                              FileName: createdDoc.FileName,
-                              DocumentType: createdDoc.DocumentType,
-                              CustomsId: customsRes.CustomsId ?? 0,
-                              InternalID: customsRes.InternalId ?? null,
-                              CustomsStatus: customsRes.Success ? 1 : 0,
-                              ErrorDesc: customsRes.ErrorMessage ?? null,
-                              RelatedEntity: createdDoc.RelatedEntity,
-                              RelatedID: createdDoc.RelatedID,
-                            };
-                            this.documentsService
-                              .updateDocument$(createdDoc.Id, updateDoc)
-                              .subscribe({
-                                next: () => {
-                                  pending--;
-                                  finalizeIfDone();
-                                },
-                                error: () => {
-                                  hasError = true;
-                                  pending--;
-                                  this.msgs1 = [
-                                    {
-                                      severity: 'error',
-                                      summary: 'שגיאה',
-                                      detail: 'עדכון סטטוס למכס נכשל',
-                                    },
-                                  ];
-                                  finalizeIfDone();
-                                },
-                              });
-                          },
-                          error: () => {
-                            hasError = true;
-                            pending--;
-                            this.msgs1 = [
-                              {
-                                severity: 'warn',
-                                summary: 'שליחה למכס נכשלה',
-                                detail: `המסמך ${file.name} נשמר אך לא נשלח למכס`,
-                              },
-                            ];
-                            finalizeIfDone();
-                          },
+                //       this.documentsService
+                //         .sendToCustoms$(customsFormData)
+                //         .subscribe({
+                //           next: (customsRes: any) => {
+                //             // עדכון המסמך הקיים במידע מהמכס
+                //             // הכנת אובייקט מלא עבור update
+                //             const updateDoc = {
+                //               Id: createdDoc.Id,
+                //               Code: createdDoc.Code,
+                //               URL: createdDoc.URL,
+                //               FileName: createdDoc.FileName,
+                //               DocumentType: createdDoc.DocumentType,
+                //               CustomsId: customsRes.CustomsId ?? 0,
+                //               InternalID: customsRes.InternalId ?? null,
+                //               CustomsStatus: customsRes.Success ? 1 : 0,
+                //               ErrorDesc: customsRes.ErrorMessage ?? null,
+                //               RelatedEntity: createdDoc.RelatedEntity,
+                //               RelatedID: createdDoc.RelatedID,
+                //             };
+                //             this.documentsService
+                //               .updateDocument$(createdDoc.Id, updateDoc)
+                //               .subscribe({
+                //                 next: () => {
+                //                   pending--;
+                //                   finalizeIfDone();
+                //                 },
+                //                 error: () => {
+                //                   hasError = true;
+                //                   pending--;
+                //                   this.msgs1 = [
+                //                     {
+                //                       severity: 'error',
+                //                       summary: 'שגיאה',
+                //                       detail: 'עדכון סטטוס למכס נכשל',
+                //                     },
+                //                   ];
+                //                   finalizeIfDone();
+                //                 },
+                //               });
+                //           },
+                //           error: () => {
+                //             hasError = true;
+                //             pending--;
+                //             this.msgs1 = [
+                //               {
+                //                 severity: 'warn',
+                //                 summary: 'שליחה למכס נכשלה',
+                //                 detail: `המסמך ${file.name} נשמר אך לא נשלח למכס`,
+                //               },
+                //             ];
+                //             finalizeIfDone();
+                //           },
+                //         });
+                //     },
+                //     error: () => {
+                //       hasError = true;
+                //       pending--;
+                //       this.msgs1 = [
+                //         {
+                //           severity: 'error',
+                //           summary: 'שגיאה',
+                //           detail: 'שמירת האטריביוטים נכשלה',
+                //         },
+                //       ];
+                //       finalizeIfDone();
+                //     },
+                //   });
+                const saveAttributes = () => {
+                  const attrsBase = this.buildAttributesForDoc(type);
+
+                  const attrsToSave = attrsBase.map((a) => ({
+                    DocID: createdDoc.Id,
+                    PointerID: this.currentDecId,
+                    Attribute: a.Attribute,
+                    Attribute_Vlaue: a.Attribute_Vlaue,
+                  }));
+
+                  this.documentsService
+                    .addDocumentAttributes$(attrsToSave)
+                    .subscribe({
+                      next: () => {
+                        // שלב 3 – שליחה למכס, אם נכשל רק נעדכן סטטוס
+                        const customsFormData = new FormData();
+                        customsFormData.append('file', file, file.name);
+                        customsFormData.append('DocumentType', type);
+
+                        attrsBase.forEach((attr, index) => {
+                          customsFormData.append(
+                            `attributes[${index}]`,
+                            JSON.stringify({
+                              id: String(attr.Attribute),
+                              value: String(attr.Attribute_Vlaue),
+                            }),
+                          );
                         });
-                    },
-                    error: () => {
-                      hasError = true;
-                      pending--;
-                      this.msgs1 = [
-                        {
-                          severity: 'error',
-                          summary: 'שגיאה',
-                          detail: 'שמירת האטריביוטים נכשלה',
-                        },
-                      ];
-                      finalizeIfDone();
-                    },
+
+                        this.documentsService
+                          .sendToCustoms$(customsFormData)
+                          .subscribe({
+                            next: (customsRes: any) => {
+                              const updateDoc = {
+                                Id: createdDoc.Id,
+                                Code: createdDoc.Code,
+                                URL: createdDoc.URL,
+                                FileName: createdDoc.FileName,
+                                DocumentType: createdDoc.DocumentType,
+                                CustomsId: customsRes.CustomsId ?? 0,
+                                InternalID: customsRes.InternalId ?? null,
+                                CustomsStatus: customsRes.Success ? 1 : 0,
+                                ErrorDesc: customsRes.ErrorMessage ?? null,
+                                RelatedEntity: createdDoc.RelatedEntity,
+                                RelatedID: createdDoc.RelatedID,
+                              };
+
+                              this.documentsService
+                                .updateDocument$(createdDoc.Id, updateDoc)
+                                .subscribe({
+                                  next: () => {
+                                    pending--;
+                                    finalizeIfDone();
+                                  },
+                                  error: () => {
+                                    hasError = true;
+                                    pending--;
+                                    this.msgs1 = [
+                                      {
+                                        severity: 'error',
+                                        summary: 'שגיאה',
+                                        detail: 'עדכון סטטוס למכס נכשל',
+                                      },
+                                    ];
+                                    finalizeIfDone();
+                                  },
+                                });
+                            },
+                            error: () => {
+                              hasError = true;
+                              pending--;
+                              this.msgs1 = [
+                                {
+                                  severity: 'warn',
+                                  summary: 'שליחה למכס נכשלה',
+                                  detail: `המסמך ${file.name} נשמר אך לא נשלח למכס`,
+                                },
+                              ];
+                              finalizeIfDone();
+                            },
+                          });
+                      },
+                      error: () => {
+                        hasError = true;
+                        pending--;
+                        this.msgs1 = [
+                          {
+                            severity: 'error',
+                            summary: 'שגיאה',
+                            detail: 'שמירת האטריביוטים נכשלה',
+                          },
+                        ];
+                        finalizeIfDone();
+                      },
+                    });
+                };
+
+                if (type === '714' && !this.getCargoCreateDateIsoSafe()) {
+                  this.refreshCargoCreateDateIfMissing().then(() => {
+                    saveAttributes();
                   });
+                } else {
+                  saveAttributes();
+                }
               },
               error: () => {
                 hasError = true;
@@ -1473,21 +1577,58 @@ export class AddDocumentsComponent {
   // }
 
   private buildAttributesForDoc(type: string) {
-    const year = new Date().getFullYear().toString();
     const todayIso = new Date().toISOString();
+    const rawCtx = this.decService.getCargoContextSnapshot();
+    const ctx =
+      rawCtx && String(rawCtx.decId) === String(this.currentDecId)
+        ? rawCtx
+        : null;
+
+    let currentDec: any = null;
+    try {
+      currentDec = JSON.parse(localStorage.getItem('currentDec') || 'null');
+    } catch {
+      currentDec = null;
+    }
+
+    const consignment =
+      currentDec?.ConsignmentPackagesMeasures?.[0]?.Consignments ?? null;
 
     const cargoDateIso = this.getCargoCreateDateIsoSafe();
     const finalDate = cargoDateIso ?? todayIso;
 
+    const cargoTypeValue = String(
+      ctx?.key?.cargoType ??
+        consignment?.TransportContractDocumentTypeCode?.code ??
+        consignment?.TransportContractDocumentTypeCode ??
+        '1',
+    );
+
+    const firstCargoIdValue = String(
+      ctx?.key?.firstCargoID ??
+        consignment?.TransportContractDocumentID?.code ??
+        consignment?.TransportContractDocumentID ??
+        new Date().getFullYear().toString(),
+    );
+
     if (type === '380') {
-      return [{ Attribute: 87, Attribute_Vlaue: 'false' }];
+      return [{ Attribute: 87, Attribute_Vlaue: 'true' }];
     }
 
     if (type === '714') {
       return [
-        { Attribute: 57, Attribute_Vlaue: finalDate }, // ✅ התאריך מגיע מה-CargoQuery אם אפשר
-        { Attribute: 99, Attribute_Vlaue: '1' },
-        { Attribute: 100, Attribute_Vlaue: year },
+        {
+          Attribute: 57,
+          Attribute_Vlaue: finalDate, // ✅ התאריך מגיע מה-CargoQuery אם אפשר
+        },
+        {
+          Attribute: 99,
+          Attribute_Vlaue: cargoTypeValue,
+        },
+        {
+          Attribute: 100,
+          Attribute_Vlaue: firstCargoIdValue,
+        },
       ];
     }
 
@@ -1512,50 +1653,67 @@ export class AddDocumentsComponent {
   //   return new Date(ctx.createDate).toISOString();
   // }
 
-  private getCargoCreateDateIsoSafe(): string | null {
-    console.log('[getCargoCreateDateIsoSafe] start');
+  // private getCargoCreateDateIsoSafe(): string | null {
+  //   console.log('[getCargoCreateDateIsoSafe] start');
 
-    if (!this.currentDecId) {
-      console.log('no currentDecId');
-      return null;
-    }
+  //   if (!this.currentDecId) {
+  //     console.log('no currentDecId');
+  //     return null;
+  //   }
+
+  //   const ctx = this.decService.getCargoContextSnapshot();
+  //   console.log('ctx snapshot:', ctx);
+
+  //   if (!ctx) {
+  //     console.log('ctx is null');
+  //     return null;
+  //   }
+
+  //   if (ctx.decId !== this.currentDecId) {
+  //     console.log('decId mismatch', {
+  //       ctxDecId: ctx.decId,
+  //       currentDecId: this.currentDecId,
+  //     });
+  //     return null;
+  //   }
+
+  //   const currentKey = this.getCurrentCargoKeyFromLocalDec();
+  //   console.log('currentKey:', currentKey);
+
+  //   if (!currentKey) {
+  //     console.log('currentKey is null');
+  //     return null;
+  //   }
+
+  //   if (!this.cargoKeyEquals(ctx.key, currentKey)) {
+  //     console.log('cargo key mismatch', { ctxKey: ctx.key, currentKey });
+  //     return null;
+  //   }
+
+  //   if (!ctx.createDate || !this.isValidDateString(ctx.createDate)) {
+  //     console.log('invalid createDate', { createDate: ctx.createDate });
+  //     return null;
+  //   }
+
+  //   console.log('✅ using cargo createDate (as-is):', ctx.createDate);
+  //   return ctx.createDate; // ✅ בלי להוריד שעות
+  // }
+
+  private getCargoCreateDateIsoSafe(): string | null {
+    if (!this.currentDecId) return null;
 
     const ctx = this.decService.getCargoContextSnapshot();
-    console.log('ctx snapshot:', ctx);
+    if (!ctx) return null;
 
-    if (!ctx) {
-      console.log('ctx is null');
-      return null;
-    }
-
-    if (ctx.decId !== this.currentDecId) {
-      console.log('decId mismatch', {
-        ctxDecId: ctx.decId,
-        currentDecId: this.currentDecId,
-      });
-      return null;
-    }
-
-    const currentKey = this.getCurrentCargoKeyFromLocalDec();
-    console.log('currentKey:', currentKey);
-
-    if (!currentKey) {
-      console.log('currentKey is null');
-      return null;
-    }
-
-    if (!this.cargoKeyEquals(ctx.key, currentKey)) {
-      console.log('cargo key mismatch', { ctxKey: ctx.key, currentKey });
+    if (String(ctx.decId) !== String(this.currentDecId)) {
       return null;
     }
 
     if (!ctx.createDate || !this.isValidDateString(ctx.createDate)) {
-      console.log('invalid createDate', { createDate: ctx.createDate });
       return null;
     }
 
-    console.log('✅ using cargo createDate (as-is):', ctx.createDate);
-    return ctx.createDate; // ✅ בלי להוריד שעות
+    return ctx.createDate;
   }
 
   private isValidDateString(s: string): boolean {
@@ -1794,5 +1952,97 @@ export class AddDocumentsComponent {
     }
 
     return '1'; // הצהרה רגילה
+  }
+
+  private getCargoParamsFromCurrentDec(): {
+    cargoType: string;
+    firstCargoID: string;
+    secondCargoID: string;
+    thirdCargoID: string;
+  } | null {
+    const raw = localStorage.getItem('currentDec');
+    if (!raw) return null;
+
+    let dec: any;
+    try {
+      dec = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+
+    const consignment =
+      dec?.ConsignmentPackagesMeasures?.[0]?.Consignments ?? null;
+
+    if (!consignment) return null;
+
+    const cargoType = String(
+      consignment?.TransportContractDocumentTypeCode?.code ??
+        consignment?.TransportContractDocumentTypeCode ??
+        '',
+    ).trim();
+
+    const firstCargoID = String(
+      consignment?.TransportContractDocumentID?.code ??
+        consignment?.TransportContractDocumentID ??
+        '',
+    ).trim();
+
+    const secondCargoID = String(
+      consignment?.SecondCargoID?.code ?? consignment?.SecondCargoID ?? '',
+    ).trim();
+
+    const thirdCargoID = String(
+      consignment?.ThirdCargoID?.code ?? consignment?.ThirdCargoID ?? '',
+    ).trim();
+
+    if (!cargoType || !firstCargoID || !secondCargoID) {
+      return null;
+    }
+
+    return {
+      cargoType,
+      firstCargoID,
+      secondCargoID,
+      thirdCargoID,
+    };
+  }
+
+  private refreshCargoCreateDateIfMissing(): Promise<boolean> {
+    if (!this.currentDecId) {
+      return Promise.resolve(false);
+    }
+
+    const params = this.getCargoParamsFromCurrentDec();
+    if (!params) {
+      return Promise.resolve(false);
+    }
+
+    return new Promise((resolve) => {
+      this.decService.getCagroQueryMessage$(params).subscribe({
+        next: (res: any) => {
+          const createDateField = res?.cargosVersionField?.[0]?.createDateField;
+
+          if (!createDateField) {
+            resolve(false);
+            return;
+          }
+
+          this.decService.setCargoContext({
+            decId: String(this.currentDecId),
+            key: {
+              cargoType: params.cargoType,
+              firstCargoID: params.firstCargoID,
+              secondCargoID: params.secondCargoID,
+              thirdCargoID: params.thirdCargoID,
+            },
+            createDate: createDateField,
+            receivedAtIso: new Date().toISOString(),
+          });
+
+          resolve(true);
+        },
+        error: () => resolve(false),
+      });
+    });
   }
 }

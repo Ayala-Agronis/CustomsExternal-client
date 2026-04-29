@@ -15,19 +15,21 @@ export class CustomsDataService {
   constructor(private http: HttpClient) {}
 
   getCustomsTableValues$(id: string): Observable<any> {
-    const url = `${apiConfig.customsdbApiUrl}/Sys`;
+    const url = `${apiConfig.customsdbApiUrl}Sys`;
     return this.http.get<any>(url, { params: { id } });
   }
 
   getChargingPortsByCountry$(countryCode: string): Observable<any> {
-    const url = `${apiConfig.customsdbApiUrl}/Sys/charging-ports`;
+    const url = `${apiConfig.customsdbApiUrl}Sys/charging-ports`;
     return this.http.get<any>(url, {
       params: { countryCode },
     });
   }
 
   getVendor$(): Observable<any> {
-    const url = `${apiConfig.customsdbApiUrl}/vendors`;
+    // const url = `${apiConfig.customsdbApiUrl}/vendors`;
+    const url = `${apiConfig.customsdbApiUrl}vendors`;
+
     return this.http.get<any>(url);
   }
 

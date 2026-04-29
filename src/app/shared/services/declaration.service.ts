@@ -32,11 +32,13 @@ export class DeclarationService {
   }
 
   setCargoContext(ctx: CargoContext) {
+    //debugger
     this.cargoContextSubject.next(ctx);
     localStorage.setItem(`cargoctx:${ctx.decId}`, JSON.stringify(ctx));
   }
 
   loadCargoContextFromStorage(decId: string) {
+    //debugger
     const raw = localStorage.getItem(`cargoctx:${decId}`);
     if (!raw) return null;
     try {

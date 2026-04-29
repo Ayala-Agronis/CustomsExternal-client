@@ -12,7 +12,7 @@
     aria-label="חזרה לשאילתת ההצהרות"
   ></button>
 
-  <div class="progress-spinner" *ngIf="loading">
+  <div class="progress-spinner" *ngIf="loading || cargoLookupLoading">
     <p-progressSpinner></p-progressSpinner>
   </div>
   <div class="title-container">
@@ -116,7 +116,7 @@
               inputId="autocomplete"
               [suggestions]="filteredCargoCompanyOptionsForCode17"
               (completeMethod)="filterCargoCompanyOptionsForCode17($event)"
-              (onSelect)="triggerCourierLookupIfNeeded()"
+              (onSelect)="onCargo17Blur()"
               field="name"
               [dropdown]="true"
             >
@@ -153,7 +153,7 @@
             <input
               pInputText
               formControlName="TransportContractDocumentID"
-              (blur)="onCargoIDBlur(2); triggerCourierLookupIfNeeded()"
+              (blur)="onCargo17Blur()"
             />
           </ng-container>
 

@@ -1804,7 +1804,7 @@ export class DeclarationFormTsComponent implements OnInit {
         { name: '', code: '' },
         Validators.required,
       ),
-      Id: this.formBuilder.control(null),
+      Id: this.formBuilder.control(0),
       BuyerName: this.formBuilder.control('', Validators.required),
       BuyerAddress: this.formBuilder.control('', Validators.required),
       BuyerIssueLocation: this.formBuilder.control(
@@ -1814,7 +1814,7 @@ export class DeclarationFormTsComponent implements OnInit {
       BuyerRole: this.formBuilder.control({ name: '', code: '' }),
       CustomsValuation: this.formBuilder.array([
         this.formBuilder.group({
-          ID: this.formBuilder.control(null),
+          ID: this.formBuilder.control(0),
           ChargesTypeCode: this.formBuilder.control({
             name: 'ביטוח',
             code: '67',
@@ -1826,7 +1826,7 @@ export class DeclarationFormTsComponent implements OnInit {
           ),
         }),
         this.formBuilder.group({
-          ID: this.formBuilder.control(null),
+          ID: this.formBuilder.control(0),
           ChargesTypeCode: this.formBuilder.control({
             name: 'הובלה',
             code: '144',
@@ -1936,6 +1936,7 @@ export class DeclarationFormTsComponent implements OnInit {
 
   private createSupplierInvoiceItem(): FormGroup {
     return this.formBuilder.group({
+      Id: this.formBuilder.control(0),
       ClassificationID: this.formBuilder.control('', Validators.required),
       MeasureQualifier: this.formBuilder.control(null),
       CustomsValueAmount: this.formBuilder.control(null, Validators.required),
@@ -2353,6 +2354,8 @@ export class DeclarationFormTsComponent implements OnInit {
         .pipe(takeUntil(this.destroy$))
         .subscribe((res: any) => {
           localStorage.setItem('activeIndex', '0');
+          localStorage.setItem('currentDecId', String(perfectDec.Id ?? ''));
+          localStorage.setItem('currentDec', JSON.stringify(res ?? perfectDec));
 
           if (this.unclassified) {
             // this.addEvent();
@@ -2547,6 +2550,19 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   sendDeclaration() {
+    const invalidInvoices = this.getInvoicesWithoutActiveItems();
+
+    if (invalidInvoices.length > 0) {
+      this.msgs1 = [
+        {
+          severity: 'error',
+          summary: 'לא ניתן לשלוח למכס',
+          detail: `יש חשבונית ללא שורת חשבון ספק: ${invalidInvoices.join(', ')}`,
+        },
+      ];
+
+      return;
+    }
     this.loading = true;
     const id = localStorage.getItem('currentDecId');
     const dec = this.generalDeclarationForm.value;
@@ -2592,6 +2608,19 @@ export class DeclarationFormTsComponent implements OnInit {
           localStorage.setItem('decVersion', perfectDec.VersionID);
           localStorage.setItem('CustomsStatus', perfectDec.CustomsStatus);
           this.loading = true;
+
+          const updatedDecForStorage = {
+            ...perfectDec,
+            DeclarationNumber: dec.DeclarationNumber,
+            VersionID: dec.VersionID,
+            CustomsStatus: dec.CustomsStatus,
+          };
+
+          localStorage.setItem('currentDecId', String(id ?? ''));
+          localStorage.setItem(
+            'currentDec',
+            JSON.stringify(updatedDecForStorage),
+          );
 
           this.decService
             .updateDeclarationTs$(id, perfectDec)
@@ -3863,5 +3892,35 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.displayVendorDialog = false;
     this.currentVendorInvoiceIndex = null;
+  }
+
+  private getInvoicesWithoutActiveItems(): number[] {
+    const supplierInvoices = this.generalDeclarationForm.get(
+      'SupplierInvoices',
+    ) as FormArray;
+
+    const invalidInvoices: number[] = [];
+
+    supplierInvoices.controls.forEach((invoiceControl, index) => {
+      const invoiceId = invoiceControl.get('Id')?.value;
+
+      // חשבונית שמסומנת למחיקה לא מעניינת אותנו
+      if (invoiceId < 0) return;
+
+      const items = invoiceControl.get('SupplierInvoiceItems') as FormArray;
+
+      const activeItems = items?.controls?.filter((itemControl) => {
+        const itemId = itemControl.get('Id')?.value;
+
+        // שורה קיימת שנמחקה מסומנת Id שלילי
+        return !(itemId < 0);
+      });
+
+      if (!activeItems || activeItems.length === 0) {
+        invalidInvoices.push(index + 1);
+      }
+    });
+
+    return invalidInvoices;
   }
 }
