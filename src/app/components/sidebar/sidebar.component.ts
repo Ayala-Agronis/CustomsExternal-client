@@ -24,7 +24,9 @@ export class SidebarComponent {
     localStorage.setItem('CustomsStatus', '');
     localStorage.setItem('activeIndex', '0');
     localStorage.setItem('maxIndex', '0');
-    this.router.navigate(['declaration-main/dec-form']);
+    this.router.navigate(['/declaration-main'], {
+      queryParams: { type: 'import' },
+    });
   }
 
   logout() {
@@ -74,29 +76,31 @@ export class SidebarComponent {
 
   navigateToNewDeclaration(type: string) {
     localStorage.setItem('currentDecId', '');
+    localStorage.setItem('currentDec', '');
     localStorage.setItem('CustomsStatus', '');
     localStorage.setItem('activeIndex', '0');
     localStorage.setItem('maxIndex', '0');
-    this.stepService.updateMaxIndex(0);
-    let path = '';
 
-    switch (type) {
-      case 'import':
-        path = 'dec-form';
-        break;
-      case 'transshipment':
-        path = 'dec-form-ts';
-        localStorage.setItem('decType', 'tr');
-        break;
-      case 'export':
-        path = 'dec-form-export';
-        break;
-      default:
-        path = 'dec-form-ts';
+    if (type === 'transshipment') {
+      localStorage.setItem('decType', 'tr');
+    } else if (type === 'import') {
+      localStorage.setItem('decType', 'regular');
+    } else if (type === 'export') {
+      localStorage.setItem('decType', 'ex');
     }
 
-    this.router.navigate([`declaration-main/${path}`], {
-      queryParams: { type },
+    this.stepService.updateMaxIndex(0);
+
+    const path =
+      type === 'transshipment'
+        ? '/declaration-main/dec-form-ts'
+        : '/declaration-main/dec-form';
+
+    this.router.navigate([path], {
+      queryParams: {
+        type,
+        newDeclaration: Date.now(),
+      },
     });
   }
 }

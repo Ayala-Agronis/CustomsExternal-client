@@ -33,6 +33,15 @@ export class HomePageComponent implements OnInit {
   isClientAuthorized = true;
   showButtonMenu: boolean = false;
 
+  processSteps = [
+    'הזנת נתוני הצהרה',
+    'הוספת מסמכים',
+    'תשלום מסים ועמלת שחרור',
+    'קבלת התרה ותדפיס הצהרה',
+  ];
+
+  activeProcessStep = 0;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,

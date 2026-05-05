@@ -84,4 +84,13 @@ export class CustomsDataService {
       },
     );
   }
+
+  getDecTaxesByAgentFileReferenceId$(
+    agentFileReferenceId: string,
+  ): Observable<any[]> {
+    const url = `${apiConfig.customsdbApiUrl}DecTaxes`;
+    return this.http.get<any[]>(url, {
+      params: { id: agentFileReferenceId },
+    });
+  }
 }

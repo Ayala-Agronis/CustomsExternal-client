@@ -112,11 +112,21 @@
     </div>
 
     <div class="steps-side">
-      <img
-        src="assets/home-page/Frame4.png"
-        alt="שלבי התהליך"
-        class="img-fluid"
-      />
+      <div class="process-steps-box" dir="rtl">
+        <h2 class="process-title">איך עובד התהליך?</h2>
+
+        <div class="steps-list">
+          <div
+            class="process-step"
+            *ngFor="let step of processSteps; let i = index"
+            [class.active]="activeProcessStep === i"
+            (mouseenter)="activeProcessStep = i"
+          >
+            <span class="step-number">{{ i + 1 }}</span>
+            <span class="step-text">{{ step }}</span>
+          </div>
+        </div>
+      </div>
 
       <div class="button-wrapper">
         <button class="btn-orange-start" (click)="goToStart()">

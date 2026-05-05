@@ -110,7 +110,7 @@ header {
     font-size: clamp(34px, 4.5vw, 52px);
     // font-size: 48px;
     color: $color-13;
-    font-weight: 800;
+    // font-weight: 800;
     line-height: 1.1;
   }
 
@@ -198,7 +198,7 @@ header {
 .mid-title {
   font-size: 36px;
   color: $color-13;
-  font-weight: 800;
+  // font-weight: 800;
   margin-bottom: 20px;
   position: relative;
 }
@@ -272,7 +272,7 @@ header {
     gap: 15px;
     color: $color-13;
     font-size: clamp(25px, 3vw, 40px);
-    font-weight: 800;
+    // font-weight: 800;
     margin-bottom: 50px;
 
     .inline-logo {
@@ -314,7 +314,7 @@ header {
 
   .benefit-title {
     color: $color-13;
-    font-weight: 800;
+    // font-weight: 800;
     font-size: clamp(18px, 2.2vw, 22px);
     margin-bottom: 10px;
     line-height: 1.2;
@@ -355,7 +355,7 @@ header {
   .products-main-title {
     color: $color-13;
     font-size: 32px;
-    font-weight: 800;
+    // font-weight: 800;
   }
 }
 
@@ -398,7 +398,7 @@ header {
   .product-title {
     color: $color-13;
     font-size: 24px;
-    font-weight: 800;
+    // font-weight: 800;
     margin-bottom: 15px;
   }
 
@@ -419,7 +419,7 @@ header {
   .faq-title {
     color: #000000;
     font-size: 32px;
-    font-weight: 800;
+    // font-weight: 800;
     margin-bottom: 50px;
   }
 }
@@ -557,4 +557,63 @@ header {
     max-width: 220px;
     height: auto;
   }
+}
+
+.process-steps-box {
+  width: 100%;
+  max-width: 670px;
+  color: #fff;
+}
+
+.process-title {
+  margin: 0 0 50px;
+  text-align: center;
+  font-size: 28px;
+  // font-weight: 800;
+  color: #fff;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.process-step {
+  position: relative;
+  min-height: 80px;
+  padding: 0 95px 0 34px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: #0f3a7d;
+  border-radius: 4px;
+  cursor: default;
+  transition: 0.25s ease;
+}
+
+.process-step.active,
+.process-step:hover {
+  background: #234f9c;
+}
+
+.step-number {
+  position: absolute;
+  right: 25px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 58px;
+  line-height: 1;
+  color: #f5a400;
+}
+
+.step-text {
+  font-size: 22px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.button-wrapper {
+  margin-top: 55px;
+  text-align: center;
 }
