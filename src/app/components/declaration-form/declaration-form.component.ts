@@ -200,6 +200,8 @@ export class DeclarationFormComponent implements OnInit {
   portsLoading: boolean = false;
 
   private destroy$ = new Subject<void>();
+  private initDestroy$ = new Subject<void>();
+
   secondCargoIDError: any;
   showCustomsValuation: boolean[] = [];
   fieldLabels: any = {
@@ -250,10 +252,18 @@ export class DeclarationFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.initForm();
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => {
+        this.initDestroy$.next();
+        this.initForm();
 
-    const params = this.route.snapshot.queryParams;
+        //const params = this.route.snapshot.queryParams;
+        this.initWithParams(params);
+      });
+  }
 
+  private initWithParams(params: any): void {
     this.mode = params['Mode'];
     this.declarationType = params['type'] || 'import';
     this.isCopyMode = params['copyMode'] === 'true';
@@ -400,15 +410,17 @@ export class DeclarationFormComponent implements OnInit {
           return res;
         }),
       ),
-    ]).subscribe(() => {
-      this.consignmentInit(() => {
-        if (this.mode === 'e') {
-          localStorage.setItem('maxIndex', '2');
-          this.customStatus = localStorage.getItem('CustomsStatus');
-          this.initElements();
-        }
+    ])
+      .pipe(takeUntil(this.initDestroy$))
+      .subscribe(() => {
+        this.consignmentInit(() => {
+          if (this.mode === 'e') {
+            localStorage.setItem('maxIndex', '2');
+            this.customStatus = localStorage.getItem('CustomsStatus');
+            this.initElements();
+          }
+        });
       });
-    });
 
     // if (this.mode === 'copy') {
     //   return;
@@ -431,21 +443,21 @@ export class DeclarationFormComponent implements OnInit {
     this.deferFormErrorsMessageUpdate();
 
     this.generalDeclarationForm.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe(() => {
         this.deferFormErrorsMessageUpdate();
       });
 
     this.generalDeclarationForm
       .get('VersionID')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      ?.valueChanges.pipe(takeUntil(this.initDestroy$))
       .subscribe(() => {
         this.updateBrokerRoutingState();
       });
 
     this.generalDeclarationForm
       .get('Consignments.TransportContractDocumentTypeCode')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      ?.valueChanges.pipe(takeUntil(this.initDestroy$))
       .subscribe((value) => {
         const consignmentsGroup = this.generalDeclarationForm.get(
           'Consignments',
@@ -495,7 +507,7 @@ export class DeclarationFormComponent implements OnInit {
       });
     //data from cargo query
     this.decService.packageData$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe((data) => {
         if (data) {
           (
@@ -546,8 +558,8 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.initDestroy$.next();
+    this.initDestroy$.complete();
   }
 
   // consignmentInit() {
@@ -1267,7 +1279,7 @@ export class DeclarationFormComponent implements OnInit {
     let currentDec: any;
     this.decService
       .getDeclaration(decId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe((res) => {
         this.initElementsWithData(res);
         this.loading = false;
@@ -1398,7 +1410,7 @@ export class DeclarationFormComponent implements OnInit {
       this.getChargingPortsByCountry$(
         currentConsignment?.ExportationCountryCode,
       )
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntil(this.initDestroy$))
         .subscribe((ports) => {
           this.declarationChargingCountry = ports;
           this.filteredChargingCountry = ports;
@@ -2693,8 +2705,8 @@ export class DeclarationFormComponent implements OnInit {
     }
 
     this.customsDataService
-      .hasValidSbtEvent$('1', decId)
-      .pipe(takeUntil(this.destroy$))
+      .hasValidExternalLockEvent$('1', decId)
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe({
         next: (res) => {
           this.isLockedBySbtEvent = res?.isLocked === true;
@@ -2735,7 +2747,8 @@ export class DeclarationFormComponent implements OnInit {
 
     this.documentsService
       .hasDocumentsForDeclaration$(declarationId)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.initDestroy$))
+
       .subscribe((hasDocs) => {
         this.showBtnCustoms = hasDocs;
       });

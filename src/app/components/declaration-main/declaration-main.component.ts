@@ -90,7 +90,7 @@ export class DeclarationMainComponent implements OnInit {
       }
 
       this.buildSteps();
-      this.navigateBasedOnStep(null);
+      //this.navigateBasedOnStep(null);
     });
 
     this.stepService.maxIndex$.subscribe((index: any) => {
@@ -156,6 +156,8 @@ export class DeclarationMainComponent implements OnInit {
     this.activeIndex = 0;
     localStorage.setItem('currentDecId', '');
     localStorage.setItem('CustomsStatus', '');
+    localStorage.removeItem('currentDecId');
+    localStorage.removeItem('CustomsStatus');
     localStorage.setItem('activeIndex', '0');
     localStorage.setItem('maxIndex', '0');
     this.stepService.updateMaxIndex(0);
@@ -244,6 +246,10 @@ export class DeclarationMainComponent implements OnInit {
 
   logout() {
     localStorage.setItem('isRegister', 'false');
+  }
+
+  navigateToHomePage() {
+    this.router.navigate(['home-page']);
   }
 
   buildSteps(): void {

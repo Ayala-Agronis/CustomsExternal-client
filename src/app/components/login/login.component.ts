@@ -25,6 +25,8 @@ import { Message, MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { MixpanelService } from '../../shared/services/mixpanel.service';
+import { CheckboxModule } from 'primeng/checkbox';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
@@ -37,6 +39,8 @@ import { MixpanelService } from '../../shared/services/mixpanel.service';
     PasswordModule,
     ProgressSpinnerModule,
     MessagesModule,
+    FormsModule,
+    CheckboxModule,
   ],
   providers: [MessageService],
   templateUrl: './login.component.html',
@@ -77,6 +81,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
           updateOn: 'change',
         },
       ],
+      RememberMe: [false],
     });
   }
 
@@ -155,23 +160,29 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.loading = true;
       console.log('in login');
 
-      this.userService.login(this.loginForm.value).subscribe({
+      // this.userService.login(this.loginForm.value).subscribe({
+      const payload = {
+        Email: this.loginForm.value.Email,
+        Password: this.loginForm.value.Password,
+        RememberMe: this.loginForm.value.RememberMe,
+      };
+      this.userService.login(payload).subscribe({
         next: (res) => {
           if (res.body.token) {
             localStorage.setItem('authToken', res.body.token);
             localStorage.setItem('isRegister', 'true');
             localStorage.setItem('userId', res.body.user.Id);
 
-            this.customsDataService
-              .GetClient$(res.body.Id)
-              .subscribe((client) => {
-                const status =
-                  client?.generalCustomerDataField?.costomerStatusForCAField;
-                localStorage.setItem(
-                  'isClientAuthorized',
-                  status === 6 ? 'false' : 'true',
-                );
-              });
+            // this.customsDataService
+            //   .GetClient$(res.body.Id)
+            //   .subscribe((client) => {
+            //     const status =
+            //       client?.generalCustomerDataField?.costomerStatusForCAField;
+            //     localStorage.setItem(
+            //       'isClientAuthorized',
+            //       status === 6 ? 'false' : 'true',
+            //     );
+            //   });
 
             const userJson = JSON.stringify(res.body.user);
             localStorage.setItem('user', userJson);

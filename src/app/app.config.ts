@@ -1,8 +1,12 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
+import { withRouterConfig } from '@angular/router';
 
 // ✅ ייבוא האינטרספטור שלך
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -10,7 +14,12 @@ import { AuthInterceptor } from './shared/interceptors/auth.interceptor'; // ו�
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withRouterConfig({
+        onSameUrlNavigation: 'reload',
+      }),
+    ),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptorsFromDi()),
 
@@ -18,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 };

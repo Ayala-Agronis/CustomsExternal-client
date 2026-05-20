@@ -30,8 +30,8 @@ $color-13: #002966;
 
 // החל פונט רק על טקסטים, לא על אייקונים וכפתורים של ספריות
 body {
-  // font-family: 'Ploni', Arial, sans-serif;
-  font-family: "Rubik", sans-serif;
+  font-family: 'Ploni', Arial, sans-serif;
+  // font-family: "Rubik", sans-serif;
 }
 
 // טקסטים בלבד
@@ -45,22 +45,22 @@ h4,
 h5,
 h6,
 div {
-  // font-family: 'Ploni', Arial, sans-serif;
-  font-family: "Rubik", sans-serif;
+  font-family: 'Ploni', Arial, sans-serif;
+  // font-family: "Rubik", sans-serif;
 }
 
 // שדות קלט
 input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {
-  // font-family: 'Ploni', Arial, sans-serif;
-  font-family: "Rubik", sans-serif;
+  font-family: 'Ploni', Arial, sans-serif;
+  // font-family: "Rubik", sans-serif;
 }
 
 // כפתורים שאינם של PrimeNG
 button:not(.p-button) {
-  // font-family: 'Ploni', Arial, sans-serif;
-  font-family: "Rubik", sans-serif;
+  font-family: 'Ploni', Arial, sans-serif;
+  // font-family: "Rubik", sans-serif;
 }
 
 .progress-spinner {
@@ -122,10 +122,14 @@ button:not(.p-button) {
 }
 
 .form {
-  background: rgba(249, 250, 251, 1);
+  background: transparent;
   width: 80vw;
-  min-height: 60vh;
   margin: auto;
+  border-radius: 16px;
+}
+
+.form.dec-form {
+  background: transparent !important;
 }
 
 .title {

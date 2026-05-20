@@ -183,6 +183,7 @@ export class DeclarationFormTsComponent implements OnInit {
   formattedCustomsErrors: any[] = [];
 
   private destroy$ = new Subject<void>();
+  private initDestroy$ = new Subject<void>();
   secondCargoIDError: any;
   showCustomsValuation: boolean[] = [];
   fieldLabels: any = {
@@ -303,17 +304,19 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.columns = ['מוצר מיובא *', 'כמות *', 'ערך טובין *', 'ארץ מקור *'];
 
-    /* =========================
-       Query Params
-    ========================= */
-    console.time('queryParams subscribe');
-
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
-        console.timeLog('queryParams subscribe', 'params arrived');
-        console.log('queryParams', params);
+        this.initDestroy$.next();
+        this.initForm();
+        this.runInit(params);
+      });
 
+    this.loadClassificationData();
+    console.timeEnd('ngOnInit TOTAL');
+  }
+
+  private runInit(params: any): void {
         this.mode = params['Mode'];
         this.sendToCustoms = params['Send'];
         this.declarationType = params['type'] || 'import';
@@ -384,19 +387,9 @@ export class DeclarationFormTsComponent implements OnInit {
           ];
         }
 
-        console.timeEnd('queryParams subscribe');
-      });
-
-    /* =========================
-       initForm (global)
-    ========================= */
-    console.time('initForm (global)');
-    this.initForm();
-    console.timeEnd('initForm (global)');
-
     this.generalDeclarationForm
       .get('VersionID')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      ?.valueChanges.pipe(takeUntil(this.initDestroy$))
       .subscribe(() => {
         this.updateBrokerRoutingState();
       });
@@ -421,7 +414,7 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.generalDeclarationForm
       .get('Consignments.ExportationCountryCode')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      ?.valueChanges.pipe(takeUntil(this.initDestroy$))
       .subscribe((country: any) => {
         const supplierInvoices = this.generalDeclarationForm.get(
           'SupplierInvoices',
@@ -443,17 +436,10 @@ export class DeclarationFormTsComponent implements OnInit {
 
     this.deferFormErrorsMessageUpdate();
     this.generalDeclarationForm.valueChanges
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe(() => {
         this.deferFormErrorsMessageUpdate();
       });
-
-    /* =========================
-       loadClassificationData
-    ========================= */
-    console.time('loadClassificationData');
-    this.loadClassificationData();
-    console.timeEnd('loadClassificationData');
 
     /* =========================
        packageData$
@@ -461,7 +447,7 @@ export class DeclarationFormTsComponent implements OnInit {
     console.time('packageData$ subscribe');
 
     this.decService.packageData$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe((data) => {
         console.timeLog('packageData$ subscribe', 'data received');
 
@@ -592,8 +578,7 @@ export class DeclarationFormTsComponent implements OnInit {
             )
           : of(null),
     })
-      .pipe(takeUntil(this.destroy$))
-
+      .pipe(takeUntil(this.initDestroy$))
       .subscribe((res) => {
         console.timeEnd('forkJoin TABLES');
         console.log('✅ forkJoin result keys:', Object.keys(res));
@@ -679,8 +664,7 @@ export class DeclarationFormTsComponent implements OnInit {
         // ✅ לזה (עם subscribe):
         console.time('consignmentInit');
         this.consignmentInit()
-          .pipe(takeUntil(this.destroy$))
-
+          .pipe(takeUntil(this.initDestroy$))
           .subscribe(() => {
             console.timeEnd('consignmentInit');
 
@@ -768,10 +752,9 @@ export class DeclarationFormTsComponent implements OnInit {
         //     }
         //   });
       });
-    console.timeEnd('ngOnInit TOTAL');
   }
 
-  // ✅ הוסף את הפונקציה הזאת אחרי ngOnInit:
+  // ✅ הוסף את הפונקציה הזאת אחרי runInit:
   private buildMaps(data: any): void {
     console.time('🗺️ Building Maps');
 
@@ -1295,6 +1278,8 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
+    this.initDestroy$.next();
+    this.initDestroy$.complete();
     this.destroy$.next();
     this.destroy$.complete();
   }

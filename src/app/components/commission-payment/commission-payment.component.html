@@ -1,4 +1,11 @@
 <div class="payment-page" dir="rtl">
+  <div class="return-loader-overlay" *ngIf="isReturningFromPayment">
+    <div class="return-loader-box">
+      <div class="spinner"></div>
+      <div class="loader-text">טוען את תוצאות התשלום...</div>
+    </div>
+  </div>
+  <div *ngIf="!isReturningFromPayment">
     <div class="payment-header">
       <h2>תשלום מסים ועמלת שחרור</h2>
     </div>
@@ -9,6 +16,15 @@
       [(value)]="msgs1"
       [enableService]="false"
     ></p-messages>
+
+    <div
+      *ngIf="paymentStatus === false && !isAlreadyPaid"
+      class="retry-payment-container"
+    >
+      <button type="button" class="retry-payment-btn" (click)="retryPayment()">
+        נסה שוב לשלם
+      </button>
+    </div>
 
     <div class="loading-box" *ngIf="loadingPaymentData">
       טוען נתוני תשלום...
@@ -26,7 +42,6 @@
           </thead>
 
           <tbody>
-
             <tr *ngIf="releaseFeeRow" class="release-row">
               <td>{{ releaseFeeRow.name }}</td>
               <td class="amount-cell" dir="ltr">
@@ -50,8 +65,6 @@
                 <span class="vat-mark no">×</span>
               </td>
             </tr>
-
-            
           </tbody>
 
           <tfoot>
@@ -65,13 +78,17 @@
 
             <tr>
               <td>מע"מ 18%</td>
-              <td class="amount-cell" dir="ltr">₪ {{ getVatAmount() | number: "1.2-2" }}</td>
+              <td class="amount-cell" dir="ltr">
+                ₪ {{ getVatAmount() | number: "1.2-2" }}
+              </td>
               <td></td>
             </tr>
 
             <tr class="total-row">
               <td>סה"כ כולל מע"מ</td>
-              <td class="amount-cell" dir="ltr">₪ {{ getTotalWithVat() | number: "1.2-2" }}</td>
+              <td class="amount-cell" dir="ltr">
+                ₪ {{ getTotalWithVat() | number: "1.2-2" }}
+              </td>
               <td></td>
             </tr>
           </tfoot>
@@ -93,4 +110,5 @@
         ></iframe>
       </div>
     </div>
+  </div>
 </div>

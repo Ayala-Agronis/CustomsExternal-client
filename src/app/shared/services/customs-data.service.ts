@@ -85,6 +85,30 @@ export class CustomsDataService {
     );
   }
 
+  hasValidExternalLockEvent$(
+    entityTypeId: string,
+    entityKey: string,
+  ): Observable<any> {
+    return this.http.get<any>(
+      `${apiConfig.customsdbApiUrl}Events/HasValidExternalLockEvent`,
+      {
+        params: { entityTypeId, entityKey },
+      },
+    );
+  }
+
+  hasValidPaymentSuccessEvent$(
+    entityTypeId: string,
+    entityKey: string,
+  ): Observable<any> {
+    return this.http.get<any>(
+      `${apiConfig.customsdbApiUrl}Events/HasValidPaymentSuccessEvent`,
+      {
+        params: { entityTypeId, entityKey },
+      },
+    );
+  }
+
   getDecTaxesByAgentFileReferenceId$(
     agentFileReferenceId: string,
   ): Observable<any[]> {

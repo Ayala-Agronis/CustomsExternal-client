@@ -42,10 +42,10 @@ buildMenuItems(): void {
       label: 'תעריף מכס',
       routerLink: '/customs-book-query',
     },
-    {
-      label: 'דברו איתנו',
-      command: () => this.handleSectionNavigation('footerSection'),
-    },
+    // {
+    //   label: 'דברו איתנו',
+    //   command: () => this.handleSectionNavigation('footerSection'),
+    // },
   ];
 
   if (this.isRegister) 

@@ -55,6 +55,7 @@
         </div>
       </div>
 
+<div class="actions-wrapper">
       <div class="btnSubmit">
         <button type="submit" (click)="onSubmit()" class="button-primary">
           התחברות
@@ -67,10 +68,20 @@
           הרשמה
         </button>
       </div>
+      <div class="remember-me">
+        <p-checkbox
+          formControlName="RememberMe"
+          binary="true"
+          inputId="rememberMe"
+        ></p-checkbox>
 
+        <label for="rememberMe">השאר אותי מחובר</label>
+      </div>
+      </div>
+      <!-- <button class="btnGoogle" (click)="loginWithGoogle()">
       <button class="btnGoogle" (click)="loginWithGoogle()">
         <i class="pi pi-google google-icon"></i>התחברות באמצעות גוגל
-      </button>
+      </button> -->
     </form>
   </div>
 

@@ -77,15 +77,28 @@
 .p-password-panel {
   display: none !important;
 }
+
 .btnSubmit {
   display: flex;
-  gap: 10px; // הרווח בין הכפתורים
-
+  gap: 10px;
   margin-top: 15px;
   direction: ltr;
-  margin-left: 40%;
-  z-index: 90000;
-  position: relative;
+}
+
+.actions-wrapper {
+  margin-right: 25%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.remember-me {
+  margin-right: 8%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  align-self: flex-start;
 }
 
 .overlay-spinner {

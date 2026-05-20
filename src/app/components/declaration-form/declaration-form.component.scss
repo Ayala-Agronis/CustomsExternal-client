@@ -1,5 +1,20 @@
 @import "./../../../styles.scss";
 
+.packages-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.packages-row .form-subtitle {
+  margin: 0;
+}
+
+.packages-row .form-item {
+  width: 180px;
+}
+
 p-calendar {
   direction: ltr;
 }
@@ -34,7 +49,7 @@ p-calendar {
 }
 
 .right-side .form-item {
-  width: 20%;
+  width: auto !important;
 }
 
 .btns {
@@ -74,7 +89,7 @@ td {
 }
 
 .readonly-field {
-  background-color: #f5f5f5;
+  background-color: white;
   color: #6c757d;
   border: 1px solid #ced4da;
 }
@@ -86,7 +101,8 @@ td {
 
 .vendor-label {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
 }
 
 // .valuations input,
@@ -110,7 +126,7 @@ td {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 6px;
-  background-color: #f9f9f9;
+  background-color: white;
   display: flex;
   flex-direction: column;
 }
@@ -179,6 +195,14 @@ input {
   gap: 30px;
 }
 
+::ng-deep .p-card,
+::ng-deep .p-card .p-card-content,
+::ng-deep .p-card .p-card-body {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
 ::ng-deep .p-button {
   color: black;
   background-color: white;
@@ -228,9 +252,29 @@ input {
   border: 1px solid #ccc;
 }
 
+::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  padding: 0.1rem 0.3rem !important;
+  background-color: transparent !important;
+}
+
+::ng-deep .p-datatable .p-datatable-tbody > tr,
+::ng-deep .p-datatable .p-datatable-thead > tr,
+::ng-deep .p-datatable .p-datatable-tfoot > tr {
+  background: transparent !important;
+}
+
 ::ng-deep .p-datatable .p-datatable-tbody > tr > td,
 ::ng-deep .p-datatable .p-datatable-tfoot > tr > td {
   padding: 0.2rem 0.5rem;
+  background-color: transparent !important;
+}
+
+::ng-deep .p-table,
+::ng-deep .p-datatable,
+::ng-deep .p-datatable-wrapper,
+::ng-deep .p-datatable-table,
+::ng-deep .p-datatable-header {
+  background: transparent !important;
 }
 
 ::ng-deep .valuations .p-datatable .p-datatable-tbody > tr > td,
@@ -239,8 +283,8 @@ input {
 }
 
 ::ng-deep.p-button.p-button-icon-only {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1rem;
+  height: 1rem;
   // margin-bottom: -1rem;
 }
 
@@ -309,18 +353,18 @@ input {
 }
 
 .supplierInvoices-container .right-side > .form-group {
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: space-between;
+  display: grid !important;
+  grid-template-columns: 1fr 1.75fr 0.75fr 1fr 1fr 1fr 1.25fr 1fr;
   gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .supplierInvoices-container .right-side > .form-group > .form-item {
-  flex: 0 0 calc(100% / 8 - 8px);
-  /* 8 עמודות עם ריווח */
-  max-width: 12.5%;
-  min-width: 110px;
+  width: 100% !important;
+  min-width: 0;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .supplierInvoices-container .right-side > .form-group input,
@@ -391,11 +435,11 @@ input {
 .form-group .form-item .p-inputwrapper,
 .form-group .form-item .p-dropdown,
 .form-group .form-item .p-calendar {
-  width: 178px;
+  width: 100%;
   box-sizing: border-box;
 }
 .form-item {
-  width: 178px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -472,7 +516,7 @@ input {
   font-weight: bold;
 }
 
-.broker-routing-message{
+.broker-routing-message {
   font-weight: bold;
 }
 

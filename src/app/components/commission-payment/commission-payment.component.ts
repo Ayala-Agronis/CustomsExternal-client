@@ -9,6 +9,8 @@ import { MessagesModule } from 'primeng/messages';
 import { forkJoin } from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { TranzilaService } from '../../shared/services/tranzila.service';
+import { DeclarationService } from '../../shared/services/declaration.service';
+
 @Component({
   selector: 'app-commission-payment',
   standalone: true,
@@ -18,23 +20,26 @@ import { TranzilaService } from '../../shared/services/tranzila.service';
   styleUrl: './commission-payment.component.scss',
 })
 export class CommissionPaymentComponent implements OnInit {
-  iframeUrl: string = '';
-  paymentSuccess: boolean = false;
+  iframeUrl = '';
+  paymentSuccess = false;
   paymentStatus: any;
-  paymentAmount: number = 0;
+  paymentAmount = 0;
   paymentRows: any[] = [];
   taxTypes: any[] = [];
   currentDec: any;
   loadingPaymentData = false;
+  isReturningFromPayment = false;
   currency: any;
   decId: any;
   confirmationCode: any;
 
   msgs1: Message[] = [];
-  typeDec: string = 'tr';
+  typeDec = 'tr';
 
   taxRows: any[] = [];
   releaseFeeRow: any = null;
+
+  isAlreadyPaid = false;
 
   constructor(
     private stepService: StepService,
@@ -43,87 +48,161 @@ export class CommissionPaymentComponent implements OnInit {
     private paymentService: PaymentService,
     private customsDataService: CustomsDataService,
     private tranzilaService: TranzilaService,
+    private declarationService: DeclarationService,
   ) {}
 
   ngOnInit(): void {
     this.typeDec = localStorage.getItem('decType') || '';
-
     this.decId = localStorage.getItem('currentDecId');
     this.currentDec = this.getCurrentDeclarationFromStorage();
+
     this.route.queryParams.subscribe((params) => {
+      const returnedDeclarationId = params['declarationId'];
+
+      if (returnedDeclarationId) {
+        this.decId = returnedDeclarationId;
+        localStorage.setItem('currentDecId', returnedDeclarationId);
+      }
+
+      const paymentStatus = params['paymentStatus'];
+
+      if (paymentStatus) {
+        this.isReturningFromPayment = true;
+        // if (paymentStatus === 'success') {
+        //   this.paymentStatus = true;
+        //   this.nextStep();
+        //   return;
+        // }
+
+        if (paymentStatus === 'success') {
+          this.paymentStatus = true;
+          this.isAlreadyPaid = true;
+          this.iframeUrl = '';
+
+          this.msgs1 = [
+            {
+              severity: 'success',
+              summary: 'התשלום בוצע בהצלחה',
+              detail: 'התשלום נקלט בהצלחה. מעבירים למסך ההצהרה...',
+            },
+          ];
+
+          this.loadPaymentData(false);
+
+          setTimeout(() => {
+            this.goToDeclarationAfterSuccess();
+          }, 1200);
+
+          return;
+        }
+
+        this.paymentStatus = false;
+        this.iframeUrl = '';
+
+        // this.msgs1 = [
+        //   {
+        //     severity: 'error',
+        //     summary: 'תשלום נכשל',
+        //     detail: `התשלום נכשל. קוד שגיאה: ${params['responseCode'] || ''}`,
+        //   },
+        // ];
+
+        this.setPaymentFailMessage(params['responseCode'] || '');
+
+        this.loadPaymentData(false);
+        return;
+      }
+
       const isFailed = params['fail'];
       if (isFailed) {
-        this.msgs1 = [
-          { severity: 'error', summary: 'תשלום נכשל  ', detail: 'נסה שוב' },
-        ];
-      }
-      const success = params['Success'];
-      if (success == undefined) {
-        this.loadPaymentData();
-      } else {
-        const successData = success.split('&');
-        let currencyCode = '';
-        successData.forEach((param: any) => {
-          if (param.startsWith('currency=')) {
-            currencyCode = param.split('=')[1];
-          } else if (param.startsWith('ConfirmationCode')) {
-            this.confirmationCode = param.split('=')[1];
-          }
-        });
-        this.currency = this.convertCurrency(currencyCode);
+        this.paymentStatus = false;
+        this.iframeUrl = '';
 
-        console.log('Success:', success); //Success:"false&Response=039&lang=us&ccard=&expmonth=04&currency=1&ccno=8527&expyear=26&supplier=customsil&sum=2&benid=16sq53o1kqtvcsthihff9gq7d1&ConfirmationCode=0000000&cardtype=2&cardissuer=6&cardaquirer=0&index=17&Tempref=01220001&"[[Prototype]]: Object
-        //"true&Response=000&lang=us&ccard=&expmonth=11&currency=1&ccno=8525&expyear=30&supplier=customsil&sum=2&benid=16sq53o1kqtvcsthihff9gq7d1&ConfirmationCode=0000000&cardtype=2&cardissuer=6&cardaquirer=6&index=18&Tempref=01570002&"
-        if (success && success.startsWith('true')) {
-          this.paymentStatus = true;
-          this.savePaymentStatus(true);
-          this.nextStep();
-        } else {
-          this.paymentStatus = false;
-          // this.savePaymentStatus(false);
-          this.nextTry();
-        }
+        this.msgs1 = [
+          {
+            severity: 'error',
+            summary: 'תשלום נכשל',
+            detail: 'נסה שוב',
+          },
+        ];
+
+        this.loadPaymentData(false);
+        return;
       }
+
+      // this.loadPaymentData(true);
+      this.checkIfAlreadyPaid();
     });
   }
 
-  nextStep() {
-    if (window.top) {
-      if (this.typeDec == 'tr') {
-        this.stepService.emitStepCompleted('dec-form-ts');
-        window.top.location.href =
-          '/declaration-main/dec-form-ts?customsSend=true&Mode=e';
-      } else {
-        this.stepService.emitStepCompleted('dec-form');
-        window.top.location.href =
-          '/declaration-main/dec-form?customsSend=true&Mode=e';
-      }
-    }
+  goToDeclarationAfterSuccess(): void {
+    this.declarationService.getDeclaration(this.decId).subscribe({
+      next: (dec) => {
+        localStorage.setItem('currentDec', JSON.stringify(dec || {}));
+        localStorage.setItem('currentDecId', String(this.decId || ''));
+
+        this.router.navigate(['/declaration-main/dec-form'], {
+          queryParams: {
+            customsSend: true,
+            Mode: 'e',
+            declarationId: this.decId,
+          },
+        });
+      },
+      error: () => {
+        this.router.navigate(['/declaration-main/dec-form'], {
+          queryParams: {
+            customsSend: true,
+            Mode: 'e',
+            declarationId: this.decId,
+          },
+        });
+      },
+    });
   }
 
-  nextTry() {
-    if (window.top) {
-      // this.stepService.emitStepCompleted('commission-payment');
-      window.top.location.href =
-        '/declaration-main/commission-payment?Mode=e&fail=true';
+  nextStep(): void {
+    if (this.typeDec === 'tr') {
+      this.stepService.emitStepCompleted('dec-form-ts');
+    } else {
+      this.stepService.emitStepCompleted('dec-form');
     }
+
+    this.goToDeclarationAfterSuccess();
   }
 
-  // nextStep() {
-  //   this.router.navigate(['declaration-main/dec-form'], { queryParams: { customsSend: true, 'Mode': 'e' } })
-  //   this.stepService.emitStepCompleted('dec-form');
-
-  // }
-
-  previousStep() {
+  previousStep(): void {
     this.stepService.emitStepCompleted('-');
   }
 
-  openTransaction() {
-    this.iframeUrl = this.tranzilaService.buildIframeUrl(this.paymentAmount);
+  retryPayment(): void {
+    this.msgs1 = [];
+    this.iframeUrl = '';
+    this.openTransaction();
   }
 
-  savePaymentStatus(success: boolean) {
+  openTransaction(): void {
+    const returnUrl = `${window.location.origin}/declaration-main/commission-payment`;
+
+    this.tranzilaService
+      .createPaymentUrl$(this.paymentAmount, Number(this.decId), returnUrl)
+      .subscribe({
+        next: (res) => {
+          this.iframeUrl = res.iframeUrl;
+        },
+        error: () => {
+          this.msgs1 = [
+            {
+              severity: 'error',
+              summary: 'שגיאה',
+              detail: 'לא ניתן לפתוח תשלום כעת',
+            },
+          ];
+        },
+      });
+  }
+
+  savePaymentStatus(success: boolean): void {
     const paymentData = {
       declarationNumber: this.decId,
       isPaid: success ? 1 : 0,
@@ -133,11 +212,7 @@ export class CommissionPaymentComponent implements OnInit {
       currency: this.currency,
     };
 
-    this.paymentService
-      .saveCustomerPayment(paymentData)
-      .subscribe((response) => {
-        console.log(response);
-      });
+    this.paymentService.saveCustomerPayment(paymentData).subscribe();
   }
 
   convertCurrency(currencyCode: string): string {
@@ -169,7 +244,7 @@ export class CommissionPaymentComponent implements OnInit {
     }
   }
 
-  loadPaymentData(): void {
+  loadPaymentData(openIframe: boolean = true): void {
     const agentFileReferenceId = this.currentDec?.AgentFileReferenceID;
 
     if (!agentFileReferenceId) {
@@ -195,7 +270,7 @@ export class CommissionPaymentComponent implements OnInit {
       next: ({ taxes, taxTypes }) => {
         this.taxTypes = taxTypes || [];
 
-        const taxRows = (taxes || []).map((tax: any) => {
+        this.taxRows = (taxes || []).map((tax: any) => {
           const type = this.taxTypes.find(
             (x: any) => String(x.Code) === String(tax.TaxTypeCode),
           );
@@ -207,8 +282,6 @@ export class CommissionPaymentComponent implements OnInit {
           };
         });
 
-        this.taxRows = taxRows;
-
         this.releaseFeeRow = {
           name: 'עמלת שחרור',
           amount: this.getReleaseFee(),
@@ -216,14 +289,17 @@ export class CommissionPaymentComponent implements OnInit {
         };
 
         this.paymentRows = [...this.taxRows, this.releaseFeeRow];
-
         this.paymentAmount = this.getTotalWithVat();
         this.loadingPaymentData = false;
+        this.isReturningFromPayment = false;
 
-        this.openTransaction();
+        if (openIframe) {
+          this.openTransaction();
+        }
       },
       error: () => {
         this.loadingPaymentData = false;
+        this.isReturningFromPayment = false;
         this.msgs1 = [
           {
             severity: 'error',
@@ -236,7 +312,6 @@ export class CommissionPaymentComponent implements OnInit {
   }
 
   getReleaseFee(): number {
-    // debugger;
     const userRaw = localStorage.getItem('user');
     const user = userRaw ? JSON.parse(userRaw) : null;
 
@@ -278,5 +353,74 @@ export class CommissionPaymentComponent implements OnInit {
 
   getTotalWithVat(): number {
     return this.getSubtotal() + this.getVatAmount();
+  }
+
+  checkIfAlreadyPaid(): void {
+    if (!this.decId) {
+      this.loadPaymentData(true);
+      return;
+    }
+
+    const entityType = this.typeDec === 'tr' ? '2' : '1';
+
+    this.customsDataService
+      .hasValidPaymentSuccessEvent$(entityType, String(this.decId))
+      .subscribe({
+        next: (res) => {
+          this.isAlreadyPaid = res?.isPaid === true;
+
+          if (this.isAlreadyPaid) {
+            this.paymentStatus = true;
+            this.iframeUrl = '';
+
+            this.msgs1 = [
+              {
+                severity: 'success',
+                summary: 'התשלום בוצע בהצלחה',
+                detail: 'לא ניתן לבצע תשלום נוסף עבור הצהרה זו.',
+              },
+            ];
+
+            this.loadPaymentData(false);
+            return;
+          }
+
+          this.loadPaymentData(true);
+        },
+        error: () => {
+          this.loadPaymentData(true);
+        },
+      });
+  }
+
+  setPaymentFailMessage(responseCode: string): void {
+    const cleanCode = (responseCode || '').split(',')[0];
+
+    this.customsDataService.getCustomsTableValues$('5000').subscribe({
+      next: (values) => {
+        const error = (values || []).find(
+          (x: any) => String(x.Code) === String(cleanCode),
+        );
+
+        this.msgs1 = [
+          {
+            severity: 'error',
+            summary: 'תשלום נכשל',
+            detail: error?.Value2
+              ? `התשלום נכשל. ${error.Value2} קוד שגיאה: ${cleanCode}`
+              : `התשלום נכשל. קוד שגיאה: ${cleanCode}`,
+          },
+        ];
+      },
+      error: () => {
+        this.msgs1 = [
+          {
+            severity: 'error',
+            summary: 'תשלום נכשל',
+            detail: `התשלום נכשל. קוד שגיאה: ${cleanCode}`,
+          },
+        ];
+      },
+    });
   }
 }

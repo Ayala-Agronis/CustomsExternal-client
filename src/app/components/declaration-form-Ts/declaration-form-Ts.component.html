@@ -170,9 +170,10 @@
                 maxlength="12"
                 minlength="11"
               />
-            </div>
-            <div class="error" *ngIf="secondCargoIDError">
-              {{ secondCargoIDError }}
+
+              <span class="error-inline" *ngIf="secondCargoIDError">{{
+                secondCargoIDError
+              }}</span>
             </div>
             <div class="form-item">
               <label>מזהה מטען פנימי</label>
@@ -315,9 +316,10 @@
                 (blur)="onCargoIDBlur(2)"
                 maxlength="12"
               />
-            </div>
-            <div class="error" *ngIf="secondCargoIDError">
-              {{ secondCargoIDError }}
+
+              <span class="error-inline" *ngIf="secondCargoIDError">{{
+                secondCargoIDError
+              }}</span>
             </div>
             <div class="form-item">
               <label>מזהה מטען פנימי</label>
@@ -432,10 +434,10 @@
   <br />
   <!-- Package Details -->
   <p-card>
-    <h3 class="form-subtitle">פירוט חבילות</h3>
-    <div class="form-group" formGroupName="ConsignmentPackagesMeasures">
+    <div class="packages-row" formGroupName="ConsignmentPackagesMeasures">
+      <h3 class="form-subtitle">פירוט חבילות:</h3>
       <div class="form-item">
-        <label for="TypeCode">סוג אריזה </label>
+        <label for="TypeCode">סוג אריזה</label>
         <div class="ui-ltr" dir="ltr">
           <p-autoComplete
             id="TypeCode"
@@ -452,7 +454,7 @@
         <!-- <input id="UnitType" formControlName="UnitType" type="text" pInputText /> -->
       </div>
       <div class="form-item">
-        <label> כמות * </label>
+        <label>כמות *</label>
         <input
           pInputText
           type="number"
@@ -500,11 +502,9 @@
               <div class="header">
                 <h3 class="form-subtitle">חשבוניות וסחורות</h3>
               </div>
-              <div class="form-group">
+              <div class="form-group invoice-header-row">
                 <div class="form-item">
-                  <label>
-                    מספר חשבונית ספק <span class="required">*</span></label
-                  >
+                  <label> מ. חשבונית ספק <span class="required">*</span></label>
                   <input pInputText formControlName="InvoiceNumber" />
                 </div>
                 <div class="form-item">
@@ -580,6 +580,8 @@
                   >
                   </p-autoComplete>
                 </div>
+              </div>
+              <div class="form-group invoice-footer-row">
                 <div class="form-item">
                   <label>סוג חשבון <span class="required">*</span></label>
                   <p-autoComplete
@@ -601,8 +603,6 @@
                     formControlName="InvoiceAmount"
                   />
                 </div>
-              </div>
-              <div class="form-group">
                 <div class="form-item">
                   <label for="BuyerName">
                     שם הקונה <span class="required">*</span></label
@@ -1050,7 +1050,7 @@
                         [dropdown]="true"
                         [appendTo]="'body'"
                         placeholder="בחר ארץ מקור"
-  [panelStyleClass]="'origin-country-panel'"
+                        [panelStyleClass]="'origin-country-panel'"
                       >
                       </p-autoComplete>
                     </td>

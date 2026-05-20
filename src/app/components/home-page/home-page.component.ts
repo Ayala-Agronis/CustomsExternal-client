@@ -108,10 +108,10 @@ export class HomePageComponent implements OnInit {
         // command: () => this.navigate('customs-book-query'),
         command: () => this.openCustomsBookInNewTab(),
       },
-      {
-        label: 'דברו איתנו',
-        command: () => this.scrollToSection('footerSection'),
-      },
+      // {
+      //   label: 'דברו איתנו',
+      //   command: () => this.scrollToSection('footerSection'),
+      // },
       ...(this.isRegister
         ? [
             {

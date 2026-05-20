@@ -103,14 +103,31 @@
   }
 }
 
+.page-container {
+  display: flex;
+  flex-direction: column;
+  height: 133vh;
+  overflow: visible;
+  zoom: 0.9;
+  padding-top: 0;
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 20px;
+  background-color: white;
+  margin: 0 2% 2% 2%;
+}
+
 .progress-container {
   width: 80%;
-  margin-right: 15%;
+  margin-right: 20%;
   display: flex;
-  // justify-content: space-between;
   align-items: center;
   padding: 10px;
-  margin-top: -3%;
+  flex-shrink: 0;
+  margin-top: -4%;
 }
 
 .icon-wrapper {

@@ -1933,7 +1933,7 @@ export class AddDocumentsComponent {
     const entityType = this.getCurrentEntityType();
 
     this.customsDataService
-      .hasValidSbtEvent$(entityType, this.currentDecId)
+      .hasValidExternalLockEvent$(entityType, this.currentDecId)
       .subscribe({
         next: (res) => {
           this.isDocumentsLockedBySbt = res?.isLocked === true;

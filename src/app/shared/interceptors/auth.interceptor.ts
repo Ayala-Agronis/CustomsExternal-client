@@ -16,24 +16,47 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private router: Router) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+
     const token = localStorage.getItem('authToken');
 
-    let authReq = req;
-
+    // 🟡 בדיקה אם הטוקן פג תוקף לפני שליחה
     if (token) {
-      authReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const exp = payload.exp * 1000;
+
+        if (Date.now() > exp) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+
+          this.router.navigate(['/login']);
+          return throwError(() => new Error('Token expired'));
         }
-      });
+
+      } catch (e) {
+        localStorage.clear();
+        this.router.navigate(['/login']);
+        return throwError(() => new Error('Invalid token'));
+      }
     }
+
+    // 🟢 הוספת הטוקן לבקשה
+    const authReq = token
+      ? req.clone({
+          setHeaders: {
+          Authorization: `Bearer ${token}`
+          }
+        })
+      : req;
 
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
+
         if (error.status === 401) {
-          // אם קיבלת שגיאת הרשאה – שלח מחדש ל־login
+          localStorage.clear();
           this.router.navigate(['/login']);
         }
+
         return throwError(() => error);
       })
     );
