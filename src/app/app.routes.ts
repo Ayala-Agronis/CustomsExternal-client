@@ -87,6 +87,15 @@ export const routes: Routes = [
   },
 
   {
+    path: 'privacy',
+    loadComponent: () =>
+      import('./components/privacy-policy/privacy-policy.component').then(
+        (c) => c.PrivacyPolicyComponent,
+      ),
+    data: { title: 'מדיניות ביטול שירות והחזר כספי' },
+  },
+
+  {
     path: 'forgot-password',
     loadComponent: () =>
       import('./components/forgot-password/forgot-password.component').then(
