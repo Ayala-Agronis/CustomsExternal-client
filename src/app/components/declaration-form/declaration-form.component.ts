@@ -477,6 +477,8 @@ export class DeclarationFormComponent implements OnInit {
 
         if (value?.code === '17') {
           firstControl?.setValue(null);
+        } else if (value?.code === '1') {
+          firstControl?.setValue(new Date().getFullYear().toString());
         } else {
           firstControl?.setValue('');
         }
@@ -789,7 +791,7 @@ export class DeclarationFormComponent implements OnInit {
         //   Validators.required,
         // ),
         TransportContractDocumentID: this.formBuilder.control(
-          '',
+          new Date().getFullYear().toString(),
           Validators.required,
         ),
         SecondCargoID: this.formBuilder.control('', Validators.required),
