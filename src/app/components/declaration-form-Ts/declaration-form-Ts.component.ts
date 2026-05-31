@@ -165,6 +165,14 @@ export class DeclarationFormTsComponent implements OnInit {
   customStatus: any;
   customsStatuses: any;
 
+  importerName: string = '';
+  errorMessage: string = '';
+
+  measureQualifierNameMap: { [code: string]: string } = {};
+  measureQualifierDisplayMap: {
+    [invoiceIndex: number]: { [rowIndex: number]: string };
+  } = {};
+
   showBtnCustoms = false;
   loading: boolean = false;
   isLocked: boolean = false;
@@ -302,7 +310,13 @@ export class DeclarationFormTsComponent implements OnInit {
     console.time('ngOnInit TOTAL');
     console.log('ngOnInit start', new Date().toISOString());
 
-    this.columns = ['מוצר מיובא *', 'כמות *', 'ערך טובין *', 'ארץ מקור *'];
+    this.columns = [
+      'מוצר מיובא *',
+      'סוג יחידה *',
+      'כמות *',
+      'ערך טובין *',
+      'ארץ מקור *',
+    ];
 
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
@@ -317,75 +331,75 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   private runInit(params: any): void {
-        this.mode = params['Mode'];
-        this.sendToCustoms = params['Send'];
-        this.declarationType = params['type'] || 'import';
+    this.mode = params['Mode'];
+    this.sendToCustoms = params['Send'];
+    this.declarationType = params['type'] || 'import';
 
-        // ✅ טיפול במצב העתקה
-        if (this.mode === 'copy') {
-          this.loading = true;
-          this.loadAndCopyDeclaration();
-          return;
-        }
+    // ✅ טיפול במצב העתקה
+    if (this.mode === 'copy') {
+      this.loading = true;
+      this.loadAndCopyDeclaration();
+      return;
+    }
 
-        if (this.mode !== 'e') {
-          localStorage.removeItem('currentDecId');
-          localStorage.removeItem('AgentFileReferenceID');
-          this.customsDataService
-            .GetSeq$('Customs')
-            .pipe(takeUntil(this.destroy$))
+    if (this.mode !== 'e') {
+      localStorage.removeItem('currentDecId');
+      localStorage.removeItem('AgentFileReferenceID');
+      this.customsDataService
+        .GetSeq$('Customs')
+        .pipe(takeUntil(this.destroy$))
 
-            .subscribe((seq) => {
-              localStorage.setItem('AgentFileReferenceID', seq);
-              this.generalDeclarationForm.patchValue(
-                { AgentFileReferenceID: seq },
-                { emitEvent: false },
-              );
-            });
-        } else {
-          this.loading = true;
-        }
-
-        console.log('mode/send/type', {
-          mode: this.mode,
-          sendToCustoms: this.sendToCustoms,
-          declarationType: this.declarationType,
-          currentDecId: localStorage.getItem('currentDecId'),
+        .subscribe((seq) => {
+          localStorage.setItem('AgentFileReferenceID', seq);
+          this.generalDeclarationForm.patchValue(
+            { AgentFileReferenceID: seq },
+            { emitEvent: false },
+          );
         });
+    } else {
+      this.loading = true;
+    }
 
-        // ✅ הוסף את זה כאן - הפעל loading מיד אם זה עריכה
-        if (this.mode === 'e') {
-          this.loading = true; // ✅ הפעל spinner מיד!
-        }
+    console.log('mode/send/type', {
+      mode: this.mode,
+      sendToCustoms: this.sendToCustoms,
+      declarationType: this.declarationType,
+      currentDecId: localStorage.getItem('currentDecId'),
+    });
 
-        // if (this.mode !== 'e') {
-        //   console.time('initForm (mode !== e)');
-        //   this.initForm();
-        //   console.timeEnd('initForm (mode !== e)');
+    // ✅ הוסף את זה כאן - הפעל loading מיד אם זה עריכה
+    if (this.mode === 'e') {
+      this.loading = true; // ✅ הפעל spinner מיד!
+    }
 
-        //   this.customsError = '';
-        //   this.customsErrorsContent = '';
+    // if (this.mode !== 'e') {
+    //   console.time('initForm (mode !== e)');
+    //   this.initForm();
+    //   console.timeEnd('initForm (mode !== e)');
 
-        //   console.time('GetSeq Customs');
-        //   this.customsDataService.GetSeq$('Customs')
-        //     .pipe(
-        //       tap(res => {
-        //         localStorage.setItem('AgentFileReferenceID', res);
-        //         console.timeEnd('GetSeq Customs');
-        //       })
-        //     )
-        //     .subscribe();
-        // }
+    //   this.customsError = '';
+    //   this.customsErrorsContent = '';
 
-        if (params['customsSend'] === 'true') {
-          this.msgs1 = [
-            {
-              severity: 'success',
-              summary: 'תשלום עמלה בוצע בהצלחה ',
-              detail: 'ניתן לשלוח טיוטה למכס',
-            },
-          ];
-        }
+    //   console.time('GetSeq Customs');
+    //   this.customsDataService.GetSeq$('Customs')
+    //     .pipe(
+    //       tap(res => {
+    //         localStorage.setItem('AgentFileReferenceID', res);
+    //         console.timeEnd('GetSeq Customs');
+    //       })
+    //     )
+    //     .subscribe();
+    // }
+
+    if (params['customsSend'] === 'true') {
+      this.msgs1 = [
+        {
+          severity: 'success',
+          summary: 'תשלום עמלה בוצע בהצלחה ',
+          detail: 'ניתן לשלוח טיוטה למכס',
+        },
+      ];
+    }
 
     this.generalDeclarationForm
       .get('VersionID')
@@ -522,6 +536,10 @@ export class DeclarationFormTsComponent implements OnInit {
         name: `${i.Value2.substring(0, 7)} (${i.Value1})`,
         code: i.Value1,
       })),
+      measureQualifier: this.getCachedTable$('1385', (i) => ({
+        code: i.Value1,
+        name: i.Value2,
+      })),
       declarationIssueLocation: this.getCachedTable$('1136', (i) => ({
         name: `${i.Value2.substring(0, 7)} (${i.Value1})`,
         code: i.Value1,
@@ -585,6 +603,10 @@ export class DeclarationFormTsComponent implements OnInit {
 
         console.time('assign TABLES');
         this.buildMaps(res);
+
+        res.measureQualifier?.forEach((item: any) => {
+          this.measureQualifierNameMap[item.code] = item.name;
+        });
 
         // ✅✅✅ הדפס את כל הנתונים מהשרת:
         console.group('🔍 SERVER DATA INSPECTION');
@@ -752,6 +774,12 @@ export class DeclarationFormTsComponent implements OnInit {
         //     }
         //   });
       });
+
+    if (this.mode !== 'e') {
+      setTimeout(() => {
+        this.onImporterIdBlur();
+      }, 0);
+    }
   }
 
   // ✅ הוסף את הפונקציה הזאת אחרי runInit:
@@ -994,6 +1022,8 @@ export class DeclarationFormTsComponent implements OnInit {
       { emitEvent: false },
     );
 
+    this.onImporterIdBlur();
+
     const currentConsignment =
       currentDec.ConsignmentPackagesMeasures?.[0]?.Consignments;
 
@@ -1215,6 +1245,10 @@ export class DeclarationFormTsComponent implements OnInit {
                 this.countryMap.get(item.OriginCountryCode),
                 Validators.required,
               ],
+              StatisticalTariffQuantity: [
+                item.StatisticalTariffQuantity ?? null,
+              ],
+
               MeasureQualifier: [item.MeasureQualifier],
             }),
           ) || [],
@@ -1222,6 +1256,26 @@ export class DeclarationFormTsComponent implements OnInit {
       });
 
       supplierInvoicesFormArray.push(invoiceGroup);
+
+      invoice.SupplierInvoiceItems.forEach((item: any, rowIndex: number) => {
+        const unitCode = item.MeasureQualifier;
+
+        if (unitCode) {
+          if (
+            !this.measureQualifierDisplayMap[
+              supplierInvoicesFormArray.length - 1
+            ]
+          ) {
+            this.measureQualifierDisplayMap[
+              supplierInvoicesFormArray.length - 1
+            ] = {};
+          }
+
+          this.measureQualifierDisplayMap[supplierInvoicesFormArray.length - 1][
+            rowIndex
+          ] = this.measureQualifierNameMap[unitCode] || unitCode;
+        }
+      });
 
       const code = invoice.TradeTermsConditionCode;
       if (['FCA', 'FOB', 'EXW', 'FAS'].includes(code)) {
@@ -2055,35 +2109,50 @@ export class DeclarationFormTsComponent implements OnInit {
 
   onClassificationIDBlur(index: any, suplierInvoiceIndex: any) {
     const tableRowArray = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
-    // const tableRowArray = this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray;
-    const classificationID =
-      tableRowArray.controls[index].get('ClassificationID');
-    const MeasureQualifier =
-      tableRowArray.controls[index].get('MeasureQualifier');
+    const row = tableRowArray.at(index) as FormGroup;
 
-    if (classificationID && classificationID.value) {
-      this.decService
-        .GetClassificationID$(classificationID.value)
-        .pipe(takeUntil(this.destroy$))
+    const classificationID = row.get('ClassificationID');
+    const measureQualifier = row.get('MeasureQualifier');
 
-        .subscribe({
-          next: (responseData: any) => {
-            if (responseData.customsItemField) {
-              console.log(responseData);
-              MeasureQualifier?.patchValue(
-                responseData.customsItemField[0]
-                  .statisticMeasurementUnitExternalIDField,
-              );
-              MeasureQualifier?.setErrors(null);
+    const classificationValue =
+      classificationID?.value?.value ?? classificationID?.value;
+
+    if (!classificationValue) return;
+
+    this.decService
+      .GetClassificationID$(classificationValue)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (responseData: any) => {
+          const unitCode =
+            responseData?.data?.measurementUnit ??
+            responseData?.customsItemField?.[0]
+              ?.statisticMeasurementUnitExternalIDField;
+
+          if (unitCode) {
+            measureQualifier?.patchValue(unitCode);
+            measureQualifier?.setErrors(null);
+
+            if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
+              this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
             }
-            // else {
-            // }
-          },
-          error: (err) => {
-            console.error('Error fetching client data:', err);
-          },
-        });
-    }
+
+            this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
+              this.measureQualifierNameMap[unitCode] || unitCode;
+          } else {
+            measureQualifier?.patchValue(null);
+            measureQualifier?.setErrors({ notFound: true });
+
+            if (this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
+              this.measureQualifierDisplayMap[suplierInvoiceIndex][index] = '';
+            }
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching client data:', err);
+          measureQualifier?.setErrors({ apiError: true });
+        },
+      });
   }
 
   getValuationValue(index: any): FormArray {
@@ -2561,88 +2630,112 @@ export class DeclarationFormTsComponent implements OnInit {
       .updateAndSendDeclarationTs$(id, perfectDec, false)
       .pipe(takeUntil(this.destroy$))
 
-      .subscribe((res: any) => {
-        this.loading = false;
-        res = JSON.parse(res);
-        console.log(res);
-        if (res.responseField) {
-          this.createEvent('DRFT', false);
+      .subscribe({
+        next: (res: any) => {
+          this.loading = false;
+          res = JSON.parse(res);
+          console.log(res);
+          if (res.responseField) {
+            this.createEvent('DRFT', false);
 
-          if (res.responseField.statusField.nameCodeField.valueField == 13) {
-            //תשלום קופה
-          }
+            if (res.responseField.statusField.nameCodeField.valueField == 13) {
+              //תשלום קופה
+            }
 
-          this.generalDeclarationForm
-            .get('DeclarationNumber')
-            ?.setValue(res.responseField.declarationField.idField.valueField);
-          this.generalDeclarationForm
-            .get('VersionID')
-            ?.setValue(
-              res.responseField.declarationField.dMExtensionsField
-                .versionIDField.valueField,
-            );
-          this.updateBrokerRoutingState();
+            this.generalDeclarationForm
+              .get('DeclarationNumber')
+              ?.setValue(res.responseField.declarationField.idField.valueField);
+            this.generalDeclarationForm
+              .get('VersionID')
+              ?.setValue(
+                res.responseField.declarationField.dMExtensionsField
+                  .versionIDField.valueField,
+              );
+            this.updateBrokerRoutingState();
 
-          perfectDec.DeclarationNumber =
-            res.responseField.declarationField.idField.valueField;
-          perfectDec.VersionID =
-            res.responseField.declarationField.dMExtensionsField.versionIDField.valueField;
-          perfectDec.CustomsStatus =
-            res.responseField.statusField.nameCodeField.valueField;
-          this.customStatus = perfectDec.CustomsStatus;
-          localStorage.setItem('decVersion', perfectDec.VersionID);
-          localStorage.setItem('CustomsStatus', perfectDec.CustomsStatus);
-          this.loading = true;
+            perfectDec.DeclarationNumber =
+              res.responseField.declarationField.idField.valueField;
+            perfectDec.VersionID =
+              res.responseField.declarationField.dMExtensionsField.versionIDField.valueField;
+            perfectDec.CustomsStatus =
+              res.responseField.statusField.nameCodeField.valueField;
 
-          const updatedDecForStorage = {
-            ...perfectDec,
-            DeclarationNumber: dec.DeclarationNumber,
-            VersionID: dec.VersionID,
-            CustomsStatus: dec.CustomsStatus,
-          };
-
-          localStorage.setItem('currentDecId', String(id ?? ''));
-          localStorage.setItem(
-            'currentDec',
-            JSON.stringify(updatedDecForStorage),
-          );
-
-          this.decService
-            .updateDeclarationTs$(id, perfectDec)
-            .pipe(
-              tap((_) => (this.loading = false)),
-              // tap(_ => this.msgs1 = [{ severity: 'success', summary: 'Success', detail: 'העידכונים נשמרו בהצלחה!' }])
-            )
-            .subscribe((res: any) => {
-              this.isLocked = false;
-              console.log(res);
-            });
-
-          if (+dec.VersionID > 0.5) {
-            this.msgs1 = [
+            this.generalDeclarationForm.patchValue(
               {
-                severity: 'error',
-                summary: 'נשלחו 6 טיוטות שגויות',
-                detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ',
+                DeclarationNumber: perfectDec.DeclarationNumber,
+                VersionID: perfectDec.VersionID,
+                CustomsStatus: perfectDec.CustomsStatus,
               },
-            ];
-          }
-          // if (res.responseField.errorField) {
-          //   this.customsErrorsContent = res.responseField.errorField;
-          //   // res.responseField.errorField[0].validationCodeField.nameField
-          //   // res.responseField.errorField[1].validationCodeField.valueField
-          // }
-          console.log('errorField', res.responseField.errorField);
-          console.log('first error', res.responseField.errorField?.[0]);
-          if (res.responseField.errorField) {
-            this.customsErrorsContent = res.responseField.errorField;
-            this.formattedCustomsErrors = this.formatCustomsErrors(
-              res.responseField.errorField,
+              { emitEvent: false },
             );
+
+            this.customStatus = perfectDec.CustomsStatus;
+            localStorage.setItem('decVersion', perfectDec.VersionID);
+            localStorage.setItem('CustomsStatus', perfectDec.CustomsStatus);
+            this.loading = true;
+
+            const updatedDecForStorage = {
+              ...perfectDec,
+              DeclarationNumber: perfectDec.DeclarationNumber,
+              VersionID: perfectDec.VersionID,
+              CustomsStatus: perfectDec.CustomsStatus,
+            };
+
+            localStorage.setItem('currentDecId', String(id ?? ''));
+            localStorage.setItem(
+              'currentDec',
+              JSON.stringify(updatedDecForStorage),
+            );
+
+            this.decService
+              .updateDeclarationTs$(id, perfectDec)
+              .pipe(
+                tap((_) => (this.loading = false)),
+                // tap(_ => this.msgs1 = [{ severity: 'success', summary: 'Success', detail: 'העידכונים נשמרו בהצלחה!' }])
+              )
+              .subscribe((res: any) => {
+                this.isLocked = false;
+                console.log(res);
+              });
+
+            if (+dec.VersionID > 0.5) {
+              this.msgs1 = [
+                {
+                  severity: 'error',
+                  summary: 'נשלחו 6 טיוטות שגויות',
+                  detail: '"שחרור ההצהרה עובר לתהליך של "חבר בוואטסאפ',
+                },
+              ];
+            }
+            // if (res.responseField.errorField) {
+            //   this.customsErrorsContent = res.responseField.errorField;
+            //   // res.responseField.errorField[0].validationCodeField.nameField
+            //   // res.responseField.errorField[1].validationCodeField.valueField
+            // }
+            console.log('errorField', res.responseField.errorField);
+            console.log('first error', res.responseField.errorField?.[0]);
+            if (res.responseField.errorField) {
+              this.customsErrorsContent = res.responseField.errorField;
+              this.formattedCustomsErrors = this.formatCustomsErrors(
+                res.responseField.errorField,
+              );
+            }
+          } else if (res.responseContentHeaderField) {
+            this.customsError = res.responseContentHeaderField.exceptionField;
           }
-        } else if (res.responseContentHeaderField) {
-          this.customsError = res.responseContentHeaderField.exceptionField;
-        }
+        },
+        error: (err) => {
+          this.loading = false;
+          console.error('Send to customs failed:', err);
+
+          this.msgs1 = [
+            {
+              severity: 'error',
+              summary: 'שליחה למכס נכשלה',
+              detail: 'שליחת ההצהרה למכס נכשלה. נא לנסות שוב או לפנות לתמיכה.',
+            },
+          ];
+        },
       });
   }
 
@@ -3907,5 +4000,27 @@ export class DeclarationFormTsComponent implements OnInit {
     });
 
     return invalidInvoices;
+  }
+
+  onImporterIdBlur() {
+    this.importerName = '';
+
+    const control = this.generalDeclarationForm.get('ImporterID');
+
+    const importerId = control?.value?.code ?? control?.value;
+
+    if (!importerId) {
+      this.importerName = 'לא נמצא במערכת המכס';
+      return;
+    }
+
+    this.customsDataService.GetClientName$(importerId).subscribe({
+      next: (response: any) => {
+        this.importerName = response?.fullName || 'לא נמצא במערכת המכס';
+      },
+      error: () => {
+        this.importerName = 'לא נמצא במערכת המכס';
+      },
+    });
   }
 }

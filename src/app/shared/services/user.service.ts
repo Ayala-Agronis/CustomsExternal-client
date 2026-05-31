@@ -86,4 +86,16 @@ export class UserService {
       { observe: 'response' },
     );
   }
+
+  getCustomerFeesOutside(customerId: number, guid: string): Observable<any> {
+    // הגדרת הפרמטרים עבור ה-Query String
+    const params = new HttpParams()
+      .set('customerId', customerId.toString())
+      .set('guid', guid);
+
+    // ביצוע קריאת ה-GET לנקודת הקצה החדשה (החזרת הנתונים עצמם ללא אובייקט ה-Response המלא)
+    return this.http.get<any>(`${this.userURL}GetCustomerFeesOutside`, {
+      params,
+    });
+  }
 }

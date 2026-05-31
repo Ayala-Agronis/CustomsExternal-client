@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { CanActivate, Router, ActivatedRouteSnapshot } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -8,7 +8,13 @@ export class AuthGuard implements CanActivate {
 
   constructor(private router: Router) {}
 
-  canActivate(): boolean {
+  canActivate(route: ActivatedRouteSnapshot): boolean {
+    // 🌟 שינוי: אם מגיעים עם guid ב-Query Params, מאשרים כניסה אוטומטית ללא טוקן
+    const guid = route.queryParams['guid'];
+    if (guid) {
+      return true;
+    }
+
     const token = localStorage.getItem('authToken');
 
     if (!token) {

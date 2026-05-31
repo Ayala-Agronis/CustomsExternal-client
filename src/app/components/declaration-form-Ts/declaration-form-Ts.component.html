@@ -53,14 +53,23 @@
   <!-- General Information -->
   <p-card>
     <div class="form-group">
-      <div class="form-item">
+      <div class="form-item importer-id-field">
         <label>מזהה יצואן </label>
+
         <input
           pInputText
           formControlName="ImporterID"
           readonly
           class="readonly-field"
         />
+
+        <span *ngIf="importerName" class="importer-name-label">
+          {{ importerName }}
+        </span>
+
+        <div *ngIf="errorMessage" class="required-star importer-error">
+          {{ errorMessage }}
+        </div>
       </div>
 
       <div class="form-item">
@@ -99,12 +108,18 @@
 
       <div class="form-item">
         <label for="RecipientName">שם מקבל *</label>
-        <input id="RecipientName" formControlName="RecipientName" type="text" />
+        <input
+          pInputText
+          id="RecipientName"
+          formControlName="RecipientName"
+          type="text"
+        />
       </div>
 
       <div class="form-item">
         <label for="RecipientAddress">כתובת מקבל *</label>
         <input
+          pInputText
           id="RecipientAddress"
           formControlName="RecipientAddress"
           type="text"
@@ -1019,6 +1034,19 @@
                         placeholder="בחר מוצר"
                       >
                       </p-autoComplete>
+                    </td>
+
+                    <td>
+                      <input
+                        pInputText
+                        type="text"
+                        [value]="
+                          measureQualifierDisplayMap[i]?.[rowIndex] || ''
+                        "
+                        readonly
+                        class="readonly-field"
+                        placeholder="סוג יחידה"
+                      />
                     </td>
 
                     <td>

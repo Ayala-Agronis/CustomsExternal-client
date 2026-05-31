@@ -524,3 +524,18 @@ input {
   direction: rtl !important;
   text-align: right !important;
 }
+
+.importer-id-field {
+  width: 50%;
+}
+
+.importer-id-field input {
+  width: 100% !important;
+}
+
+.importer-name-label {
+  display: block;
+  margin-top: 3px;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}

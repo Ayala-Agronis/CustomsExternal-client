@@ -107,6 +107,16 @@ export class DeclarationFormComponent implements OnInit {
   declarationInvoiceTypeCode: any;
   declarationFacilityID: any;
 
+  importerName = '';
+  errorMessage = '';
+
+  sendToCustoms: any;
+
+  measureQualifierNameMap: { [code: string]: string } = {};
+  measureQualifierDisplayMap: {
+    [invoiceIndex: number]: { [rowIndex: number]: string };
+  } = {};
+
   isCopyMode = false;
   private pendingCopy = false;
 
@@ -261,11 +271,15 @@ export class DeclarationFormComponent implements OnInit {
         //const params = this.route.snapshot.queryParams;
         this.initWithParams(params);
       });
+    if (this.mode !== 'e') {
+      this.onImporterIdBlur();
+    }
   }
 
   private initWithParams(params: any): void {
     this.mode = params['Mode'];
     this.declarationType = params['type'] || 'import';
+    this.sendToCustoms = params['Send'];
     this.isCopyMode = params['copyMode'] === 'true';
 
     if (this.isCopyMode) {
@@ -333,6 +347,14 @@ export class DeclarationFormComponent implements OnInit {
               }),
             )),
         ),
+      ),
+      this.customsDataService.getCustomsTableValues$('1385').pipe(
+        map((res: any[]) => {
+          res.forEach((item) => {
+            this.measureQualifierNameMap[item.Value1] = item.Value2;
+          });
+          return res;
+        }),
       ),
       this.customsDataService.getCustomsTableValues$('1981').pipe(
         map(
@@ -471,6 +493,8 @@ export class DeclarationFormComponent implements OnInit {
 
         if (value?.code === '17') {
           firstControl?.setValue(null);
+        } else if (value?.code === '1') {
+          firstControl?.setValue(new Date().getFullYear().toString());
         } else {
           firstControl?.setValue('');
         }
@@ -541,7 +565,13 @@ export class DeclarationFormComponent implements OnInit {
       this.setChargingCountryControlStatus();
     });
 
-    this.columns = ['מוצר מיובא ', 'כמות', 'ערך טובין', 'ארץ מקור'];
+    this.columns = [
+      'מוצר מיובא ',
+      'סוג יחידה',
+      'כמות',
+      'ערך טובין',
+      'ארץ מקור',
+    ];
 
     // if (this.mode != 'e') {
     //   this.customsError = '';
@@ -783,7 +813,7 @@ export class DeclarationFormComponent implements OnInit {
         //   Validators.required,
         // ),
         TransportContractDocumentID: this.formBuilder.control(
-          '',
+          new Date().getFullYear().toString(),
           Validators.required,
         ),
         SecondCargoID: this.formBuilder.control('', Validators.required),
@@ -964,6 +994,8 @@ export class DeclarationFormComponent implements OnInit {
       Id: this.formBuilder.control(0),
       ClassificationID: this.formBuilder.control('', Validators.required),
       MeasureQualifier: this.formBuilder.control(null),
+      StatisticalTariffQuantity: this.formBuilder.control(null),
+
       CustomsValueAmount: this.formBuilder.control(null, Validators.required),
       AmountType: this.formBuilder.control('', Validators.required),
       OriginCountryCode: this.formBuilder.control(null, Validators.required),
@@ -987,34 +1019,42 @@ export class DeclarationFormComponent implements OnInit {
       supplierInvoiceItems.removeAt(index);
     }
   }
-
   onClassificationIDBlur(index: any, suplierInvoiceIndex: any) {
     const tableRowArray = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
-    // const tableRowArray = this.generalDeclarationForm.get('SupplierInvoices.SupplierInvoiceItems') as FormArray;
-    const classificationID =
-      tableRowArray.controls[index].get('ClassificationID');
-    const MeasureQualifier =
-      tableRowArray.controls[index].get('MeasureQualifier');
+    const row = tableRowArray.at(index) as FormGroup;
 
-    if (classificationID && classificationID.value) {
-      this.decService.GetClassificationID$(classificationID.value).subscribe({
-        next: (responseData: any) => {
-          if (responseData.customsItemField) {
-            console.log(responseData);
-            MeasureQualifier?.patchValue(
-              responseData.customsItemField[0]
-                .statisticMeasurementUnitExternalIDField,
-            );
-            MeasureQualifier?.setErrors(null);
+    const classificationID = row.get('ClassificationID');
+    const measureQualifier = row.get('MeasureQualifier');
+
+    if (!classificationID?.value) return;
+
+    this.decService.GetClassificationID$(classificationID.value).subscribe({
+      next: (responseData: any) => {
+        const unitCode =
+          responseData?.data?.measurementUnit ??
+          responseData?.customsItemField?.[0]
+            ?.statisticMeasurementUnitExternalIDField;
+
+        if (unitCode) {
+          measureQualifier?.patchValue(unitCode);
+          measureQualifier?.setErrors(null);
+
+          if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
+            this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
           }
-          // else {
-          // }
-        },
-        error: (err) => {
-          console.error('Error fetching client data:', err);
-        },
-      });
-    }
+
+          this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
+            this.measureQualifierNameMap[unitCode] || unitCode;
+        } else {
+          measureQualifier?.patchValue(null);
+          measureQualifier?.setErrors({ notFound: true });
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching classification data:', err);
+        measureQualifier?.setErrors({ apiError: true });
+      },
+    });
   }
 
   getValuationValue(index: any): FormArray {
@@ -1197,9 +1237,8 @@ export class DeclarationFormComponent implements OnInit {
     const perfectDec = this.convertToDecObj(dec);
     console.log(perfectDec);
 
-    this.decService
-      .updateAndSendDeclaration$(id, perfectDec, false)
-      .subscribe((res: any) => {
+    this.decService.updateAndSendDeclaration$(id, perfectDec, false).subscribe({
+      next: (res: any) => {
         this.loading = false;
         res = JSON.parse(res);
         console.log(res);
@@ -1227,6 +1266,18 @@ export class DeclarationFormComponent implements OnInit {
           dec.CustomsStatus =
             res.responseField.statusField.nameCodeField.valueField;
           this.customStatus = dec.CustomsStatus;
+          perfectDec.DeclarationNumber = dec.DeclarationNumber;
+          perfectDec.VersionID = dec.VersionID;
+          perfectDec.CustomsStatus = dec.CustomsStatus;
+
+          this.generalDeclarationForm.patchValue(
+            {
+              DeclarationNumber: perfectDec.DeclarationNumber,
+              VersionID: perfectDec.VersionID,
+              CustomsStatus: perfectDec.CustomsStatus,
+            },
+            { emitEvent: false },
+          );
           localStorage.setItem('decVersion', dec.VersionID);
           localStorage.setItem('CustomsStatus', dec.CustomsStatus);
 
@@ -1269,7 +1320,21 @@ export class DeclarationFormComponent implements OnInit {
         } else if (res.responseContentHeaderField) {
           this.customsError = res.responseContentHeaderField.exceptionField;
         }
-      });
+      },
+      error: (err) => {
+        this.loading = false;
+
+        this.msgs1 = [
+          {
+            severity: 'error',
+            summary: 'שליחה למכס נכשלה',
+            detail: 'שליחת ההצהרה למכס נכשלה. נא לנסות שוב או לפנות לתמיכה.',
+          },
+        ];
+
+        console.error(err);
+      },
+    });
   }
 
   initElements() {
@@ -1338,6 +1403,7 @@ export class DeclarationFormComponent implements OnInit {
       consignmentForm.patchValue({
         ImporterID: currentDec?.ImporterID,
       });
+      this.onImporterIdBlur();
       this.generalDeclarationForm.patchValue({
         CustomsStatus: currentDec?.CustomsStatus,
       });
@@ -1628,6 +1694,9 @@ export class DeclarationFormComponent implements OnInit {
                   Validators.required,
                 ],
                 AmountType: [item.AmountType, Validators.required],
+                StatisticalTariffQuantity: [
+                  item.StatisticalTariffQuantity ?? null,
+                ],
                 OriginCountryCode: [
                   matchingOriginCountryCode,
                   Validators.required,
@@ -1639,6 +1708,20 @@ export class DeclarationFormComponent implements OnInit {
         });
 
         supplierInvoicesFormArray.push(invoiceGroup);
+
+        invoice.SupplierInvoiceItems.forEach((item: any, rowIndex: number) => {
+          const unitCode = item.MeasureQualifier;
+
+          if (unitCode) {
+            if (!this.measureQualifierDisplayMap[i]) {
+              this.measureQualifierDisplayMap[i] = {};
+            }
+
+            this.measureQualifierDisplayMap[i][rowIndex] =
+              this.measureQualifierNameMap[unitCode] || unitCode;
+          }
+        });
+
         const code = matchingTradeTermsConditionCode?.code;
         if (code) {
           const codes = ['FCA', 'FOB', 'EXW', 'FAS'];
@@ -1660,8 +1743,11 @@ export class DeclarationFormComponent implements OnInit {
     }
 
     this.isInitializingDeclaration = false;
-
-    this.loading = false; // ✅ כבה את ה-loading בסוף
+    if (this.sendToCustoms === 'T') {
+      this.sendDeclaration();
+    } else {
+      this.loading = false; // ✅ כבה את ה-loading בסוף
+    }
   }
 
   getFormErrors(checkInvoice: boolean) {
@@ -3304,5 +3390,27 @@ export class DeclarationFormComponent implements OnInit {
     });
 
     return invalidInvoices;
+  }
+
+  onImporterIdBlur() {
+    this.importerName = '';
+
+    const control = this.generalDeclarationForm.get('Consignments.ImporterID');
+
+    const importerId = control?.value?.code ?? control?.value;
+
+    if (!importerId) {
+      this.importerName = 'לא נמצא במערכת המכס';
+      return;
+    }
+
+    this.customsDataService.GetClientName$(importerId).subscribe({
+      next: (response: any) => {
+        this.importerName = response?.fullName || 'לא נמצא במערכת המכס';
+      },
+      error: () => {
+        this.importerName = 'לא נמצא במערכת המכס';
+      },
+    });
   }
 }
