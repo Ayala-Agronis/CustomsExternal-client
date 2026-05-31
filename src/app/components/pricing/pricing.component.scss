@@ -1,0 +1,128 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #f3f7fc;
+  padding-top: 1px;
+}
+
+.pricing-page {
+  direction: rtl;
+  padding: 14px 28px 28px;
+  max-width: 920px;
+  margin: auto;
+  background: #f3f7fc;
+  border-radius: 20px;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 16px;
+  margin-top: 20px;
+  font-size: 30px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.pricing-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  font-size: 14px;
+}
+
+.pricing-table thead {
+  background: #0f172a;
+  color: white;
+}
+
+.pricing-table th,
+.pricing-table td {
+  padding: 10px 8px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  line-height: 1.2;
+}
+
+.pricing-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.extra-info {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-card {
+  background: #f3f4f6;
+  padding: 10px 12px;
+  border-radius: 10px;
+  line-height: 1.4;
+
+  .office-email {
+    font-weight: 600;
+    word-break: break-word;
+    direction: ltr;
+    display: inline-block;
+  }
+}
+
+.warning {
+  background: #fef3c7;
+}
+
+.vat {
+  background: #fee2e2;
+  font-weight: bold;
+}
+
+.back-home-button {
+  position: fixed;
+  right: 150px;
+  bottom: 62px;
+  z-index: 9999;
+
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border-radius: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #092857;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  box-shadow: 0 8px 22px rgba(9, 40, 87, 0.25);
+
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+
+  cursor: pointer;
+  outline: none;
+
+  transform: scaleX(-1);
+
+  transition:
+    filter 0.2s ease,
+    transform 0.2s ease;
+}
+
+.back-home-button:hover {
+  filter: brightness(1.12);
+  transform: scaleX(-1) translateY(-2px);
+}
+
+.back-home-button:active {
+  transform: scaleX(-1) translateY(0);
+}

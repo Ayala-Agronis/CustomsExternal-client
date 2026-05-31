@@ -1,0 +1,72 @@
+<app-top-navbar pageType="inner"></app-top-navbar>
+
+<div class="pricing-page">
+<button
+  (click)="goHome()"
+  class="back-home-button"
+  aria-label="חזור לדף הבית">
+
+  ->
+
+</button>
+  <h1 class="title">
+    מחירון שירותי שחרור ממכס
+  </h1>
+
+  <div class="table-wrapper">
+
+    <table class="pricing-table">
+
+      <thead>
+        <tr>
+          <th>סוג</th>
+          <th>ערך טובין</th>
+          <th>עמלת שחרור</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let item of pricingData">
+
+          <td>{{ item.type }}</td>
+          <td>{{ item.value }}</td>
+          <td>{{ item.price }}</td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div class="extra-info">
+
+    <div class="info-card">
+      בדיקה פיזית (אישי/מסחרי): 120 ₪
+    </div>
+
+    <div class="info-card">
+      הפקת אישורי רשויות: 180 ₪ לכל אישור
+    </div>
+
+    <div class="info-card warning">
+      המחירים מוגבלים להצהרות עד 5 שורות חשבון בלבד
+    </div>
+
+  <div class="info-card">
+    יש לפנות למשרד בכתובת
+    <a href="mailto:Office@Customsil.co.il" target="_blank" rel="noopener noreferrer" class="office-email">
+      Office&#64;Customsil.co.il
+    </a>
+    לצורך קבלת הצעת מחיר להצהרות יבוא עם ריבוי שורות
+  </div>
+
+    <div class="info-card vat">
+      המחירים אינם כוללים מע"מ
+    </div>
+
+  </div>
+
+</div>

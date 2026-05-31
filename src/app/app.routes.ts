@@ -85,7 +85,14 @@ export const routes: Routes = [
       ),
     data: { title: 'תעריף מכס' },
   },
-
+  {
+  path: 'pricing',
+  loadComponent: () =>
+    import('./components/pricing/pricing.component').then(
+      (c) => c.PricingComponent,
+    ),
+  data: { title: 'מחירון' },
+},
   {
     path: 'privacy',
     loadComponent: () =>
