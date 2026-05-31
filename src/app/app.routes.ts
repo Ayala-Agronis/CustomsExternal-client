@@ -112,7 +112,19 @@ export const routes: Routes = [
     data: { title: 'איפוס סיסמה' },
   },
 
-  // { path: 'dec-form', loadComponent: () => import('./components/declaration-form/declaration-form.component').then(c => c.DeclarationFormComponent), data: { title: 'טופס הצהרה' } },
+  // 🌟 השורה החדשה: מאפשרת גישה ישירה בלי 'declaration-main' עבור אורחים עם GUID.
+  // שימי לב שהיא משתמשת ב-AuthGuard, והוא יאשר אותה אוטומטית בזכות התיקון שכבר עשית בו!
+  // 🌟 הנתיב הציבורי האמיתי: מאפשר גישה מלאה וחופשית מהמייל (גם בהצלחה וגם בכישלון)
+  {
+    path: 'commission-payment',
+    loadComponent: () =>
+      import('./components/commission-payment/commission-payment.component').then(
+        (c) => c.CommissionPaymentComponent,
+      ),
+    // 🛑 מחקנו מכאן את: canActivate: [AuthGuard],
+    data: { title: 'תשלום עמלה חיצוני' },
+  },
+
   {
     path: 'declaration-main',
     loadComponent: () =>
@@ -121,7 +133,6 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard],
     children: [
-      // { path: '', redirectTo: '/home-page', pathMatch: 'full' },
       {
         path: 'dec-form',
         loadComponent: () =>

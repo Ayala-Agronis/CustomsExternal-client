@@ -10,6 +10,7 @@ import { forkJoin } from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { TranzilaService } from '../../shared/services/tranzila.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
+import { UserService } from '../../shared/services/user.service';
 
 @Component({
   selector: 'app-commission-payment',
@@ -41,6 +42,10 @@ export class CommissionPaymentComponent implements OnInit {
 
   isAlreadyPaid = false;
 
+  // 🌟 משתנים חדשים עבור מסלול הלינק במייל
+  guid: string | null = null;
+  linkFees: { personalFee: number; businessFee: number } | null = null;
+
   constructor(
     private stepService: StepService,
     private router: Router,
@@ -49,36 +54,202 @@ export class CommissionPaymentComponent implements OnInit {
     private customsDataService: CustomsDataService,
     private tranzilaService: TranzilaService,
     private declarationService: DeclarationService,
+    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
-    this.typeDec = localStorage.getItem('decType') || '';
-    this.decId = localStorage.getItem('currentDecId');
-    this.currentDec = this.getCurrentDeclarationFromStorage();
-
     this.route.queryParams.subscribe((params) => {
-      const returnedDeclarationId = params['declarationId'];
+      this.guid = params['guid'] || null;
 
+      // 🌟 טעינת עמלות קיימות מהזיכרון אם קיימות
+      if (this.guid) {
+        const savedFees = localStorage.getItem(`linkFees_${this.guid}`);
+        if (savedFees) {
+          this.linkFees = JSON.parse(savedFees);
+        }
+      }
+
+      const paymentStatus = params['paymentStatus'];
+
+      // 🌟 מסלול לינק חיצוני (GUID)
+      if (this.guid) {
+        // א. טיפול במצב של הצלחה/כישלון במסלול ה-GUID לאחר חזרה מטרנזילה
+        if (paymentStatus) {
+          this.isReturningFromPayment = true;
+          this.loadingPaymentData = true;
+
+          // 1. מביאים את נתוני התיק מהשרת הפנימי המורשה ל-GUID
+          this.tranzilaService.getDeclarationByGuid$(this.guid).subscribe({
+            next: (declaration) => {
+              if (declaration) {
+                this.currentDec = declaration;
+                this.decId = declaration.Id || declaration.id;
+                this.typeDec = 'tr';
+
+                if (paymentStatus === 'success') {
+                  this.paymentStatus = true;
+                  this.isAlreadyPaid = true;
+                  this.iframeUrl = '';
+                  this.paymentSuccess = true; // מציג כרטיס הצלחה
+                  this.loadingPaymentData = false;
+                  this.isReturningFromPayment = false;
+                } else {
+                  // 🌟 התיקון המאובטח למצב כישלון - ללא פניות ל-API חסום! 🌟
+                  this.paymentStatus = false;
+                  this.iframeUrl = '';
+                  this.isReturningFromPayment = false;
+                  this.loadingPaymentData = false;
+
+                  // תרגום קוד השגיאה מקומית באנגולר כדי למנוע קריאה לשרת והפניה ללוגין
+                  const responseCode = params['responseCode'] || '';
+
+                  // קריאה לשרת עם קוד השגיאה
+                  this.tranzilaService
+                    .getDeclarationByGuid$(this.guid!, responseCode)
+                    .subscribe({
+                      next: (declaration) => {
+                        if (declaration) {
+                          this.currentDec = declaration;
+                          this.decId = declaration.Id || declaration.id;
+
+                          // 🌟 שימוש בהודעה שהשרת החזיר לנו
+                          const errorMessage =
+                            declaration.PaymentErrorMessage ||
+                            'חלה שגיאה בתהליך התשלום, נא לנסות שוב.';
+
+                          this.msgs1 = [
+                            {
+                              severity: 'error',
+                              summary: 'התשלום נכשל',
+                              detail: errorMessage,
+                            },
+                          ];
+
+                          // טעינת שורות המסים (אותו קוד שהיה לך)
+                          const readyTaxes =
+                            declaration.Taxes || declaration.taxes || [];
+                          this.taxRows = readyTaxes.map((tax: any) => ({
+                            name:
+                              tax.TaxTypeName ||
+                              tax.TaxTypeCode ||
+                              tax.taxTypeCode,
+                            amount: Number(tax.Amount || tax.amount || 0),
+                            vatRequired: false,
+                          }));
+
+                          this.releaseFeeRow = {
+                            name: 'עמלת שחרור',
+                            amount:
+                              this.linkFees?.personalFee ||
+                              this.linkFees?.businessFee ||
+                              0,
+                            vatRequired: true,
+                          };
+
+                          this.paymentRows = [
+                            ...this.taxRows,
+                            this.releaseFeeRow,
+                          ];
+                          this.paymentAmount = this.getTotalWithVat();
+                        }
+                      },
+                      error: (err) => {
+                        this.showError('שגיאה', 'טעינת הנתונים נכשלה.');
+                      },
+                    });
+                  return;
+                }
+              } else {
+                this.showError('שגיאה', 'ההצהרה המבוקשת לא נמצאה.');
+                this.loadingPaymentData = false;
+                this.isReturningFromPayment = false;
+              }
+            },
+            error: (err) => {
+              this.loadingPaymentData = false;
+              this.isReturningFromPayment = false;
+              this.showError('שגיאה', 'טעינת הנתונים נכשלה לפעולת החזרה.');
+            },
+          });
+          return;
+        }
+
+        // ב. כניסה ראשונית מהמייל (בלי סטטוס תשלום עדיין) - נשאר אותו דבר
+        if (!paymentStatus && !params['fail']) {
+          this.loadingPaymentData = true;
+          this.tranzilaService.getDeclarationByGuid$(this.guid).subscribe({
+            next: (declaration) => {
+              if (!declaration) {
+                this.showError('שגיאה', 'ההצהרה המבוקשת לא נמצאה.');
+                this.loadingPaymentData = false;
+                return;
+              }
+              this.currentDec = declaration;
+              this.decId = declaration.Id || declaration.id;
+              this.typeDec = 'tr';
+
+              const customerId =
+                declaration.CustomerId || declaration.customerId;
+              if (!customerId) {
+                this.showError(
+                  'שגיאה',
+                  'לא נמצא מזהה לקוח תואם עבור קישור זה.',
+                );
+                this.loadingPaymentData = false;
+                return;
+              }
+
+              this.userService
+                .getCustomerFeesOutside(customerId, this.guid!)
+                .subscribe({
+                  next: (fees) => {
+                    this.linkFees = {
+                      personalFee: fees.PersonalFee ?? fees.personalFee ?? 0,
+                      businessFee: fees.BusinessFee ?? fees.businessFee ?? 0,
+                    };
+                    // 🌟 שמירה ייחודית לפי GUID
+                    localStorage.setItem(
+                      `linkFees_${this.guid}`,
+                      JSON.stringify(this.linkFees),
+                    );
+                    this.loadPaymentData(true);
+                    this.loadPaymentData(true);
+                  },
+                  error: (err) => {
+                    console.error('שגיאה בטעינת עמלות לקוח חיצוניות:', err);
+                    this.linkFees = { personalFee: 0, businessFee: 0 };
+                    this.loadPaymentData(true);
+                  },
+                });
+            },
+            error: (err) => {
+              this.loadingPaymentData = false;
+              const errMsg =
+                err.error?.Message || 'הקישור אינו בתוקף או שהתשלום כבר בוצע.';
+              this.showError('קישור לא בתוקף', errMsg);
+            },
+          });
+          return;
+        }
+      }
+
+      // --- המסלול הרגיל (בתוך האתר - משתמש מחובר) ---
+      this.typeDec = localStorage.getItem('decType') || '';
+      this.decId = localStorage.getItem('currentDecId');
+      this.currentDec = this.getCurrentDeclarationFromStorage();
+
+      const returnedDeclarationId = params['declarationId'];
       if (returnedDeclarationId) {
         this.decId = returnedDeclarationId;
         localStorage.setItem('currentDecId', returnedDeclarationId);
       }
 
-      const paymentStatus = params['paymentStatus'];
-
       if (paymentStatus) {
         this.isReturningFromPayment = true;
-        // if (paymentStatus === 'success') {
-        //   this.paymentStatus = true;
-        //   this.nextStep();
-        //   return;
-        // }
-
         if (paymentStatus === 'success') {
           this.paymentStatus = true;
           this.isAlreadyPaid = true;
           this.iframeUrl = '';
-
           this.msgs1 = [
             {
               severity: 'success',
@@ -86,29 +257,16 @@ export class CommissionPaymentComponent implements OnInit {
               detail: 'התשלום נקלט בהצלחה. מעבירים למסך ההצהרה...',
             },
           ];
-
           this.loadPaymentData(false);
-
           setTimeout(() => {
             this.goToDeclarationAfterSuccess();
           }, 1200);
-
           return;
         }
 
         this.paymentStatus = false;
         this.iframeUrl = '';
-
-        // this.msgs1 = [
-        //   {
-        //     severity: 'error',
-        //     summary: 'תשלום נכשל',
-        //     detail: `התשלום נכשל. קוד שגיאה: ${params['responseCode'] || ''}`,
-        //   },
-        // ];
-
         this.setPaymentFailMessage(params['responseCode'] || '');
-
         this.loadPaymentData(false);
         return;
       }
@@ -117,30 +275,33 @@ export class CommissionPaymentComponent implements OnInit {
       if (isFailed) {
         this.paymentStatus = false;
         this.iframeUrl = '';
-
-        this.msgs1 = [
-          {
-            severity: 'error',
-            summary: 'תשלום נכשל',
-            detail: 'נסה שוב',
-          },
-        ];
-
+        this.showError('תשלום נכשל', 'נסה שוב');
         this.loadPaymentData(false);
         return;
       }
 
-      // this.loadPaymentData(true);
       this.checkIfAlreadyPaid();
     });
   }
 
   goToDeclarationAfterSuccess(): void {
+    if (this.guid) {
+      // 🌟 ניקוי הנתונים בסיום
+      localStorage.removeItem(`linkFees_${this.guid}`);
+      this.msgs1 = [
+        {
+          severity: 'success',
+          summary: 'תודה רבה!',
+          detail: 'התשלום הסתיים בהצלחה. הודעה נשלחה לעמיל המכס.',
+        },
+      ];
+      return;
+    }
+
     this.declarationService.getDeclaration(this.decId).subscribe({
       next: (dec) => {
         localStorage.setItem('currentDec', JSON.stringify(dec || {}));
         localStorage.setItem('currentDecId', String(this.decId || ''));
-
         this.router.navigate(['/declaration-main/dec-form'], {
           queryParams: {
             customsSend: true,
@@ -167,7 +328,6 @@ export class CommissionPaymentComponent implements OnInit {
     } else {
       this.stepService.emitStepCompleted('dec-form');
     }
-
     this.goToDeclarationAfterSuccess();
   }
 
@@ -182,22 +342,23 @@ export class CommissionPaymentComponent implements OnInit {
   }
 
   openTransaction(): void {
-    const returnUrl = `${window.location.origin}/declaration-main/commission-payment`;
+    const returnUrl = this.guid
+      ? `${window.location.origin}/commission-payment?guid=${this.guid}`
+      : `${window.location.origin}/declaration-main/commission-payment`;
 
     this.tranzilaService
-      .createPaymentUrl$(this.paymentAmount, Number(this.decId), returnUrl)
+      .createPaymentUrl$(
+        this.paymentAmount,
+        Number(this.decId),
+        returnUrl,
+        this.guid,
+      )
       .subscribe({
         next: (res) => {
           this.iframeUrl = res.iframeUrl;
         },
         error: () => {
-          this.msgs1 = [
-            {
-              severity: 'error',
-              summary: 'שגיאה',
-              detail: 'לא ניתן לפתוח תשלום כעת',
-            },
-          ];
+          this.showError('שגיאה', 'לא ניתן לפתוח תשלום כעת');
         },
       });
   }
@@ -211,7 +372,6 @@ export class CommissionPaymentComponent implements OnInit {
       paymentDate: new Date().toISOString(),
       currency: this.currency,
     };
-
     this.paymentService.saveCustomerPayment(paymentData).subscribe();
   }
 
@@ -232,11 +392,7 @@ export class CommissionPaymentComponent implements OnInit {
 
   getCurrentDeclarationFromStorage(): any {
     const raw = localStorage.getItem('currentDec');
-
-    if (!raw) {
-      return null;
-    }
-
+    if (!raw) return null;
     try {
       return JSON.parse(raw);
     } catch {
@@ -245,20 +401,62 @@ export class CommissionPaymentComponent implements OnInit {
   }
 
   loadPaymentData(openIframe: boolean = true): void {
-    const agentFileReferenceId = this.currentDec?.AgentFileReferenceID;
+    const agentFileReferenceId =
+      this.currentDec?.AgentFileReferenceID ||
+      this.currentDec?.agentFileReferenceID ||
+      this.currentDec?.agentFileReferenceId;
 
     if (!agentFileReferenceId) {
-      this.msgs1 = [
-        {
-          severity: 'error',
-          summary: 'שגיאה',
-          detail: 'לא נמצא מספר תיק סוכן להצגת חיובי תשלום',
-        },
-      ];
+      this.showError('שגיאה', 'לא נמצא מספר תיק סוכן להצגת חיובי תשלום');
+      this.loadingPaymentData = false;
       return;
     }
 
     this.loadingPaymentData = true;
+
+    const processRows = (taxes: any[], taxTypes: any[]) => {
+      this.taxTypes = taxTypes || [];
+
+      this.taxRows = (taxes || []).map((tax: any) => {
+        let taxName = tax.TaxTypeName;
+
+        if (!taxName) {
+          const type = this.taxTypes.find(
+            (x: any) =>
+              String(x.Code || x.Value1) ===
+              String(tax.TaxTypeCode || tax.taxTypeCode),
+          );
+          taxName = type?.Value2 || tax.TaxTypeCode || tax.taxTypeCode;
+        }
+
+        return {
+          name: taxName,
+          amount: Number(tax.Amount || tax.amount || 0),
+          vatRequired: false,
+        };
+      });
+
+      this.releaseFeeRow = {
+        name: 'עמלת שחרור',
+        amount: this.getReleaseFee(),
+        vatRequired: true,
+      };
+
+      this.paymentRows = [...this.taxRows, this.releaseFeeRow];
+      this.paymentAmount = this.getTotalWithVat();
+      this.loadingPaymentData = false;
+      this.isReturningFromPayment = false;
+
+      if (openIframe) {
+        this.openTransaction();
+      }
+    };
+
+    if (this.guid && (this.currentDec?.Taxes || this.currentDec?.taxes)) {
+      const readyTaxes = this.currentDec.Taxes || this.currentDec.taxes;
+      processRows(readyTaxes, []);
+      return;
+    }
 
     forkJoin({
       taxes:
@@ -268,53 +466,17 @@ export class CommissionPaymentComponent implements OnInit {
       taxTypes: this.customsDataService.getCustomsTableValues$('1120'),
     }).subscribe({
       next: ({ taxes, taxTypes }) => {
-        this.taxTypes = taxTypes || [];
-
-        this.taxRows = (taxes || []).map((tax: any) => {
-          const type = this.taxTypes.find(
-            (x: any) => String(x.Code) === String(tax.TaxTypeCode),
-          );
-
-          return {
-            name: type?.Value2 || tax.TaxTypeCode,
-            amount: Number(tax.Amount || 0),
-            vatRequired: false,
-          };
-        });
-
-        this.releaseFeeRow = {
-          name: 'עמלת שחרור',
-          amount: this.getReleaseFee(),
-          vatRequired: true,
-        };
-
-        this.paymentRows = [...this.taxRows, this.releaseFeeRow];
-        this.paymentAmount = this.getTotalWithVat();
-        this.loadingPaymentData = false;
-        this.isReturningFromPayment = false;
-
-        if (openIframe) {
-          this.openTransaction();
-        }
+        processRows(taxes, taxTypes);
       },
       error: () => {
         this.loadingPaymentData = false;
         this.isReturningFromPayment = false;
-        this.msgs1 = [
-          {
-            severity: 'error',
-            summary: 'שגיאה',
-            detail: 'טעינת נתוני התשלום נכשלה',
-          },
-        ];
+        this.showError('שגיאה', 'טעינת נתוני התשלום נכשלה');
       },
     });
   }
 
   getReleaseFee(): number {
-    const userRaw = localStorage.getItem('user');
-    const user = userRaw ? JSON.parse(userRaw) : null;
-
     const governmentProcedure =
       this.currentDec?.GovernmentProcedure ||
       this.currentDec?.Consignments?.[0]?.GovernmentProcedure ||
@@ -324,14 +486,22 @@ export class CommissionPaymentComponent implements OnInit {
       governmentProcedure?.code ??
       governmentProcedure?.Value1 ??
       governmentProcedure;
+    const isPersonal = String(code) === '4000501';
+    const isBusiness = String(code) === '4000001';
 
-    if (String(code) === '4000501') {
-      return Number(user?.PersonalFee || 0);
+    if (this.guid && this.linkFees) {
+      return isPersonal
+        ? this.linkFees.personalFee
+        : isBusiness
+          ? this.linkFees.businessFee
+          : 0;
     }
 
-    if (String(code) === '4000001') {
-      return Number(user?.BusinessFee || 0);
-    }
+    const userRaw = localStorage.getItem('user');
+    const user = userRaw ? JSON.parse(userRaw) : null;
+
+    if (isPersonal) return Number(user?.PersonalFee || 0);
+    if (isBusiness) return Number(user?.BusinessFee || 0);
 
     return 0;
   }
@@ -339,18 +509,15 @@ export class CommissionPaymentComponent implements OnInit {
   getVatBaseAmount(): number {
     return Number(this.releaseFeeRow?.amount || 0);
   }
-
   getVatAmount(): number {
     return this.getVatBaseAmount() * 0.18;
   }
-
   getSubtotal(): number {
     return this.paymentRows.reduce(
       (sum, row) => sum + Number(row.amount || 0),
       0,
     );
   }
-
   getTotalWithVat(): number {
     return this.getSubtotal() + this.getVatAmount();
   }
@@ -373,6 +540,12 @@ export class CommissionPaymentComponent implements OnInit {
             this.paymentStatus = true;
             this.iframeUrl = '';
 
+            if (this.guid) {
+              this.paymentSuccess = true;
+              this.loadingPaymentData = false;
+              return;
+            }
+
             this.msgs1 = [
               {
                 severity: 'success',
@@ -380,11 +553,9 @@ export class CommissionPaymentComponent implements OnInit {
                 detail: 'לא ניתן לבצע תשלום נוסף עבור הצהרה זו.',
               },
             ];
-
             this.loadPaymentData(false);
             return;
           }
-
           this.loadPaymentData(true);
         },
         error: () => {
@@ -395,32 +566,25 @@ export class CommissionPaymentComponent implements OnInit {
 
   setPaymentFailMessage(responseCode: string): void {
     const cleanCode = (responseCode || '').split(',')[0];
-
     this.customsDataService.getCustomsTableValues$('5000').subscribe({
       next: (values) => {
         const error = (values || []).find(
           (x: any) => String(x.Code) === String(cleanCode),
         );
-
-        this.msgs1 = [
-          {
-            severity: 'error',
-            summary: 'תשלום נכשל',
-            detail: error?.Value2
-              ? `התשלום נכשל. ${error.Value2} קוד שגיאה: ${cleanCode}`
-              : `התשלום נכשל. קוד שגיאה: ${cleanCode}`,
-          },
-        ];
+        this.showError(
+          'תשלום נכשל',
+          error?.Value2
+            ? `התשלום נכשל. ${error.Value2} קוד שגיאה: ${cleanCode}`
+            : `התשלום נכשל. קוד שגיאה: ${cleanCode}`,
+        );
       },
       error: () => {
-        this.msgs1 = [
-          {
-            severity: 'error',
-            summary: 'תשלום נכשל',
-            detail: `התשלום נכשל. קוד שגיאה: ${cleanCode}`,
-          },
-        ];
+        this.showError('תשלום נכשל', `התשלום נכשל. קוד שגיאה: ${cleanCode}`);
       },
     });
+  }
+
+  private showError(summary: string, detail: string): void {
+    this.msgs1 = [{ severity: 'error', summary, detail }];
   }
 }

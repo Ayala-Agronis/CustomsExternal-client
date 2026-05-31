@@ -1,114 +1,125 @@
 <div class="payment-page" dir="rtl">
+  
   <div class="return-loader-overlay" *ngIf="isReturningFromPayment">
     <div class="return-loader-box">
       <div class="spinner"></div>
       <div class="loader-text">טוען את תוצאות התשלום...</div>
     </div>
   </div>
+
   <div *ngIf="!isReturningFromPayment">
-    <div class="payment-header">
-      <h2>תשלום מסים ועמלת שחרור</h2>
+    
+    <div *ngIf="paymentSuccess && guid" class="success-screen-container">
+      <div class="success-card">
+        <div class="success-icon-circle">✓</div>
+        <h2>התשלום נקלט בהצלחה!</h2>
+        <p>תודה רבה, תשלום עמלת השחרור והמסים עבור תיק מספר <strong>{{decId}}</strong> בוצע בהצלחה.</p>
+        <div class="footer-note">ניתן לסגור חלון זה בבטחה.</div>
+      </div>
     </div>
 
-    <p-messages
-      class="ui-ltr"
-      dir="ltr"
-      [(value)]="msgs1"
-      [enableService]="false"
-    ></p-messages>
-
-    <div
-      *ngIf="paymentStatus === false && !isAlreadyPaid"
-      class="retry-payment-container"
-    >
-      <button type="button" class="retry-payment-btn" (click)="retryPayment()">
-        נסה שוב לשלם
-      </button>
-    </div>
-
-    <div class="loading-box" *ngIf="loadingPaymentData">
-      טוען נתוני תשלום...
-    </div>
-
-    <div class="payment-layout" *ngIf="!loadingPaymentData">
-      <div class="payment-summary">
-        <table class="payment-table" *ngIf="paymentRows.length">
-          <thead>
-            <tr>
-              <th>סעיף לחיוב</th>
-              <th>סכום</th>
-              <th>חייב במע"מ</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr *ngIf="releaseFeeRow" class="release-row">
-              <td>{{ releaseFeeRow.name }}</td>
-              <td class="amount-cell" dir="ltr">
-                ₪ {{ releaseFeeRow.amount | number: "1.2-2" }}
-              </td>
-              <td class="vat-cell">
-                <span class="vat-mark yes">✓</span>
-              </td>
-            </tr>
-
-            <tr class="section-row">
-              <td colspan="3">פירוט חיובי מסים</td>
-            </tr>
-
-            <tr *ngFor="let row of taxRows">
-              <td>{{ row.name }}</td>
-              <td class="amount-cell" dir="ltr">
-                ₪ {{ row.amount | number: "1.2-2" }}
-              </td>
-              <td class="vat-cell">
-                <span class="vat-mark no">×</span>
-              </td>
-            </tr>
-          </tbody>
-
-          <tfoot>
-            <tr>
-              <td>סה"כ חייב במע"מ</td>
-              <td class="amount-cell" dir="ltr">
-                ₪ {{ getVatBaseAmount() | number: "1.2-2" }}
-              </td>
-              <td></td>
-            </tr>
-
-            <tr>
-              <td>מע"מ 18%</td>
-              <td class="amount-cell" dir="ltr">
-                ₪ {{ getVatAmount() | number: "1.2-2" }}
-              </td>
-              <td></td>
-            </tr>
-
-            <tr class="total-row">
-              <td>סה"כ כולל מע"מ</td>
-              <td class="amount-cell" dir="ltr">
-                ₪ {{ getTotalWithVat() | number: "1.2-2" }}
-              </td>
-              <td></td>
-            </tr>
-          </tfoot>
-        </table>
-
-        <!-- <div class="actions">
-          <button class="back-button" type="button" (click)="previousStep()">
-            חזור
-          </button>
-        </div> -->
+    <div *ngIf="!(paymentSuccess && guid)">
+      
+      <div class="payment-header">
+        <h2>תשלום מסים ועמלת שחרור</h2>
       </div>
 
-      <div class="iframe-wrapper" *ngIf="iframeUrl">
-        <iframe
-          allowpaymentrequest="true"
-          [src]="iframeUrl | safeUrl"
-          name="tranzila"
-          sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation"
-        ></iframe>
+      <p-messages
+        class="ui-ltr"
+        dir="ltr"
+        [(value)]="msgs1"
+        [enableService]="false"
+      ></p-messages>
+
+      <div
+        *ngIf="paymentStatus === false && !isAlreadyPaid"
+        class="retry-payment-container"
+      >
+        <p class="fail-notice-text" *ngIf="guid">נראה שהייתה שגיאה בעיבוד כרטיס האשראי. אל דאגה, שום חיוב לא בוצע.</p>
+        <button type="button" class="retry-payment-btn" (click)="retryPayment()">
+          לחץ כאן כדי לנסות שוב
+        </button>
       </div>
+
+      <div class="loading-box" *ngIf="loadingPaymentData">
+        טוען נתוני תשלום...
+      </div>
+
+      <div class="payment-layout" *ngIf="!loadingPaymentData">
+        <div class="payment-summary">
+          <table class="payment-table" *ngIf="paymentRows.length">
+            <thead>
+              <tr>
+                <th>סעיף לחיוב</th>
+                <th>סכום</th>
+                <th>חייב במע"מ</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngIf="releaseFeeRow" class="release-row">
+                <td>{{ releaseFeeRow.name }}</td>
+                <td class="amount-cell" dir="ltr">
+                  ₪ {{ releaseFeeRow.amount | number: "1.2-2" }}
+                </td>
+                <td class="vat-cell">
+                  <span class="vat-mark yes">✓</span>
+                </td>
+              </tr>
+
+              <tr class="section-row">
+                <td colspan="3">פירוט חיובי מסים</td>
+              </tr>
+
+              <tr *ngFor="let row of taxRows">
+                <td>{{ row.name }}</td>
+                <td class="amount-cell" dir="ltr">
+                  ₪ {{ row.amount | number: "1.2-2" }}
+                </td>
+                <td class="vat-cell">
+                  <span class="vat-mark no">×</span>
+                </td>
+              </tr>
+            </tbody>
+
+            <tfoot>
+              <tr>
+                <td>סה"כ חייב במע"מ</td>
+                <td class="amount-cell" dir="ltr">
+                  ₪ {{ getVatBaseAmount() | number: "1.2-2" }}
+                </td>
+                <td></td>
+              </tr>
+
+              <tr>
+                <td>מע"מ 18%</td>
+                <td class="amount-cell" dir="ltr">
+                  ₪ {{ getVatAmount() | number: "1.2-2" }}
+                </td>
+                <td></td>
+              </tr>
+
+              <tr class="total-row">
+                <td>סה"כ כולל מע"מ</td>
+                <td class="amount-cell" dir="ltr">
+                  ₪ {{ getTotalWithVat() | number: "1.2-2" }}
+                </td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="iframe-wrapper" *ngIf="iframeUrl">
+          <iframe
+            allowpaymentrequest="true"
+            [src]="iframeUrl | safeUrl"
+            name="tranzila"
+            sandbox="allow-scripts allow-popups allow-forms allow-same-origin allow-top-navigation"
+          ></iframe>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

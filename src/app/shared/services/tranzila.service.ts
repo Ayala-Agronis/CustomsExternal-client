@@ -26,14 +26,31 @@ export class TranzilaService {
     amount: number,
     declarationId: number,
     returnUrl: string,
+    guid: string | null = null, // 🌟 1. הוספת ה-guid כפרמטר אופציונלי
   ): Observable<{ iframeUrl: string }> {
-    return this.http.post<{ iframeUrl: string }>(
-      `${apiConfig.customsdbApiUrl}Tranzila/CreatePaymentUrl`,
-      {
-        amount,
-        declarationId,
-        returnUrl,
-      },
-    );
+    // 🌟 2. בניית ה-URL: אם יש guid, משרשרים אותו בסוף הכתובת
+    let url = `${apiConfig.customsdbApiUrl}Tranzila/CreatePaymentUrl`;
+    if (guid) {
+      url += `?guid=${guid}`;
+    }
+
+    // שולחים את ה-POST עם ה-body המקורי, אבל ל-URL המעודכן
+    return this.http.post<{ iframeUrl: string }>(url, {
+      amount,
+      declarationId,
+      returnUrl,
+    });
+  }
+
+  // 👈 שני את הפונקציה לזה:
+  getDeclarationByGuid$(guid: string, responseCode?: string): Observable<any> {
+    let url = `${apiConfig.customsdbApiUrl}PaymentLink/GetByGuid?guid=${guid}`;
+
+    // אם יש קוד שגיאה, נצרף אותו לכתובת ה-URL
+    if (responseCode) {
+      url += `&responseCode=${responseCode}`;
+    }
+
+    return this.http.get<any>(url);
   }
 }
