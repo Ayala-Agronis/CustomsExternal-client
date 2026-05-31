@@ -107,6 +107,9 @@ export class DeclarationFormComponent implements OnInit {
   declarationInvoiceTypeCode: any;
   declarationFacilityID: any;
 
+  importerName = '';
+  errorMessage = '';
+
   isCopyMode = false;
   private pendingCopy = false;
 
@@ -261,6 +264,9 @@ export class DeclarationFormComponent implements OnInit {
         //const params = this.route.snapshot.queryParams;
         this.initWithParams(params);
       });
+    if (this.mode !== 'e') {
+      this.onImporterIdBlur();
+    }
   }
 
   private initWithParams(params: any): void {
@@ -1338,6 +1344,7 @@ export class DeclarationFormComponent implements OnInit {
       consignmentForm.patchValue({
         ImporterID: currentDec?.ImporterID,
       });
+      this.onImporterIdBlur();
       this.generalDeclarationForm.patchValue({
         CustomsStatus: currentDec?.CustomsStatus,
       });
@@ -3304,5 +3311,27 @@ export class DeclarationFormComponent implements OnInit {
     });
 
     return invalidInvoices;
+  }
+
+  onImporterIdBlur() {
+    this.importerName = '';
+
+    const control = this.generalDeclarationForm.get('Consignments.ImporterID');
+
+    const importerId = control?.value?.code ?? control?.value;
+
+    if (!importerId) {
+      this.importerName = 'לא נמצא במערכת המכס';
+      return;
+    }
+
+    this.customsDataService.GetClientName$(importerId).subscribe({
+      next: (response: any) => {
+        this.importerName = response?.fullName || 'לא נמצא במערכת המכס';
+      },
+      error: () => {
+        this.importerName = 'לא נמצא במערכת המכס';
+      },
+    });
   }
 }

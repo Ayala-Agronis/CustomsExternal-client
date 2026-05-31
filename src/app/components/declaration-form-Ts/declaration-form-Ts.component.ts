@@ -165,6 +165,9 @@ export class DeclarationFormTsComponent implements OnInit {
   customStatus: any;
   customsStatuses: any;
 
+  importerName: string = '';
+  errorMessage: string = '';
+
   showBtnCustoms = false;
   loading: boolean = false;
   isLocked: boolean = false;
@@ -317,75 +320,75 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   private runInit(params: any): void {
-        this.mode = params['Mode'];
-        this.sendToCustoms = params['Send'];
-        this.declarationType = params['type'] || 'import';
+    this.mode = params['Mode'];
+    this.sendToCustoms = params['Send'];
+    this.declarationType = params['type'] || 'import';
 
-        // ✅ טיפול במצב העתקה
-        if (this.mode === 'copy') {
-          this.loading = true;
-          this.loadAndCopyDeclaration();
-          return;
-        }
+    // ✅ טיפול במצב העתקה
+    if (this.mode === 'copy') {
+      this.loading = true;
+      this.loadAndCopyDeclaration();
+      return;
+    }
 
-        if (this.mode !== 'e') {
-          localStorage.removeItem('currentDecId');
-          localStorage.removeItem('AgentFileReferenceID');
-          this.customsDataService
-            .GetSeq$('Customs')
-            .pipe(takeUntil(this.destroy$))
+    if (this.mode !== 'e') {
+      localStorage.removeItem('currentDecId');
+      localStorage.removeItem('AgentFileReferenceID');
+      this.customsDataService
+        .GetSeq$('Customs')
+        .pipe(takeUntil(this.destroy$))
 
-            .subscribe((seq) => {
-              localStorage.setItem('AgentFileReferenceID', seq);
-              this.generalDeclarationForm.patchValue(
-                { AgentFileReferenceID: seq },
-                { emitEvent: false },
-              );
-            });
-        } else {
-          this.loading = true;
-        }
-
-        console.log('mode/send/type', {
-          mode: this.mode,
-          sendToCustoms: this.sendToCustoms,
-          declarationType: this.declarationType,
-          currentDecId: localStorage.getItem('currentDecId'),
+        .subscribe((seq) => {
+          localStorage.setItem('AgentFileReferenceID', seq);
+          this.generalDeclarationForm.patchValue(
+            { AgentFileReferenceID: seq },
+            { emitEvent: false },
+          );
         });
+    } else {
+      this.loading = true;
+    }
 
-        // ✅ הוסף את זה כאן - הפעל loading מיד אם זה עריכה
-        if (this.mode === 'e') {
-          this.loading = true; // ✅ הפעל spinner מיד!
-        }
+    console.log('mode/send/type', {
+      mode: this.mode,
+      sendToCustoms: this.sendToCustoms,
+      declarationType: this.declarationType,
+      currentDecId: localStorage.getItem('currentDecId'),
+    });
 
-        // if (this.mode !== 'e') {
-        //   console.time('initForm (mode !== e)');
-        //   this.initForm();
-        //   console.timeEnd('initForm (mode !== e)');
+    // ✅ הוסף את זה כאן - הפעל loading מיד אם זה עריכה
+    if (this.mode === 'e') {
+      this.loading = true; // ✅ הפעל spinner מיד!
+    }
 
-        //   this.customsError = '';
-        //   this.customsErrorsContent = '';
+    // if (this.mode !== 'e') {
+    //   console.time('initForm (mode !== e)');
+    //   this.initForm();
+    //   console.timeEnd('initForm (mode !== e)');
 
-        //   console.time('GetSeq Customs');
-        //   this.customsDataService.GetSeq$('Customs')
-        //     .pipe(
-        //       tap(res => {
-        //         localStorage.setItem('AgentFileReferenceID', res);
-        //         console.timeEnd('GetSeq Customs');
-        //       })
-        //     )
-        //     .subscribe();
-        // }
+    //   this.customsError = '';
+    //   this.customsErrorsContent = '';
 
-        if (params['customsSend'] === 'true') {
-          this.msgs1 = [
-            {
-              severity: 'success',
-              summary: 'תשלום עמלה בוצע בהצלחה ',
-              detail: 'ניתן לשלוח טיוטה למכס',
-            },
-          ];
-        }
+    //   console.time('GetSeq Customs');
+    //   this.customsDataService.GetSeq$('Customs')
+    //     .pipe(
+    //       tap(res => {
+    //         localStorage.setItem('AgentFileReferenceID', res);
+    //         console.timeEnd('GetSeq Customs');
+    //       })
+    //     )
+    //     .subscribe();
+    // }
+
+    if (params['customsSend'] === 'true') {
+      this.msgs1 = [
+        {
+          severity: 'success',
+          summary: 'תשלום עמלה בוצע בהצלחה ',
+          detail: 'ניתן לשלוח טיוטה למכס',
+        },
+      ];
+    }
 
     this.generalDeclarationForm
       .get('VersionID')
@@ -752,6 +755,12 @@ export class DeclarationFormTsComponent implements OnInit {
         //     }
         //   });
       });
+
+    if (this.mode !== 'e') {
+      setTimeout(() => {
+        this.onImporterIdBlur();
+      }, 0);
+    }
   }
 
   // ✅ הוסף את הפונקציה הזאת אחרי runInit:
@@ -993,6 +1002,8 @@ export class DeclarationFormTsComponent implements OnInit {
       },
       { emitEvent: false },
     );
+
+    this.onImporterIdBlur();
 
     const currentConsignment =
       currentDec.ConsignmentPackagesMeasures?.[0]?.Consignments;
@@ -3907,5 +3918,27 @@ export class DeclarationFormTsComponent implements OnInit {
     });
 
     return invalidInvoices;
+  }
+
+  onImporterIdBlur() {
+    this.importerName = '';
+
+    const control = this.generalDeclarationForm.get('ImporterID');
+
+    const importerId = control?.value?.code ?? control?.value;
+
+    if (!importerId) {
+      this.importerName = 'לא נמצא במערכת המכס';
+      return;
+    }
+
+    this.customsDataService.GetClientName$(importerId).subscribe({
+      next: (response: any) => {
+        this.importerName = response?.fullName || 'לא נמצא במערכת המכס';
+      },
+      error: () => {
+        this.importerName = 'לא נמצא במערכת המכס';
+      },
+    });
   }
 }

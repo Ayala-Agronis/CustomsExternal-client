@@ -66,6 +66,27 @@ export class CustomsDataService {
     );
   }
 
+  GetClientAsync$(ID: any, Passport: any = ''): Observable<any> {
+    const body = {
+      ID: ID,
+      Passport: Passport,
+    };
+
+    return this.http.post(
+      `${apiConfig.customsApiUrl}ImporterDetails/ImporterDetailsAsync`,
+      body,
+      {
+        headers: new HttpHeaders().set('Content-Type', 'application/json'),
+      },
+    );
+  }
+
+  GetClientName$(id: string): Observable<any> {
+    return this.http.get(`${apiConfig.customsdbApiUrl}Clients/GetClientName`, {
+      params: { id },
+    });
+  }
+
   addEntityEvent$(event: any): Observable<any> {
     return this.http.post(
       `${apiConfig.customsdbApiUrl}Events/AddEntityEvent`,

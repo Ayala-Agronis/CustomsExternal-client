@@ -47,14 +47,23 @@
 
     <div formGroupName="Consignments">
       <div class="form-group">
-        <div class="form-item">
-          <label>מזהה יבואן </label>
+        <div class="form-item importer-id-field">
+          <label>מזהה יבואן</label>
+
           <input
             pInputText
             formControlName="ImporterID"
             readonly
             class="readonly-field"
           />
+
+          <span *ngIf="importerName" class="importer-name-label">
+            {{ importerName }}
+          </span>
+
+          <div *ngIf="errorMessage" class="required-star importer-error">
+            {{ errorMessage }}
+          </div>
         </div>
         <!-- <div class="form-item">
                 <label>מספר טלפון</label>
