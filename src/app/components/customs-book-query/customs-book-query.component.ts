@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component , OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import {
@@ -20,7 +20,9 @@ import { MessagesModule } from 'primeng/messages';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TopNavbarComponent } from '../../shared/components/top-navbar/top-navbar.component';
-
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import {
   CustomsBookApiService,
   LawFilter,
@@ -47,7 +49,10 @@ import {
     ButtonModule,
     InputTextModule,
     TopNavbarComponent,
+    TooltipModule,
+    ToastModule,
   ],
+  providers: [MessageService],
 })
 export class CustomsBookQueryComponent implements OnInit {
   loading = false;
@@ -75,7 +80,10 @@ export class CustomsBookQueryComponent implements OnInit {
 
   private term$ = new Subject<string>();
 
-  constructor(private api: CustomsBookApiService) {
+  constructor(
+    private api: CustomsBookApiService,
+    private messageService: MessageService,
+  ) {
     this.term$
       .pipe(
         debounceTime(350),
@@ -101,7 +109,7 @@ export class CustomsBookQueryComponent implements OnInit {
       .subscribe((res) => (this.suggestions = res || []));
   }
 
-   ngOnInit(): void {
+  ngOnInit(): void {
     this.api.getLastUpdateDate().subscribe({
       next: (res) => {
         this.lastUpdateDate = res?.CustomsBookUpdateDate ?? null;
@@ -359,5 +367,20 @@ export class CustomsBookQueryComponent implements OnInit {
     }
 
     return all;
+  }
+
+  copyCustomsCode(item: CustomsBookSearchResult, event: Event): void {
+    event.stopPropagation();
+
+    const code = item.FullClassification.replace(/\s+/g, '');
+
+    navigator.clipboard.writeText(code).then(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: '',
+        detail: 'פרט המכס הועתק בהצלחה',
+        life: 2000,
+      });
+    });
   }
 }

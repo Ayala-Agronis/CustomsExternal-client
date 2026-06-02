@@ -654,7 +654,6 @@
   .section-header {
     gap: 12px;
   }
-
 }
 
 // @media (max-width: 992px) {
@@ -1216,4 +1215,8 @@
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   flex: 1;
+}
+
+:host ::ng-deep .p-tooltip .p-tooltip-text {
+  font-size: 10px;
 }

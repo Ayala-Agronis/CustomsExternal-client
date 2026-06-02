@@ -1,4 +1,5 @@
-<app-top-navbar pageType="inner"></app-top-navbar>
+<p-toast position="top-center"></p-toast
+><app-top-navbar pageType="inner"></app-top-navbar>
 
 <div class="loading-overlay" *ngIf="loading">
   <p-progressSpinner></p-progressSpinner>
@@ -22,9 +23,10 @@
     <div class="search-card" dir="rtl" *ngIf="!details">
       <div class="search-card-header" *ngIf="!details">
         <h1>תעריף מכס</h1>
-        <div class="last-update">תאריך עדכון אחרון:
-  {{ lastUpdateDate ? (lastUpdateDate | date:'dd/MM/yyyy') : '-' }}
-          </div>
+        <div class="last-update">
+          תאריך עדכון אחרון:
+          {{ lastUpdateDate ? (lastUpdateDate | date: "dd/MM/yyyy") : "-" }}
+        </div>
       </div>
 
       <div class="filters">
@@ -85,7 +87,14 @@
             </div>
 
             <div class="copy-col">
-              <img src="assets/copy.png" alt="copy" class="copy-img" />
+              <img
+                src="assets/copy.png"
+                alt="copy"
+                class="copy-img"
+                pTooltip="העתק פרט מכס"
+                tooltipPosition="top"
+                (click)="copyCustomsCode(item, $event)"
+              />
             </div>
           </div>
 
