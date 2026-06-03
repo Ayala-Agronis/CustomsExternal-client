@@ -1037,16 +1037,9 @@
                     </td>
 
                     <td>
-                      <input
-                        pInputText
-                        type="text"
-                        [value]="
-                          measureQualifierDisplayMap[i]?.[rowIndex] || ''
-                        "
-                        readonly
-                        class="readonly-field"
-                        placeholder="סוג יחידה"
-                      />
+                      <div class="measure-qualifier-display">
+                        {{ measureQualifierDisplayMap[i]?.[rowIndex] || "-" }}
+                      </div>
                     </td>
 
                     <td>

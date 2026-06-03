@@ -1,0 +1,49 @@
+<div class="classification-field">
+  <p-autoComplete
+    [formControl]="control"
+    [suggestions]="suggestions"
+    (completeMethod)="onComplete($event)"
+    (onSelect)="onSelect($event)"
+    [forceSelection]="false"
+    [dropdown]="true"
+    appendTo="body"
+    [readonly]="disabled"
+    field="ClassificationID"
+    [placeholder]="isUnknown ? 'אין לי מושג' : 'הזן מוצר'"
+    [class.unknown-input]="isUnknown"
+    (onBlur)="onInputBlur()"
+  >
+    <ng-template let-item pTemplate="item">
+      <div class="classification-option">
+        <div class="goods-desc">
+          {{ item.GoodsDescription }}
+        </div>
+        <div class="classification-code">
+          {{ item.ClassificationID }}
+        </div>
+      </div>
+    </ng-template>
+  </p-autoComplete>
+
+  <button
+    type="button"
+    pButton
+    icon="pi pi-search"
+    class="classification-btn search-btn"
+    (click)="openSearch()"
+    [disabled]="disabled"
+    pTooltip="חיפוש פרט מכס"
+    tooltipPosition="top"
+  ></button>
+
+  <button
+    type="button"
+    pButton
+    icon="pi pi-question"
+    class="classification-btn unknown-btn"
+    (click)="setUnknown()"
+    [disabled]="disabled"
+    pTooltip="אין לי מושג"
+    tooltipPosition="top"
+  ></button>
+</div>

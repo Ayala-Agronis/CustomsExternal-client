@@ -672,3 +672,14 @@ input {
   white-space: nowrap;
   font-size: 0.85rem;
 }
+
+.measure-qualifier-display {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: transparent;
+  color: #555;
+  font-size: 14px;
+  justify-content: center;
+}

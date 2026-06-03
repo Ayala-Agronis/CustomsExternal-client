@@ -533,25 +533,32 @@
                       ></button>
                     </td>
                     <td>
-                      <input
-                        pInputText
-                        type="text"
-                        formControlName="ClassificationID"
-                        (blur)="onClassificationIDBlur(rowIndex, i)"
-                        placeholder="הזן מוצר"
-                      />
+                      <app-classification-id-field
+                        [control]="getClassificationControl(i, rowIndex)"
+                        [disabled]="formDisabled"
+                        [suggestions]="filteredClassificationOptions"
+                        (completeMethod)="filterClassificationOptions($event)"
+                        (optionSelected)="
+                          onClassificationOptionSelected($event, rowIndex, i)
+                        "
+                        (searchClicked)="openCustomsSearch(rowIndex, i)"
+                        (unknownClicked)="onClassificationUnknown(rowIndex, i)"
+                        (inputBlur)="onClassificationIDBlur(rowIndex, i)"
+                      ></app-classification-id-field>
+                    </td>
+
+                    <td>
+                      <div class="measure-qualifier-display">
+                        {{ measureQualifierDisplayMap[i]?.[rowIndex] || "-" }}
+                      </div>
                     </td>
 
                     <td>
                       <input
-                        pInputText
                         type="text"
-                        [value]="
-                          measureQualifierDisplayMap[i]?.[rowIndex] || ''
-                        "
-                        readonly
-                        class="readonly-field"
-                        placeholder="סוג יחידה"
+                        pInputText
+                        formControlName="GoodsDescription"
+                        placeholder="הזן תיאור טובין"
                       />
                     </td>
 
@@ -771,7 +778,7 @@
                         (click)="addNewInvoiceItem(i)"
                       ></button>
                     </td>
-                    <td colspan="3"></td>
+                    <td colspan="5"></td>
                     <td>מספר שורות: {{ GetSupplierInvoiceItems(i).length }}</td>
                   </tr>
                 </ng-template>
@@ -895,5 +902,24 @@
       (dialogClosed)="displayVendorDialog = false"
     >
     </app-search-vendor>
+  </p-dialog>
+  <p-dialog
+    [(visible)]="displayCustomsDialog"
+    [modal]="true"
+    [appendTo]="'body'"
+    [style]="{ width: '850px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <app-customs-book-query
+      [popupMode]="true"
+      (itemSelected)="
+        onCustomsItemSelected(
+          $event,
+          currentRowIndex,
+          currentSupplierInvoiceIndex
+        )
+      "
+    ></app-customs-book-query>
   </p-dialog>
 </form>

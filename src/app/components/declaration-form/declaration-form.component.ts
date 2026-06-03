@@ -57,7 +57,8 @@ import { DocumentService } from '../../shared/services/document.service';
 import { CourierService } from '../../shared/services/courier.service';
 import { SearchVendorComponent } from '../search-vendor/search-vendor.component';
 import { DialogModule } from 'primeng/dialog';
-
+import { ClassificationIdFieldComponent } from '../../shared/components/classification-id-field/classification-id-field.component';
+import { CustomsBookQueryComponent } from '../customs-book-query/customs-book-query.component';
 @Component({
   selector: 'app-declaration-form',
   standalone: true,
@@ -78,6 +79,8 @@ import { DialogModule } from 'primeng/dialog';
     ConfirmDialogModule,
     SearchVendorComponent,
     DialogModule,
+    ClassificationIdFieldComponent,
+    CustomsBookQueryComponent,
   ],
   templateUrl: './declaration-form.component.html',
   styleUrl: './declaration-form.component.scss',
@@ -119,6 +122,10 @@ export class DeclarationFormComponent implements OnInit {
 
   isCopyMode = false;
   private pendingCopy = false;
+
+  displayCustomsDialog = false;
+  currentRowIndex!: number;
+  currentSupplierInvoiceIndex!: number;
 
   private readonly allowedCargoIDTypeCodes = ['1', '11', '17', '2', '3'];
 
@@ -246,6 +253,9 @@ export class DeclarationFormComponent implements OnInit {
   };
   suplierErrorExist: boolean = false;
   suplierError: string = '';
+
+  classificationHistoryOptions: any[] = [];
+  filteredClassificationOptions: any[] = [];
 
   constructor(
     private formBuilder: FormBuilder,
@@ -568,6 +578,7 @@ export class DeclarationFormComponent implements OnInit {
     this.columns = [
       'מוצר מיובא ',
       'סוג יחידה',
+      'תיאור טובין',
       'כמות',
       'ערך טובין',
       'ארץ מקור',
@@ -585,6 +596,7 @@ export class DeclarationFormComponent implements OnInit {
     //     )
     //     .subscribe();
     // }
+    this.loadClassificationHistory();
   }
 
   ngOnDestroy(): void {
@@ -999,6 +1011,8 @@ export class DeclarationFormComponent implements OnInit {
       CustomsValueAmount: this.formBuilder.control(null, Validators.required),
       AmountType: this.formBuilder.control('', Validators.required),
       OriginCountryCode: this.formBuilder.control(null, Validators.required),
+      // השדה החדש
+      GoodsDescription: this.formBuilder.control(''),
     });
   }
 
@@ -1020,6 +1034,8 @@ export class DeclarationFormComponent implements OnInit {
     }
   }
   onClassificationIDBlur(index: any, suplierInvoiceIndex: any) {
+    console.log('onClassificationIDBlur called', index, suplierInvoiceIndex);
+
     const tableRowArray = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
     const row = tableRowArray.at(index) as FormGroup;
 
@@ -1027,6 +1043,9 @@ export class DeclarationFormComponent implements OnInit {
     const measureQualifier = row.get('MeasureQualifier');
 
     if (!classificationID?.value) return;
+
+    classificationID.setValidators(Validators.required);
+    classificationID.updateValueAndValidity({ emitEvent: false });
 
     this.decService.GetClassificationID$(classificationID.value).subscribe({
       next: (responseData: any) => {
@@ -1055,6 +1074,36 @@ export class DeclarationFormComponent implements OnInit {
         measureQualifier?.setErrors({ apiError: true });
       },
     });
+  }
+
+  onClassificationSearch(rowIndex: number, supplierInvoiceIndex: number): void {
+    console.log('search classification', rowIndex, supplierInvoiceIndex);
+  }
+
+  onClassificationUnknown(
+    rowIndex: number,
+    supplierInvoiceIndex: number,
+  ): void {
+    const row = this.GetSupplierInvoiceItems(supplierInvoiceIndex).at(
+      rowIndex,
+    ) as FormGroup;
+
+    const classificationControl = row.get('ClassificationID');
+    const measureQualifierControl = row.get('MeasureQualifier');
+
+    classificationControl?.clearValidators();
+    classificationControl?.setValue(null);
+    classificationControl?.setErrors(null);
+    classificationControl?.updateValueAndValidity();
+
+    measureQualifierControl?.setValue(null);
+    measureQualifierControl?.setErrors(null);
+
+    if (!this.measureQualifierDisplayMap[supplierInvoiceIndex]) {
+      this.measureQualifierDisplayMap[supplierInvoiceIndex] = {};
+    }
+
+    this.measureQualifierDisplayMap[supplierInvoiceIndex][rowIndex] = 'לא ידוע';
   }
 
   getValuationValue(index: any): FormArray {
@@ -1345,9 +1394,19 @@ export class DeclarationFormComponent implements OnInit {
     this.decService
       .getDeclaration(decId)
       .pipe(takeUntil(this.initDestroy$))
-      .subscribe((res) => {
-        this.initElementsWithData(res);
-        this.loading = false;
+      .subscribe({
+        next: (res) => {
+          this.initElementsWithData(res);
+
+          if (this.sendToCustoms === 'T') {
+            this.sendDeclaration();
+          } else {
+            this.loading = false;
+          }
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
   private initElementsWithData(currentDec: any) {
@@ -1689,6 +1748,7 @@ export class DeclarationFormComponent implements OnInit {
               return this.formBuilder.group({
                 Id: [item.Id, Validators.required],
                 ClassificationID: [item.ClassificationID, Validators.required],
+                GoodsDescription: [item.GoodsDescription ?? ''],
                 CustomsValueAmount: [
                   item.CustomsValueAmount,
                   Validators.required,
@@ -1743,11 +1803,11 @@ export class DeclarationFormComponent implements OnInit {
     }
 
     this.isInitializingDeclaration = false;
-    if (this.sendToCustoms === 'T') {
-      this.sendDeclaration();
-    } else {
-      this.loading = false; // ✅ כבה את ה-loading בסוף
-    }
+    // if (this.sendToCustoms === 'T') {
+    //   this.sendDeclaration();
+    // } else {
+    //   this.loading = false; // ✅ כבה את ה-loading בסוף
+    // }
   }
 
   getFormErrors(checkInvoice: boolean) {
@@ -3412,5 +3472,92 @@ export class DeclarationFormComponent implements OnInit {
         this.importerName = 'לא נמצא במערכת המכס';
       },
     });
+  }
+
+  getClassificationControl(
+    supplierInvoiceIndex: number,
+    rowIndex: number,
+  ): FormControl {
+    return this.GetSupplierInvoiceItems(supplierInvoiceIndex)
+      .at(rowIndex)
+      .get('ClassificationID') as FormControl;
+  }
+
+  openCustomsSearch(rowIndex: number, supplierInvoiceIndex: number) {
+    this.currentRowIndex = rowIndex;
+    this.currentSupplierInvoiceIndex = supplierInvoiceIndex;
+    this.displayCustomsDialog = true;
+  }
+
+  onCustomsItemSelected(
+    item: any,
+    rowIndex: number,
+    supplierInvoiceIndex: number,
+  ) {
+    const row = this.GetSupplierInvoiceItems(supplierInvoiceIndex).at(
+      rowIndex,
+    ) as FormGroup;
+
+    // מילוי השדות
+    row.get('ClassificationID')?.patchValue(item.FullClassification);
+    row.get('GoodsDescription')?.patchValue(item.GoodsDescription);
+    row.get('MeasureQualifier')?.patchValue(item.MeasurementUnitName);
+
+    // איפוס מצב העיצוב של השדה (כדי שהאפור יוסר)
+    const control = row.get('ClassificationID');
+    if (control) {
+      control.markAsPristine(); // מסמן שהשדה נקי
+      control.markAsUntouched(); // מסמן שהשדה לא נגעו בו
+    }
+
+    // קריאה לפונקציה הקיימת שמטפלת אחרי שינוי ערך
+    this.onClassificationIDBlur(rowIndex, supplierInvoiceIndex);
+
+    // סוגר את הפופאפ
+    this.displayCustomsDialog = false;
+  }
+
+  loadClassificationHistory(): void {
+    const importerId = this.generalDeclarationForm.get(
+      'Consignments.ImporterID',
+    )?.value;
+
+    if (!importerId) return;
+
+    this.decService
+      .getImporterClassificationHistory(String(importerId))
+      .subscribe((res) => {
+        this.classificationHistoryOptions = res || [];
+      });
+  }
+
+  filterClassificationOptions(event: any): void {
+    const query = (event.query || '').toLowerCase();
+
+    this.filteredClassificationOptions =
+      this.classificationHistoryOptions.filter(
+        (x) =>
+          String(x.ClassificationID || '')
+            .toLowerCase()
+            .includes(query) ||
+          String(x.GoodsDescription || '')
+            .toLowerCase()
+            .includes(query),
+      );
+  }
+
+  onClassificationOptionSelected(
+    item: any,
+    rowIndex: number,
+    supplierInvoiceIndex: number,
+  ): void {
+    const row = this.GetSupplierInvoiceItems(supplierInvoiceIndex).at(
+      rowIndex,
+    ) as FormGroup;
+
+    row.get('ClassificationID')?.setValue(item.ClassificationID);
+    row.get('GoodsDescription')?.setValue(item.GoodsDescription || '');
+
+    this.onClassificationIDBlur(rowIndex, supplierInvoiceIndex);
   }
 }

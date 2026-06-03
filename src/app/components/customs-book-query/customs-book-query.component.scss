@@ -1220,3 +1220,11 @@
 :host ::ng-deep .p-tooltip .p-tooltip-text {
   font-size: 10px;
 }
+
+.pin-icon {
+  cursor: pointer; // מצביע כמו כפתור
+  background: none; // אין רקע
+  border: none; // אין מסגרת
+  padding: 0; // אין ריפוד
+  line-height: 1; // למרכז האייקון
+}

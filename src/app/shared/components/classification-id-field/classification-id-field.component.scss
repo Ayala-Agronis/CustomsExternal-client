@@ -1,0 +1,52 @@
+.classification-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 230px;
+}
+
+.classification-field input {
+  width: 100%;
+  min-width: 120px;
+}
+
+.classification-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+}
+
+.search-btn {
+  background: #eef6ff !important;
+  color: #1f6fb2 !important;
+  border: 1px solid #b9daf5 !important;
+}
+
+.unknown-btn {
+  background: #fff4e5 !important;
+  color: #d97706 !important;
+  border: 1px solid #ffd59a !important;
+}
+
+.unknown-input {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  font-style: italic;
+}
+
+.classification-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.goods-desc {
+  font-weight: 700;
+  color: #222;
+}
+
+.classification-code {
+  font-size: 12px;
+  color: #777;
+}

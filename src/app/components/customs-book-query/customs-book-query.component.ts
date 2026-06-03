@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import {
@@ -55,6 +55,13 @@ import {
   providers: [MessageService],
 })
 export class CustomsBookQueryComponent implements OnInit {
+  @Input() popupMode = false;
+  @Output() itemSelected = new EventEmitter<any>();
+
+  selectItem(item: any) {
+    this.itemSelected.emit(item);
+  }
+
   loading = false;
   msgs: Message[] = [];
 

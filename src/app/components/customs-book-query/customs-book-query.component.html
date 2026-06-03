@@ -1,5 +1,5 @@
 <p-toast position="top-center"></p-toast
-><app-top-navbar pageType="inner"></app-top-navbar>
+><app-top-navbar *ngIf="!popupMode" pageType="inner"></app-top-navbar>
 
 <div class="loading-overlay" *ngIf="loading">
   <p-progressSpinner></p-progressSpinner>
@@ -87,7 +87,9 @@
             </div>
 
             <div class="copy-col">
+              <!-- מצב רגיל -->
               <img
+                *ngIf="!popupMode"
                 src="assets/copy.png"
                 alt="copy"
                 class="copy-img"
@@ -95,6 +97,15 @@
                 tooltipPosition="top"
                 (click)="copyCustomsCode(item, $event)"
               />
+
+              <!-- מצב פופאפ -->
+              <i
+                *ngIf="popupMode"
+                class="pi pi-thumbtack pin-icon"
+                pTooltip="בחר פרט מכס"
+                tooltipPosition="top"
+                (click)="selectItem(item); $event.stopPropagation()"
+              ></i>
             </div>
           </div>
 

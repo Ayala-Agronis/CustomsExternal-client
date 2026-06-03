@@ -190,4 +190,11 @@ export class DeclarationService {
       },
     );
   }
+
+  getImporterClassificationHistory(importerId: string): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${apiConfig.customsdbApiUrl}Dec/GetImporterClassificationHistory`,
+      { params: { importerId } },
+    );
+  }
 }
