@@ -46,12 +46,12 @@
 .pricing-table td {
   padding: 10px 8px;
   text-align: center;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eaf2fb;
   line-height: 1.2;
 }
 
 .pricing-table tbody tr:hover {
-  background: #f8fafc;
+  background: #eaf2fb;
 }
 
 .extra-info {
@@ -62,7 +62,7 @@
 }
 
 .info-card {
-  background: #f3f4f6;
+  background: #eaf2fb;
   padding: 10px 12px;
   border-radius: 10px;
   line-height: 1.4;
@@ -76,11 +76,11 @@
 }
 
 .warning {
-  background: #fef3c7;
+  background: #eaf2fb; /* תכלת בהיר */
 }
 
 .vat {
-  background: #fee2e2;
+  background: #eaf2fb; /* תכלת מעט יותר חזק */
   font-weight: bold;
 }
 
