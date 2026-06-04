@@ -550,3 +550,53 @@ input {
   font-size: 14px;
   justify-content: center;
 }
+
+:host ::ng-deep .unit-col {
+  width: 90px;
+  min-width: 90px;
+}
+
+:host ::ng-deep .goods-description-col {
+  width: 360px;
+  min-width: 360px;
+}
+
+:host ::ng-deep .goods-description-col input {
+  width: 100%;
+}
+
+:host ::ng-deep .amount-col,
+:host ::ng-deep .value-col {
+  width: 130px;
+  min-width: 130px;
+}
+
+:host ::ng-deep .p-datatable table {
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 8px 0; // רווח בין העמודות
+}
+
+:host ::ng-deep .unit-col,
+:host ::ng-deep .goods-description-col,
+:host ::ng-deep .amount-col {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+:host ::ng-deep .p-datatable th,
+:host ::ng-deep .p-datatable td {
+  padding: 3px 0;
+}
+
+:host ::ng-deep .classification-col {
+  width: 220px;
+  min-width: 220px;
+}
+
+:host ::ng-deep .p-datatable input,
+:host ::ng-deep .p-datatable .p-autocomplete,
+:host ::ng-deep .p-datatable .p-autocomplete-input {
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -576,12 +576,12 @@ export class DeclarationFormComponent implements OnInit {
     });
 
     this.columns = [
-      'מוצר מיובא ',
-      'סוג יחידה',
-      'תיאור טובין',
-      'כמות',
-      'ערך טובין',
-      'ארץ מקור',
+      { title: 'מוצר מיובא', class: 'classification-col' },
+      { title: 'סוג יחידה', class: 'unit-col' },
+      { title: 'תיאור טובין', class: 'goods-description-col' },
+      { title: 'כמות', class: 'amount-col' },
+      { title: 'ערך טובין', class: 'value-col' },
+      { title: 'ארץ מקור', class: 'origin-col' },
     ];
 
     // if (this.mode != 'e') {

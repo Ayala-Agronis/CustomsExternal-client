@@ -512,7 +512,7 @@
                   <tr>
                     <th class="sCol"></th>
                     <ng-container *ngFor="let col of columns">
-                      <th>{{ col }}</th>
+                      <th [ngClass]="col.class">{{ col.title }}</th>
                     </ng-container>
                   </tr>
                 </ng-template>
@@ -532,7 +532,7 @@
                         (click)="onDeleteRow(rowData, rowIndex, i)"
                       ></button>
                     </td>
-                    <td>
+                    <td [ngClass]="columns[0].class">
                       <app-classification-id-field
                         [control]="getClassificationControl(i, rowIndex)"
                         [disabled]="formDisabled"
@@ -547,13 +547,13 @@
                       ></app-classification-id-field>
                     </td>
 
-                    <td>
+                    <td [ngClass]="columns[1].class">
                       <div class="measure-qualifier-display">
                         {{ measureQualifierDisplayMap[i]?.[rowIndex] || "-" }}
                       </div>
                     </td>
 
-                    <td>
+                    <td [ngClass]="columns[2].class">
                       <input
                         type="text"
                         pInputText
@@ -562,7 +562,7 @@
                       />
                     </td>
 
-                    <td>
+                    <td [ngClass]="columns[3].class">
                       <input
                         pInputText
                         type="text"
@@ -571,7 +571,7 @@
                       />
                     </td>
 
-                    <td>
+                    <td [ngClass]="columns[4].class">
                       <input
                         (blur)="getFormErrors(true)"
                         pInputText
@@ -581,7 +581,7 @@
                       />
                     </td>
 
-                    <td>
+                    <td [ngClass]="columns[5].class">
                       <p-autoComplete
                         formControlName="OriginCountryCode"
                         [forceSelection]="true"
