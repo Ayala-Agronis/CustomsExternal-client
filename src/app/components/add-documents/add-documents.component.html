@@ -133,35 +133,66 @@
   <hr />
 
   <!-- הוספת מסמך חדש -->
-  <h4>הוספת מסמך חדש</h4>
-  <!-- filepath: c:\Users\Admin\Desktop\External\CustomsExternal-Angular\CustomsExternal\src\app\components\add-documents\add-documents.component.html -->
+  <div class="add-document-row">
+    <div class="add-document-side">
+      <h4>הוספת מסמך חדש</h4>
 
-  <div class="document-details">
-    <div class="form-group">
-      <label>סוג מסמך</label>
-      <p-dropdown
-        [options]="documentCodes"
-        [(ngModel)]="selectedDocumentCode"
-        optionLabel="name"
-        placeholder="בחר סוג מסמך"
-      ></p-dropdown>
+      <div class="document-details">
+        <div class="form-group">
+          <label>סוג מסמך</label>
+          <p-dropdown
+            [options]="documentCodes"
+            [(ngModel)]="selectedDocumentCode"
+            optionLabel="name"
+            placeholder="בחר סוג מסמך"
+          ></p-dropdown>
+        </div>
+
+        <div class="form-group">
+          <button
+            class="button-add-file"
+            (click)="fileInput.click()"
+            [disabled]="isDocumentsLockedBySbt"
+          >
+            <i class="pi pi-plus"></i>
+          </button>
+          <input
+            #fileInput
+            type="file"
+            hidden
+            accept=".pdf,.xls,.xlsx,.jpg,.png"
+            (change)="onFileSelect($event)"
+          />
+        </div>
+      </div>
     </div>
 
-    <div class="form-group">
+    <div class="btns">
       <button
-        class="button-add-file"
-        (click)="fileInput.click()"
-        [disabled]="isDocumentsLockedBySbt"
+        class="button-primary"
+        [disabled]="!canUpload() || isDocumentsLockedBySbt"
+        (click)="saveDocument()"
       >
-        <i class="pi pi-plus"></i>
+        שמור
       </button>
-      <input
-        #fileInput
-        type="file"
-        hidden
-        accept=".pdf,.xls,.xlsx,.jpg,.png"
-        (change)="onFileSelect($event)"
-      />
+      <!-- <button class="button-secondary" (click)="goBack()">חזור</button> -->
+      <span
+        [pTooltip]="getSendToCustomsTooltip()"
+        tooltipPosition="top"
+        [tooltipDisabled]="canSendToCustoms() && !isDocumentsLockedBySbt"
+        class="send-tooltip-wrapper"
+      >
+        <button
+          pButton
+          type="button"
+          label="שלח למכס"
+          icon="pi pi-send"
+          class="p-button-success"
+          (click)="sendDecToCustoms()"
+          [disabled]="!canSendToCustoms() || isDocumentsLockedBySbt"
+        ></button>
+      </span>
+      <button class="button-secondary" (click)="previousStep()">חזור</button>
     </div>
   </div>
   <!-- <div class="form-group">
@@ -204,34 +235,6 @@
 
         <button class="button-primary" [disabled]="!canUpload()" (click)="saveDocument()">שמור</button>
     </div> -->
-
-  <div class="btns">
-    <button
-      class="button-primary"
-      [disabled]="!canUpload() || isDocumentsLockedBySbt"
-      (click)="saveDocument()"
-    >
-      שמור
-    </button>
-    <!-- <button class="button-secondary" (click)="goBack()">חזור</button> -->
-    <span
-      [pTooltip]="getSendToCustomsTooltip()"
-      tooltipPosition="top"
-      [tooltipDisabled]="canSendToCustoms() && !isDocumentsLockedBySbt"
-      class="send-tooltip-wrapper"
-    >
-      <button
-        pButton
-        type="button"
-        label="שלח למכס"
-        icon="pi pi-send"
-        class="p-button-success"
-        (click)="sendDecToCustoms()"
-        [disabled]="!canSendToCustoms() || isDocumentsLockedBySbt"
-      ></button>
-    </span>
-    <button class="button-secondary" (click)="previousStep()">חזור</button>
-  </div>
 </p-card>
 
 <p-dialog

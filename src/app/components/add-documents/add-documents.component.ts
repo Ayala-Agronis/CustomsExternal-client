@@ -1087,7 +1087,7 @@ export class AddDocumentsComponent {
     }
 
     if (this.hasPendingUploads()) {
-      return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמרי קודם ואז שלחי למכס.';
+      return 'יש קבצים שנבחרו ועדיין לא נשמרו. שמור קודם ואז שלח למכס.';
     }
 
     const missingDocs = this.getRequiredDocumentCodes()
