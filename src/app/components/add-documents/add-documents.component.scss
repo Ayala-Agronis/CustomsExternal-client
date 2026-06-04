@@ -175,31 +175,42 @@
 .required-documents {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 8px; // מרווח קטן יותר בין המלבנים
+  margin-bottom: 16px; // רווח נוסף לפני הטבלה
 }
 
 .required-document-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1rem;
-  background: #fafafa;
-}
+  padding: 6px 10px; // הקטנת padding פנימי
+  font-size: 0.85rem; // הקטנת טקסט
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fafafa;
 
-.required-document-main {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+  .required-document-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px; // פחות רווח בין השורות
+  }
 
-.required-document-title {
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  .required-document-title {
+    font-weight: 500;
+  }
+
+  .required-document-status {
+    font-size: 0.8rem; // קטן יותר
+    color: #d9534f;
+  }
+
+  .required-document-actions {
+    button.button-add-file {
+      width: 28px; // הקטנת כפתור הפלוס
+      height: 28px;
+      font-size: 0.9rem;
+    }
+  }
 }
 
 .required-badge,
