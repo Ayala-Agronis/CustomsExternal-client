@@ -1126,25 +1126,14 @@
             העתק
         </button> -->
     <button
-      [disabled]="
-        generalDeclarationForm.invalid ||
-        checkVersion() ||
-        formDisabled ||
-        isLockedBySbtEvent
-      "
-      [ngClass]="{
-        disabled:
-          generalDeclarationForm.invalid ||
-          checkVersion() ||
-          formDisabled ||
-          isLockedBySbtEvent,
-      }"
+      [disabled]="!canSendToCustoms()"
+      [ngClass]="{ disabled: !canSendToCustoms() }"
       *ngIf="showBtnCustoms"
       class="button-primary"
       (click)="sendDeclaration()"
-      pTooltip="ניתן לשלוח למכס עד 6 טיוטות "
+      [pTooltip]="getSendToCustomsTooltip()"
       tooltipPosition="top"
-      [tooltipDisabled]="!checkVersion()"
+      [tooltipDisabled]="canSendToCustoms()"
     >
       שלח למכס
     </button>

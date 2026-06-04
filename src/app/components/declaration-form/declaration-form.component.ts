@@ -127,6 +127,9 @@ export class DeclarationFormComponent implements OnInit {
   currentRowIndex!: number;
   currentSupplierInvoiceIndex!: number;
 
+  documents: any[] = [];
+  hasRequiredDocuments = false;
+  hasUnsavedDocuments = false;
   private readonly allowedCargoIDTypeCodes = ['1', '11', '17', '2', '3'];
 
   cargoFieldLabelsMap: {
@@ -1266,6 +1269,16 @@ export class DeclarationFormComponent implements OnInit {
 
   sendDeclaration() {
     // debugger;
+    if (!this.canSendToCustoms()) {
+      this.msgs1 = [
+        {
+          severity: 'warn',
+          summary: 'לא ניתן לשלוח למכס',
+          detail: this.getSendToCustomsTooltip(),
+        },
+      ];
+      return;
+    }
 
     const invalidInvoices = this.getInvoicesWithoutActiveItems();
 
@@ -1399,8 +1412,12 @@ export class DeclarationFormComponent implements OnInit {
           this.initElementsWithData(res);
 
           if (this.sendToCustoms === 'T') {
-            this.sendDeclaration();
+            this.checkDocumentsBeforeSend(() => {
+              this.loading = false;
+              this.sendDeclaration();
+            });
           } else {
+            this.checkDocumentsBeforeSend();
             this.loading = false;
           }
         },
@@ -1808,6 +1825,7 @@ export class DeclarationFormComponent implements OnInit {
     // } else {
     //   this.loading = false; // ✅ כבה את ה-loading בסוף
     // }
+    this.checkDocumentsBeforeSend();
   }
 
   getFormErrors(checkInvoice: boolean) {
@@ -3559,5 +3577,66 @@ export class DeclarationFormComponent implements OnInit {
     row.get('GoodsDescription')?.setValue(item.GoodsDescription || '');
 
     this.onClassificationIDBlur(rowIndex, supplierInvoiceIndex);
+  }
+
+  canSendToCustoms(): boolean {
+    return (
+      !this.loading &&
+      !this.generalDeclarationForm.invalid &&
+      !this.suplierErrorExist &&
+      !this.formDisabled &&
+      !this.isLockedBySbtEvent &&
+      !this.checkVersion() &&
+      this.hasRequiredDocuments &&
+      this.getInvoicesWithoutActiveItems().length === 0
+    );
+  }
+
+  getSendToCustomsTooltip(): string {
+    if (this.loading) return 'המערכת עדיין טוענת נתונים';
+    if (this.isLockedBySbtEvent) return this.sbtLockMessage;
+    if (this.formDisabled)
+      return this.formErrorsMessage || 'לא ניתן לשלוח הצהרה זו';
+    if (this.checkVersion()) return 'ניתן לשלוח למכס עד 6 טיוטות';
+    if (!this.hasRequiredDocuments) {
+      return 'לא ניתן לשלוח למכס – חסרים מסמכי חובה';
+    }
+    if (this.suplierErrorExist)
+      return this.suplierError || 'יש שגיאה בנתוני ספק';
+    if (this.generalDeclarationForm.invalid)
+      return this.formErrorsMessage || 'יש שדות חובה חסרים';
+
+    const invalidInvoices = this.getInvoicesWithoutActiveItems();
+    if (invalidInvoices.length > 0) {
+      return `יש חשבונית ללא שורת חשבון ספק: ${invalidInvoices.join(', ')}`;
+    }
+
+    return '';
+  }
+  checkDocumentsBeforeSend(callback?: () => void) {
+    const decId = localStorage.getItem('currentDecId');
+
+    if (!decId) {
+      this.hasRequiredDocuments = false;
+      callback?.();
+      return;
+    }
+
+    this.documentsService.getDocumentsByEntityId$(decId).subscribe({
+      next: (res: any[]) => {
+        this.documents = res || [];
+
+        const has714 = this.documents.some((doc) => doc.DocumentType === '714');
+        const has380 = this.documents.some((doc) => doc.DocumentType === '380');
+
+        this.hasRequiredDocuments = has714 && has380;
+        callback?.();
+      },
+      error: () => {
+        this.documents = [];
+        this.hasRequiredDocuments = false;
+        callback?.();
+      },
+    });
   }
 }

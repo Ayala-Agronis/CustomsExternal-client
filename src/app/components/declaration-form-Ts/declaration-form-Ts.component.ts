@@ -255,7 +255,10 @@ export class DeclarationFormTsComponent implements OnInit {
   formDisabled: boolean = false;
   filteredClassification: { name: string; value: string }[] = [];
   unclassified: boolean = false;
-  documents: any;
+  // documents: any;
+  documents: any[] = [];
+  hasRequiredDocuments = false;
+
   sendToCustoms: any;
 
   constructor(
@@ -1308,11 +1311,12 @@ export class DeclarationFormTsComponent implements OnInit {
 
     console.timeEnd('📝 Populate Form');
 
-    this.loading = false;
-
-    if (this.sendToCustoms == 'T') {
-      this.sendDeclaration();
-    }
+    this.checkDocumentsBeforeSend(() => {
+      this.loading = false;
+      if (this.sendToCustoms === 'T') {
+        this.sendDeclaration();
+      }
+    });
 
     console.timeEnd('⏱️ initElements TOTAL');
   }
@@ -2604,6 +2608,18 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   sendDeclaration() {
+    if (!this.canSendToCustoms()) {
+      this.msgs1 = [
+        {
+          severity: 'warn',
+          summary: 'לא ניתן לשלוח למכס',
+          detail: this.getSendToCustomsTooltip(),
+        },
+      ];
+
+      this.loading = false;
+      return;
+    }
     const invalidInvoices = this.getInvoicesWithoutActiveItems();
 
     if (invalidInvoices.length > 0) {
@@ -4022,5 +4038,87 @@ export class DeclarationFormTsComponent implements OnInit {
         this.importerName = 'לא נמצא במערכת המכס';
       },
     });
+  }
+
+  checkDocumentsBeforeSend(callback?: () => void) {
+    const decId = localStorage.getItem('currentDecId');
+
+    if (!decId) {
+      this.hasRequiredDocuments = false;
+      callback?.();
+      return;
+    }
+
+    this.documentsService.getDocumentsByEntityId$(decId).subscribe({
+      next: (res: any[]) => {
+        this.documents = res || [];
+
+        const requiredCodes = this.getRequiredDocumentCodes();
+
+        this.hasRequiredDocuments = requiredCodes.every((code) =>
+          this.documents.some(
+            (doc: any) => (doc.DocumentType ?? doc.Code) === code,
+          ),
+        );
+
+        callback?.();
+      },
+      error: () => {
+        this.documents = [];
+        this.hasRequiredDocuments = false;
+        callback?.();
+      },
+    });
+  }
+
+  canSendToCustoms(): boolean {
+    return (
+      !this.loading &&
+      !this.generalDeclarationForm.invalid &&
+      !this.suplierErrorExist &&
+      !this.formDisabled &&
+      !this.isLockedBySbtEvent &&
+      !this.checkVersion() &&
+      this.hasRequiredDocuments &&
+      this.getInvoicesWithoutActiveItems().length === 0
+    );
+  }
+
+  getSendToCustomsTooltip(): string {
+    if (this.loading) return 'המערכת עדיין טוענת נתונים';
+    if (this.isLockedBySbtEvent) return this.sbtLockMessage;
+    if (this.formDisabled)
+      return this.formErrorsMessage || 'לא ניתן לשלוח הצהרה זו';
+    if (this.checkVersion()) return 'ניתן לשלוח למכס עד 6 טיוטות';
+    if (!this.hasRequiredDocuments)
+      return 'לא ניתן לשלוח למכס – חסרים מסמכי חובה';
+    if (this.suplierErrorExist)
+      return this.suplierError || 'יש שגיאה בנתוני ספק';
+    if (this.generalDeclarationForm.invalid)
+      return this.formErrorsMessage || 'יש שדות חובה חסרים';
+
+    const invalidInvoices = this.getInvoicesWithoutActiveItems();
+    if (invalidInvoices.length > 0) {
+      return `יש חשבונית ללא שורת חשבון ספק: ${invalidInvoices.join(', ')}`;
+    }
+
+    return '';
+  }
+
+  private getRequiredDocumentCodes(): string[] {
+    const totalPackageQuantity =
+      Number(
+        this.generalDeclarationForm.get(
+          'ConsignmentPackagesMeasures.TotalPackageQuantity',
+        )?.value,
+      ) || 0;
+
+    const requiredCodes = ['714', '380'];
+
+    if (totalPackageQuantity >= 2) {
+      requiredCodes.push('271');
+    }
+
+    return requiredCodes;
   }
 }

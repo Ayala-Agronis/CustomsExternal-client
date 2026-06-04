@@ -815,19 +815,14 @@
             העתק
         </button> -->
     <button
-      [disabled]="
-        generalDeclarationForm.invalid || checkVersion() || formDisabled
-      "
-      [ngClass]="{
-        disabled:
-          generalDeclarationForm.invalid || checkVersion() || formDisabled,
-      }"
+      [disabled]="!canSendToCustoms()"
+      [ngClass]="{ disabled: !canSendToCustoms() }"
       *ngIf="showBtnCustoms"
       class="button-primary"
       (click)="sendDeclaration()"
-      pTooltip="ניתן לשלוח למכס עד 6 טיוטות "
+      [pTooltip]="getSendToCustomsTooltip()"
       tooltipPosition="top"
-      [tooltipDisabled]="!checkVersion()"
+      [tooltipDisabled]="canSendToCustoms()"
     >
       שלח למכס
     </button>
