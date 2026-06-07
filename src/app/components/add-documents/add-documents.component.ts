@@ -1030,7 +1030,17 @@ export class AddDocumentsComponent {
   private getRequiredDocumentCodes(): string[] {
     const totalPackageQuantity = this.getTotalPackageQuantity();
 
-    const requiredCodes = ['714', '380'];
+    const requiredCodes = ['380'];
+
+    const cargoType =
+      this.getCargoParamsFromCurrentDec()?.cargoType ??
+      JSON.parse(localStorage.getItem('currentDec') || '{}')
+        ?.ConsignmentPackagesMeasures?.[0]?.Consignments
+        ?.TransportContractDocumentTypeCode;
+
+    if (String(cargoType) !== '17') {
+      requiredCodes.push('714');
+    }
 
     if (totalPackageQuantity >= 2) {
       requiredCodes.push('271');
