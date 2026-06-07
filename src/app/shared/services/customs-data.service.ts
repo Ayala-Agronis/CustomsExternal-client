@@ -138,4 +138,10 @@ export class CustomsDataService {
       params: { id: agentFileReferenceId },
     });
   }
+
+  getMaxCustomsSendAttempts$() {
+    return this.http.get<number>(
+      `${apiConfig.customsdbApiUrl}/GeneralInformation/GetMaxCustomsSendAttempts`,
+    );
+  }
 }

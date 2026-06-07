@@ -115,6 +115,8 @@ export class DeclarationFormComponent implements OnInit {
 
   sendToCustoms: any;
 
+  maxCustomsSendAttempts = 5;
+
   measureQualifierNameMap: { [code: string]: string } = {};
   measureQualifierDisplayMap: {
     [invoiceIndex: number]: { [rowIndex: number]: string };
@@ -275,6 +277,14 @@ export class DeclarationFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.customsDataService.getMaxCustomsSendAttempts$().subscribe({
+      next: (res: number) => {
+        this.maxCustomsSendAttempts = res || 5;
+      },
+      error: () => {
+        this.maxCustomsSendAttempts = 5;
+      },
+    });
     this.route.queryParams
       .pipe(takeUntil(this.destroy$))
       .subscribe((params) => {
@@ -1948,15 +1958,14 @@ export class DeclarationFormComponent implements OnInit {
   }
 
   checkVersion(): boolean {
-    // const version = +this.generalDeclarationForm.controls['VersionID'].value;
-    // console.log('Version number:', version);
-    // return version > 0.5;
     const versionStr = String(
       this.generalDeclarationForm.controls['VersionID'].value ?? '',
     );
+
     const parts = versionStr.split('.');
     const version = parts.length > 1 ? Number(parts[1]) : 0;
-    return version > 5;
+
+    return version > this.maxCustomsSendAttempts;
   }
 
   // private updateBrokerRoutingState(): void {
@@ -1990,7 +1999,7 @@ export class DeclarationFormComponent implements OnInit {
     const parts = versionStr.split('.');
     const version = parts.length > 1 ? Number(parts[1]) : 0;
 
-    this.isLockedByBrokerRouting = version > 5;
+    this.isLockedByBrokerRouting = version > this.maxCustomsSendAttempts;
     this.applyCombinedLockState();
   }
 
@@ -3595,14 +3604,19 @@ export class DeclarationFormComponent implements OnInit {
   getSendToCustomsTooltip(): string {
     if (this.loading) return 'המערכת עדיין טוענת נתונים';
     if (this.isLockedBySbtEvent) return this.sbtLockMessage;
+    if (this.checkVersion())
+      return `ניתן לשלוח למכס עד ${this.maxCustomsSendAttempts} טיוטות`;
+
     if (this.formDisabled)
       return this.formErrorsMessage || 'לא ניתן לשלוח הצהרה זו';
-    if (this.checkVersion()) return 'ניתן לשלוח למכס עד 6 טיוטות';
+
     if (!this.hasRequiredDocuments) {
       return 'לא ניתן לשלוח למכס – חסרים מסמכי חובה';
     }
+
     if (this.suplierErrorExist)
       return this.suplierError || 'יש שגיאה בנתוני ספק';
+
     if (this.generalDeclarationForm.invalid)
       return this.formErrorsMessage || 'יש שדות חובה חסרים';
 
@@ -3613,6 +3627,7 @@ export class DeclarationFormComponent implements OnInit {
 
     return '';
   }
+
   checkDocumentsBeforeSend(callback?: () => void) {
     const decId = localStorage.getItem('currentDecId');
 

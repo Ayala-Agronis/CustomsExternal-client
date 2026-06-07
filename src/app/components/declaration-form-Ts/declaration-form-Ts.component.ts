@@ -261,6 +261,8 @@ export class DeclarationFormTsComponent implements OnInit {
 
   sendToCustoms: any;
 
+  maxCustomsSendAttempts = 5;
+
   constructor(
     private formBuilder: FormBuilder,
     private documentsService: DocumentService,
@@ -310,6 +312,15 @@ export class DeclarationFormTsComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.customsDataService.getMaxCustomsSendAttempts$().subscribe({
+      next: (res: number) => {
+        this.maxCustomsSendAttempts = res || 5;
+      },
+      error: () => {
+        this.maxCustomsSendAttempts = 5;
+      },
+    });
+
     console.time('ngOnInit TOTAL');
     console.log('ngOnInit start', new Date().toISOString());
 
@@ -2875,7 +2886,7 @@ export class DeclarationFormTsComponent implements OnInit {
     );
     const parts = versionStr.split('.');
     const version = parts.length > 1 ? Number(parts[1]) : 0;
-    return version > 5;
+    return version > this.maxCustomsSendAttempts;
   }
 
   // private updateBrokerRoutingState(): void {
@@ -2913,7 +2924,7 @@ export class DeclarationFormTsComponent implements OnInit {
     const parts = versionStr.split('.');
     const version = parts.length > 1 ? Number(parts[1]) : 0;
 
-    this.isLockedByBrokerRouting = version > 5;
+    this.isLockedByBrokerRouting = version > this.maxCustomsSendAttempts;
 
     this.applyCombinedLockState();
 
@@ -4087,9 +4098,11 @@ export class DeclarationFormTsComponent implements OnInit {
   getSendToCustomsTooltip(): string {
     if (this.loading) return 'המערכת עדיין טוענת נתונים';
     if (this.isLockedBySbtEvent) return this.sbtLockMessage;
+    if (this.checkVersion())
+      return `ניתן לשלוח למכס עד ${this.maxCustomsSendAttempts} טיוטות`;
     if (this.formDisabled)
       return this.formErrorsMessage || 'לא ניתן לשלוח הצהרה זו';
-    if (this.checkVersion()) return 'ניתן לשלוח למכס עד 6 טיוטות';
+
     if (!this.hasRequiredDocuments)
       return 'לא ניתן לשלוח למכס – חסרים מסמכי חובה';
     if (this.suplierErrorExist)
