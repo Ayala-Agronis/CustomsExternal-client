@@ -3641,10 +3641,21 @@ export class DeclarationFormComponent implements OnInit {
       next: (res: any[]) => {
         this.documents = res || [];
 
+        const cargoType =
+          this.generalDeclarationForm.get(
+            'Consignments.TransportContractDocumentTypeCode',
+          )?.value?.code ??
+          this.generalDeclarationForm.get(
+            'Consignments.TransportContractDocumentTypeCode',
+          )?.value;
+
         const has714 = this.documents.some((doc) => doc.DocumentType === '714');
+
         const has380 = this.documents.some((doc) => doc.DocumentType === '380');
 
-        this.hasRequiredDocuments = has714 && has380;
+        const requiresWaybill = String(cargoType) !== '17';
+
+        this.hasRequiredDocuments = requiresWaybill ? has714 && has380 : has380;
         callback?.();
       },
       error: () => {

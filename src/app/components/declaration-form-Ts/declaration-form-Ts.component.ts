@@ -4126,7 +4126,19 @@ export class DeclarationFormTsComponent implements OnInit {
         )?.value,
       ) || 0;
 
-    const requiredCodes = ['714', '380'];
+    const cargoType =
+      this.generalDeclarationForm.get(
+        'Consignments.TransportContractDocumentTypeCode',
+      )?.value?.code ??
+      this.generalDeclarationForm.get(
+        'Consignments.TransportContractDocumentTypeCode',
+      )?.value;
+
+    const requiredCodes = ['380'];
+
+    if (String(cargoType) !== '17') {
+      requiredCodes.push('714');
+    }
 
     if (totalPackageQuantity >= 2) {
       requiredCodes.push('271');
