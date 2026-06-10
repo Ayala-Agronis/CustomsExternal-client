@@ -7,16 +7,17 @@
 .customs-book-page {
   min-height: calc(100vh - 7vh);
   background: #f3f7fc;
-  padding: 40px 60px 80px;
+  padding: 20px 30px 40px;
 }
 
 .customs-book-hero {
   width: 100%;
-  max-width: 1160px;
+  max-width: 1360px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 16px;
 }
 
 .page-logo {
@@ -34,7 +35,6 @@
   width: 100%;
   max-width: 1360px;
   background: #ffffff;
-  // border: 1px solid #e4ebf5;
   border-radius: 18px;
   box-shadow: 0 10px 26px rgba(13, 52, 114, 0.05);
   padding: 22px 18px 0;
@@ -44,6 +44,7 @@
 .customs-book-hero.details-mode {
   width: 100%;
   max-width: calc(100vw - 24px);
+  gap: 16px;
 }
 
 .search-card.details-mode {
@@ -232,6 +233,63 @@
   flex-shrink: 0;
 }
 
+.pin-icon {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: #f59a12;
+  transition: 0.2s ease;
+  
+  &:hover {
+    color: #d47f0a;
+    transform: scale(1.2);
+  }
+}
+
+.pin-icon-details {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: #f59a12;
+  transition: 0.2s ease;
+  margin-left: 8px;
+  
+  &:hover {
+    color: #d47f0a;
+    transform: scale(1.2);
+  }
+}
+
+.selected-item-card {
+  position: relative;
+}
+
+.selected-item-card .pin-icon-details {
+  position: absolute;
+  left: 0;
+  top: -28px;
+  margin: 0;
+  z-index: 10;
+}
+
+.selected-item-card .back-icon-details {
+  position: absolute;
+  left: 24px;
+  top: -28px;
+  margin: 0;
+  z-index: 10;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: #f59a12;
+  transition: 0.2s ease;
+  
+  &:hover {
+    color: #d47f0a;
+    transform: scale(1.2);
+  }
+}
+
 .code-col {
   display: flex;
   align-items: center;
@@ -338,7 +396,7 @@
   width: 100%;
   background: #ffffff;
   border-radius: 0 0 18px 18px;
-  padding: 30px 20px 40px;
+  padding: 18px 16px 16px;
   margin-top: 0;
   border-top: 1px solid #e4ebf5;
 }
@@ -347,11 +405,12 @@
   flex-direction: column;
   align-items: flex-end;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   direction: rtl;
   text-align: right;
+  position: relative;
 }
 
 .top-meta-row {
@@ -390,7 +449,7 @@
 .selected-main-strip {
   background: #dfe8fb;
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 10px 12px;
   width: 100%;
   direction: rtl;
   text-align: right;
@@ -409,13 +468,12 @@
 
 .selected-main-title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   direction: rtl;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
   flex: 0 1 auto;
-  // white-space: nowrap;
 }
 
 .selected-main-stats {
@@ -452,17 +510,8 @@
 }
 
 .selected-main-text {
-  // min-width: 0;
-  // display: -webkit-box;
-  // -webkit-line-clamp: 4;
-  // -webkit-box-orient: vertical;
-  // overflow: hidden;
-  // text-overflow: ellipsis;
-  // white-space: normal;
-  // line-height: 1.45;
-  // word-break: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 5; // sweet spot
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -488,18 +537,19 @@
 
 .section-header {
   display: flex;
-  flex-direction: column; // 👈 זה השינוי הקריטי
-  align-items: flex-start; // יישור לימין
-  gap: 12px;
-  margin-bottom: 18px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .details-card {
   width: 100%;
   background: #ffffff;
   border-radius: 18px;
-  box-shadow: none; // בפיגמה זה כמעט שטוח
-  padding: 28px 18px 18px;
+  box-shadow: none;
+  padding: 18px 14px 14px;
+  margin-bottom: 12px;
 }
 
 .section-header h3 {
@@ -560,7 +610,7 @@
   font-size: 12px;
   font-weight: 500;
   border: none;
-  padding: 8px 10px;
+  padding: 6px 8px;
   text-align: center;
   vertical-align: middle;
 }
@@ -570,15 +620,16 @@
   color: #2f3f58;
   border: none;
   border-bottom: 1px solid #edf1f6;
-  padding: 10px 10px;
+  padding: 7px 8px;
   text-align: center;
   vertical-align: middle;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 :host ::ng-deep .customs-table-scroll .p-datatable-wrapper {
   overflow-y: auto;
   overflow-x: auto;
+  max-height: 350px;
 }
 
 :host ::ng-deep .customs-table-scroll .p-datatable-table {
@@ -604,7 +655,7 @@
   margin-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 .customs-book-hero.details-mode .details-page-header {
@@ -869,31 +920,7 @@
 
   .details-top-layout {
     flex-direction: column;
-  }
-
-  .customs-side-card {
-    width: 100%;
-    flex: 0 0 auto;
-  }
-
-  .customs-side-card-inner {
-    min-height: auto;
-    padding: 22px 18px;
-  }
-
-  .customs-side-card-image {
-    width: 96px;
-    margin-bottom: 14px;
-  }
-
-  .customs-side-card-text {
-    font-size: 18px;
-    margin-bottom: 18px;
-  }
-
-  .btn-orange-start {
-    font-size: 13px;
-    height: 38px;
+    gap: 16px;
   }
 }
 
@@ -1132,9 +1159,10 @@
 .details-top-layout {
   width: 100%;
   display: flex;
-  flex-direction: row-reverse;
-  align-items: stretch;
-  gap: 20px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
 .details-top-content {
@@ -1142,66 +1170,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-.customs-side-card {
-  width: 310px;
-  flex: 0 0 310px;
-  display: flex;
-  align-self: stretch;
-}
-
-.customs-side-card-inner {
-  width: 100%;
-  height: 100%;
-  background: #092857;
-  border-radius: 18px;
-  padding: 18px 18px 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  text-align: right;
-  box-shadow: 0 10px 26px rgba(13, 52, 114, 0.05);
-}
-
-.customs-side-card-image {
-  width: 118px;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  margin-bottom: 16px;
-  align-self: flex-start;
-}
-
-.customs-side-card-text {
-  width: 100%;
-  color: #ffffff;
-  font-size: 24px;
-  line-height: 1.28;
-  font-weight: 450;
-  margin-bottom: 18px;
-  text-align: right;
-}
-
-.btn-orange-start {
-  min-width: 118px;
-  height: 34px;
-  border: none;
-  border-radius: 2px;
-  background: #ec8305;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 450;
-  padding: 0 16px;
-  cursor: pointer;
-  transition: 0.2s ease;
-  align-self: flex-start;
-}
-
-.btn-orange-start:hover {
-  opacity: 0.92;
+  gap: 8px;
 }
 
 .details-top-content .search-card.details-mode {

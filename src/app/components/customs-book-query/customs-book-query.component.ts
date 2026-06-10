@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import {
@@ -54,8 +54,9 @@ import {
   ],
   providers: [MessageService],
 })
-export class CustomsBookQueryComponent implements OnInit {
+export class CustomsBookQueryComponent implements OnInit, OnChanges {
   @Input() popupMode = false;
+  @Input() isDialogOpen = false;
   @Output() itemSelected = new EventEmitter<any>();
 
   selectItem(item: any) {
@@ -116,15 +117,39 @@ export class CustomsBookQueryComponent implements OnInit {
       .subscribe((res) => (this.suggestions = res || []));
   }
 
-  ngOnInit(): void {
-    this.api.getLastUpdateDate().subscribe({
-      next: (res) => {
-        this.lastUpdateDate = res?.CustomsBookUpdateDate ?? null;
-      },
-      error: () => {
-        this.lastUpdateDate = null;
-      },
-    });
+ngOnInit(): void {
+  this.onContextChanged(); // מאפס הכל בעת טעינה
+  
+  this.api.getLastUpdateDate().subscribe({
+    next: (res) => {
+      this.lastUpdateDate = res?.CustomsBookUpdateDate ?? null;
+    },
+    error: () => {
+      this.lastUpdateDate = null;
+    },
+  });
+}
+
+ngOnChanges(changes: SimpleChanges): void {
+  // כשהדיאלוג נפתח (isDialogOpen משתנה ל-true), אפס הכל
+  if (changes['isDialogOpen'] && this.isDialogOpen === true) {
+    this.reset();
+  }
+}
+
+  reset() {
+    this.term = '';
+    this.term$.next(''); // אפס גם את ה-Subject כדי שיזכור שהערך הוא ''
+    this.suggestions = [];
+    this.selectedItem = null;
+    this.details = null;
+    this.msgs = [];
+    this.loading = false;
+  }
+
+  onClose() {
+    this.reset();
+    // אם יש פה אירוע שסוגר את הפופאפ בהורה, תעיפי אותו כאן
   }
 
   // // PrimeNG AutoComplete completeMethod
@@ -136,6 +161,7 @@ export class CustomsBookQueryComponent implements OnInit {
     this.term = value ?? '';
     this.details = null;
     this.selectedItem = null;
+    this.suggestions = []; // הוספתי את זה
     this.term$.next(value ?? '');
   }
 
@@ -390,4 +416,6 @@ export class CustomsBookQueryComponent implements OnInit {
       });
     });
   }
+
+  
 }
