@@ -150,72 +150,22 @@
     <ng-container *ngIf="details">
       <section class="details-section" dir="rtl">
         <div class="details-top-layout">
-          <aside class="customs-side-card">
-            <div class="customs-side-card-inner">
-              <img
-                src="assets/box2.png"
-                alt="שחרור חבילה מהמכס"
-                class="customs-side-card-image"
-              />
-
-              <div class="customs-side-card-text">
-                <div>לשחרר חבילה מהמכס?</div>
-                <div>עכשיו זה פשוט</div>
-              </div>
-
-              <button
-                class="btn-orange-start"
-                type="button"
-                onclick="window.location.href = '/login'"
-              >
-                מעניין אותי!
-              </button>
-            </div>
-          </aside>
-
           <div class="details-top-content">
-            <div class="search-card details-mode" dir="rtl">
-              <div class="filters">
-                <div class="form-group type-field">
-                  <label>תעריף מכס</label>
-                  <p-dropdown
-                    [options]="bookTypes"
-                    [(ngModel)]="bookTypeId"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="בחר ספר מכס"
-                    styleClass="book-type-dropdown"
-                    (onChange)="onContextChanged()"
-                    appendTo="body"
-                  >
-                    <ng-template pTemplate="selectedItem" let-item>
-                      <div class="book-row" [ngClass]="item?.color">
-                        {{ item?.name }}
-                      </div>
-                    </ng-template>
-
-                    <ng-template pTemplate="item" let-item>
-                      <div class="book-row" [ngClass]="item?.color">
-                        {{ item?.name }}
-                      </div>
-                    </ng-template>
-                  </p-dropdown>
-                </div>
-
-                <div class="form-group wide search-input-field">
-                  <label>חפש פרט מכס או ביטוי</label>
-                  <input
-                    pInputText
-                    type="text"
-                    class="search-input"
-                    [(ngModel)]="term"
-                    (ngModelChange)="onTermChange($event)"
-                    placeholder="הקלד לפחות 3 תווים כדי לראות פרטים."
-                  />
-                </div>
-              </div>
-            </div>
             <div class="selected-item-card">
+              <i
+                *ngIf="popupMode"
+                class="pi pi-thumbtack pin-icon-details"
+                pTooltip="בחר"
+                tooltipPosition="top"
+                (click)="selectItem(selectedItem); $event.stopPropagation()"
+              ></i>
+              <i
+                *ngIf="popupMode"
+                class="pi pi-arrow-left back-icon-details"
+                pTooltip="חזור"
+                tooltipPosition="top"
+                (click)="details = null; selectedItem = null; term = ''; $event.stopPropagation()"
+              ></i>
               <div class="selected-top-meta">
                 <div class="top-meta-row">
                   <span class="top-meta-label">חלק:</span>
@@ -303,7 +253,7 @@
           <p-table
             [value]="filteredRegularities"
             [scrollable]="true"
-            scrollHeight="420px"
+            scrollHeight="auto"
             dir="rtl"
             class="customs-table customs-table-scroll"
           >
@@ -345,7 +295,7 @@
           <p-table
             [value]="details.Tariffs"
             [scrollable]="true"
-            scrollHeight="420px"
+            scrollHeight="auto"
             dir="rtl"
             class="customs-table customs-table-scroll"
           >
