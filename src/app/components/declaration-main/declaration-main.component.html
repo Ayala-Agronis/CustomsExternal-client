@@ -50,22 +50,36 @@
     <p-steps [model]="steps" [(activeIndex)]="activeIndex"></p-steps>
 </div> -->
 <div class="page-container">
-    <div class="progress-container">
-        <div class="step" *ngFor="let step of steps; let i = index" [class.completed]="i <= maxIndex"
-            [class.active]="i === activeIndex">
-            <div class="s">
-                <div (click)="i <= maxIndex ? navigateBasedOnStep(i) : null" [class.active]="i === maxIndex" [class.clickable]="i <= maxIndex" class="icon-wrapper">
-                    <div class="circle" ></div>
-                    <img [src]="i <= maxIndex ? step.activeIcon : step.icon" [class.active]="i === maxIndex" alt="icon" class="icon" />
-                </div>
-                <p>{{ step.label }}</p>
-            </div>
-            <div *ngIf="i < steps.length - 1" class="separator">
-                <img src="assets/steps/dots.png" alt="separator" class="dots-icon" />
-            </div>
+  <div class="progress-container">
+    <div
+      class="step"
+      *ngFor="let step of steps; let i = index"
+      [class.completed]="canAccessStep(i)"
+      [class.active]="i === activeIndex"
+    >
+      <div class="s">
+        <div
+          (click)="canAccessStep(i) ? navigateBasedOnStep(i) : null"
+          [class.active]="i === activeIndex"
+          [class.clickable]="canAccessStep(i)"
+          class="icon-wrapper"
+        >
+          <div class="circle"></div>
+          <img
+            [src]="canAccessStep(i) ? step.activeIcon : step.icon"
+            [class.active]="i === activeIndex"
+            alt="icon"
+            class="icon"
+          />
         </div>
+        <p>{{ step.label }}</p>
+      </div>
+      <div *ngIf="i < steps.length - 1" class="separator">
+        <img src="assets/steps/dots.png" alt="separator" class="dots-icon" />
+      </div>
     </div>
-    <div class="content">
-        <router-outlet></router-outlet>
-    </div>
+  </div>
+  <div class="content">
+    <router-outlet></router-outlet>
+  </div>
 </div>

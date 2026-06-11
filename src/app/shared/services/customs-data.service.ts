@@ -144,4 +144,16 @@ export class CustomsDataService {
       `${apiConfig.customsdbApiUrl}/GeneralInformation/GetMaxCustomsSendAttempts`,
     );
   }
+
+  hasValidW4PaymentEvent$(
+    entityTypeId: string,
+    entityKey: string,
+  ): Observable<any> {
+    return this.http.get<any>(
+      `${apiConfig.customsdbApiUrl}Events/HasValidW4PaymentEvent`,
+      {
+        params: { entityTypeId, entityKey },
+      },
+    );
+  }
 }

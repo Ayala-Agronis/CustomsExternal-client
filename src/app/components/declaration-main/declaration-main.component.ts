@@ -50,6 +50,8 @@ export class DeclarationMainComponent implements OnInit {
   maxIndex: number = 0;
   typeDec: string = 'tr';
 
+  hasW4PaymentEvent = false;
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -91,6 +93,18 @@ export class DeclarationMainComponent implements OnInit {
 
       this.buildSteps();
       //this.navigateBasedOnStep(null);
+
+      const decId = localStorage.getItem('currentDecId');
+
+      if (decId) {
+        const entityTypeId = this.typeDec === 'tr' ? '2' : '1';
+
+        this.customsDataService
+          .hasValidW4PaymentEvent$(entityTypeId, decId)
+          .subscribe((res) => {
+            this.hasW4PaymentEvent = res?.hasW4Payment === true;
+          });
+      }
     });
 
     this.stepService.maxIndex$.subscribe((index: any) => {
@@ -165,11 +179,20 @@ export class DeclarationMainComponent implements OnInit {
 
   nextStep(): void {
     this.activeIndex = +(localStorage.getItem('activeIndex') || 0);
+
+    const nextIndex = this.activeIndex + 1;
+    const nextStep = this.steps[nextIndex];
+
+    if (nextStep?.label === 'תשלום' && !this.hasW4PaymentEvent) {
+      return;
+    }
+
     if (this.activeIndex < this.steps.length - 1) {
       if (this.activeIndex == this.maxIndex) {
         this.maxIndex++;
         localStorage.setItem('maxIndex', this.maxIndex.toString());
       }
+
       this.activeIndex++;
       localStorage.setItem('activeIndex', this.activeIndex.toString());
       this.navigateBasedOnStep(null);
@@ -264,5 +287,15 @@ export class DeclarationMainComponent implements OnInit {
     } else {
       this.steps = [this.allSteps[0], this.allSteps[1], this.allSteps[3]];
     }
+  }
+
+  canAccessStep(i: number): boolean {
+    const step = this.steps[i];
+
+    if (step?.label === 'תשלום') {
+      return this.hasW4PaymentEvent;
+    }
+
+    return i <= this.maxIndex;
   }
 }
