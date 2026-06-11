@@ -207,13 +207,14 @@ export class DeclarationFormComponent implements OnInit {
   formattedCustomsErrors: any[] = [];
 
   isLockedByBrokerRouting: boolean = false;
-  brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
+  brokerRoutingMessage: string =
+    'הצהרת היבוא הועברה למשרד להשלמת התהליך. עדכונים יופיעו באתר / ישלחו למייל';
   formDisabled: boolean = false;
   formErrorsMessage: string = '';
 
   isLockedBySbtEvent: boolean = false;
-  sbtLockMessage: string = 'ההצהרה הועברה להמשך טיפול. ניתן לצפות בלבד';
-
+  sbtLockMessage: string =
+    'הצהרת היבוא הועברה למשרד להשלמת התהליך. עדכונים יופיעו באתר / ישלחו למייל';
   displayVendorDialog = false;
   currentVendorInvoiceIndex: number | null = null;
 
@@ -1818,8 +1819,14 @@ export class DeclarationFormComponent implements OnInit {
       });
     }
 
+    // this.updateBrokerRoutingState();
+    // this.checkIfLockedBySbtEvent();
+    // this.refreshSendButtonVisibility(currentDec?.Id ?? null);
+
+    this.isLockedBySbtEvent = currentDec?.ExternalLocked === true;
+
     this.updateBrokerRoutingState();
-    this.checkIfLockedBySbtEvent();
+    this.applyCombinedLockState();
     this.refreshSendButtonVisibility(currentDec?.Id ?? null);
 
     this.deferFormErrorsMessageUpdate();
@@ -2869,28 +2876,28 @@ export class DeclarationFormComponent implements OnInit {
     return '';
   }
 
-  private checkIfLockedBySbtEvent(): void {
-    const decId = localStorage.getItem('currentDecId');
-    if (!decId) {
-      this.isLockedBySbtEvent = false;
-      this.applyCombinedLockState();
-      return;
-    }
+  // private checkIfLockedBySbtEvent(): void {
+  //   const decId = localStorage.getItem('currentDecId');
+  //   if (!decId) {
+  //     this.isLockedBySbtEvent = false;
+  //     this.applyCombinedLockState();
+  //     return;
+  //   }
 
-    this.customsDataService
-      .hasValidExternalLockEvent$('1', decId)
-      .pipe(takeUntil(this.initDestroy$))
-      .subscribe({
-        next: (res) => {
-          this.isLockedBySbtEvent = res?.isLocked === true;
-          this.applyCombinedLockState();
-        },
-        error: () => {
-          this.isLockedBySbtEvent = false;
-          this.applyCombinedLockState();
-        },
-      });
-  }
+  //   this.customsDataService
+  //     .hasValidExternalLockEvent$('1', decId)
+  //     .pipe(takeUntil(this.initDestroy$))
+  //     .subscribe({
+  //       next: (res) => {
+  //         this.isLockedBySbtEvent = res?.isLocked === true;
+  //         this.applyCombinedLockState();
+  //       },
+  //       error: () => {
+  //         this.isLockedBySbtEvent = false;
+  //         this.applyCombinedLockState();
+  //       },
+  //     });
+  // }
 
   private applyCombinedLockState(): void {
     const currentCustomsStatus =

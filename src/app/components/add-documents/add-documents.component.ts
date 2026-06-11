@@ -96,7 +96,7 @@ export class AddDocumentsComponent {
     ];
 
     this.loadDocuments();
-    this.checkIfDocumentsLockedBySbt();
+    this.setDocumentsLockFromDeclaration();
 
     this.customsDataService.getMaxCustomsSendAttempts$().subscribe({
       next: (res: number) => {
@@ -1144,23 +1144,20 @@ export class AddDocumentsComponent {
     }
   }
 
-  private checkIfDocumentsLockedBySbt(): void {
-    if (!this.currentDecId) {
+  private setDocumentsLockFromDeclaration(): void {
+    const raw = localStorage.getItem('currentDec');
+
+    if (!raw) {
       this.isDocumentsLockedBySbt = false;
       return;
     }
-    const entityType = this.getCurrentEntityType();
 
-    this.customsDataService
-      .hasValidExternalLockEvent$(entityType, this.currentDecId)
-      .subscribe({
-        next: (res) => {
-          this.isDocumentsLockedBySbt = res?.isLocked === true;
-        },
-        error: () => {
-          this.isDocumentsLockedBySbt = false;
-        },
-      });
+    try {
+      const dec = JSON.parse(raw);
+      this.isDocumentsLockedBySbt = dec?.ExternalLocked === true;
+    } catch {
+      this.isDocumentsLockedBySbt = false;
+    }
   }
 
   private getCurrentEntityType(): string {

@@ -182,10 +182,12 @@ export class DeclarationFormTsComponent implements OnInit {
   formErrorsMessage: string = '';
 
   isLockedByBrokerRouting: boolean = false;
-  brokerRoutingMessage: string = 'הצהרה נותבה לעמיל המכס להמשך טיפול';
+  brokerRoutingMessage: string =
+    'הצהרת השטעון הועברה למשרד להשלמת התהליך. עדכונים יופיעו באתר / ישלחו למייל';
 
   isLockedBySbtEvent: boolean = false;
-  sbtLockMessage: string = 'ההצהרה הועברה להמשך טיפול. ניתן לצפות בלבד';
+  sbtLockMessage: string =
+    'הצהרת השטעון הועברה למשרד להשלמת התהליך. עדכונים יופיעו באתר / ישלחו למייל';
 
   private errorTypesMap: { [key: string]: string } = {};
   formattedCustomsErrors: any[] = [];
@@ -1314,8 +1316,10 @@ export class DeclarationFormTsComponent implements OnInit {
       this.populateDestinationCountryData(currentDec.DestinationCountry);
     }
 
+    this.isLockedBySbtEvent = currentDec?.ExternalLocked === true;
+
     this.updateBrokerRoutingState();
-    this.checkIfLockedBySbtEvent();
+    this.applyCombinedLockState();
 
     // 👇 הוסיפי כאן
     this.refreshSendButtonVisibility(currentDec?.Id ?? null);
@@ -3903,24 +3907,24 @@ export class DeclarationFormTsComponent implements OnInit {
     return codePart ? codePart.toUpperCase() : '';
   }
 
-  private checkIfLockedBySbtEvent(): void {
-    const decId = localStorage.getItem('currentDecId');
-    if (!decId) return;
+  // private checkIfLockedBySbtEvent(): void {
+  //   const decId = localStorage.getItem('currentDecId');
+  //   if (!decId) return;
 
-    this.customsDataService
-      .hasValidSbtEvent$('2', decId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          this.isLockedBySbtEvent = res?.isLocked === true;
-          this.applyCombinedLockState();
-        },
-        error: () => {
-          this.isLockedBySbtEvent = false;
-          this.applyCombinedLockState();
-        },
-      });
-  }
+  //   this.customsDataService
+  //     .hasValidSbtEvent$('2', decId)
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe({
+  //       next: (res) => {
+  //         this.isLockedBySbtEvent = res?.isLocked === true;
+  //         this.applyCombinedLockState();
+  //       },
+  //       error: () => {
+  //         this.isLockedBySbtEvent = false;
+  //         this.applyCombinedLockState();
+  //       },
+  //     });
+  // }
 
   private applyCombinedLockState(): void {
     const shouldLock =
