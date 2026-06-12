@@ -1061,34 +1061,23 @@ export class DeclarationFormComponent implements OnInit {
     classificationID.setValidators(Validators.required);
     classificationID.updateValueAndValidity({ emitEvent: false });
 
-    this.decService.GetClassificationID$(classificationID.value).subscribe({
-      next: (responseData: any) => {
-        const unitCode =
-          responseData?.data?.measurementUnit ??
-          responseData?.customsItemField?.[0]
-            ?.statisticMeasurementUnitExternalIDField;
+    const unitCode =
+        measureQualifier?.value?.code ??
+        measureQualifier?.value;
 
-        if (unitCode) {
-          measureQualifier?.patchValue(unitCode);
-          measureQualifier?.setErrors(null);
-
-          if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
-            this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
-          }
-
-          this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
-            this.measureQualifierNameMap[unitCode] || unitCode;
-        } else {
-          measureQualifier?.patchValue(null);
-          measureQualifier?.setErrors({ notFound: true });
+      if (unitCode) {
+        if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
+          this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
         }
-      },
-      error: (err) => {
-        console.error('Error fetching classification data:', err);
-        measureQualifier?.setErrors({ apiError: true });
-      },
-    });
-  }
+
+        this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
+          this.measureQualifierNameMap[unitCode] || unitCode;
+
+        measureQualifier?.setErrors(null);
+      } else {
+        measureQualifier?.setErrors({ notFound: true });
+      }
+        }
 
   onClassificationSearch(rowIndex: number, supplierInvoiceIndex: number): void {
     console.log('search classification', rowIndex, supplierInvoiceIndex);

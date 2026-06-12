@@ -5,20 +5,41 @@
   <p-progressSpinner></p-progressSpinner>
 </div>
 
-<section class="customs-book-page">
+<section class="customs-book-page" [class.popup-mode]="popupMode">  
   <div class="customs-book-hero" [class.details-mode]="details">
-    <div class="page-logo" *ngIf="!details">
-      <img src="assets/logo4.png" alt="Customsil logo" />
+
+    <div class="page-logo" *ngIf="!details">  
+        <img src="assets/logo4.png" alt="Customsil logo" />
     </div>
 
-    <div class="details-page-header" *ngIf="details" dir="rtl">
-      <h1>תעריף מכס</h1>
-      <div class="last-update">
-        תאריך עדכון אחרון:
-        <!-- 14/07/2026 -->
-        {{ lastUpdateDate ? (lastUpdateDate | date: "dd/MM/yyyy") : "-" }}
-      </div>
+  <div class="details-page-header" *ngIf="details" dir="rtl">
+
+    <h1>תעריף מכס</h1>
+
+    <div class="last-update">
+      תאריך עדכון אחרון:
+      {{ lastUpdateDate ? (lastUpdateDate | date: "dd/MM/yyyy") : "-" }}
     </div>
+
+    <div *ngIf="popupMode" class="popup-actions">
+      <button
+        type="button"
+        class="back-btn"
+        pTooltip="חזור"
+        tooltipPosition="top"
+        (click)="backToResults()"
+      >
+        →
+      </button>
+
+      <i
+        class="pi pi-thumbtack pin-icon"
+        (click)="selectItem(selectedItem)"
+        pTooltip="בחר פרט מכס"
+        tooltipPosition="top"
+      ></i>
+    </div>
+  </div>
 
     <div class="search-card" dir="rtl" *ngIf="!details">
       <div class="search-card-header" *ngIf="!details">
@@ -150,22 +171,30 @@
     <ng-container *ngIf="details">
       <section class="details-section" dir="rtl">
         <div class="details-top-layout">
+          <aside class="customs-side-card" *ngIf="!popupMode">
+            <div class="customs-side-card-inner">
+              <img
+                src="assets/box2.png"
+                alt="שחרור חבילה מהמכס"
+                class="customs-side-card-image"
+              />
+
+              <div class="customs-side-card-text">
+                <div>לשחרר חבילה מהמכס?</div>
+                <div>עכשיו זה פשוט</div>
+              </div>
+
+              <button
+                class="btn-orange-start"
+                type="button"
+                onclick="window.location.href = '/login'"
+              >
+               מעניין אותי!
+              </button>
+            </div>
+          </aside>
           <div class="details-top-content">
             <div class="selected-item-card">
-              <i
-                *ngIf="popupMode"
-                class="pi pi-thumbtack pin-icon-details"
-                pTooltip="בחר"
-                tooltipPosition="top"
-                (click)="selectItem(selectedItem); $event.stopPropagation()"
-              ></i>
-              <i
-                *ngIf="popupMode"
-                class="pi pi-arrow-left back-icon-details"
-                pTooltip="חזור"
-                tooltipPosition="top"
-                (click)="details = null; selectedItem = null; term = ''; $event.stopPropagation()"
-              ></i>
               <div class="selected-top-meta">
                 <div class="top-meta-row">
                   <span class="top-meta-label">חלק:</span>
@@ -255,7 +284,7 @@
             [scrollable]="true"
             scrollHeight="auto"
             dir="rtl"
-            class="customs-table customs-table-scroll"
+            styleClass="customs-table customs-table-scroll"
           >
             <ng-template pTemplate="header">
               <tr>
