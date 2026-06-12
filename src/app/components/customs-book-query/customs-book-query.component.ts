@@ -60,7 +60,12 @@ export class CustomsBookQueryComponent implements OnInit, OnChanges {
   @Output() itemSelected = new EventEmitter<any>();
 
   selectItem(item: any) {
-    this.itemSelected.emit(item);
+    const dataToSend = {
+      ...item,
+      MeasurementUnitName: item.MeasurementUnitName
+    };
+    console.log('ITEM FULL:', item);
+    this.itemSelected.emit(dataToSend);
   }
 
   loading = false;
@@ -169,7 +174,7 @@ ngOnChanges(changes: SimpleChanges): void {
   onPick(item: CustomsBookSearchResult) {
     this.selectedItem = item;
     this.lawFilter = 'all';
-    this.suggestions = [];
+    //this.suggestions = [];
     this.term = item.FullClassification;
     // this.term='';
     this.loadDetails();
@@ -416,6 +421,8 @@ ngOnChanges(changes: SimpleChanges): void {
       });
     });
   }
-
   
+  backToResults() {
+    this.details = null;
+  }
 }
