@@ -1,24 +1,43 @@
-<p-toast position="top-center"></p-toast
-><app-top-navbar pageType="inner"></app-top-navbar>
-
+<p-toast position="top-center"></p-toast>
 <div class="loading-overlay" *ngIf="loading">
   <p-progressSpinner></p-progressSpinner>
 </div>
 
 <section class="customs-book-page">
-  <div class="customs-book-hero" [class.details-mode]="details">
-    <div class="page-logo" *ngIf="!details">
-      <img src="assets/logo4.png" alt="Customsil logo" />
+    <div class="customs-book-hero" [class.details-mode]="details">
+
+    <div class="page-logo" *ngIf="!details">  
+        <img src="assets/logo4.png" alt="Customsil logo" />
     </div>
 
-    <div class="details-page-header" *ngIf="details" dir="rtl">
-      <h1>תעריף מכס</h1>
-      <div class="last-update">
-        תאריך עדכון אחרון:
-        <!-- 14/07/2026 -->
-        {{ lastUpdateDate ? (lastUpdateDate | date: "dd/MM/yyyy") : "-" }}
-      </div>
+  <div class="details-page-header" *ngIf="details" dir="rtl">
+
+    <h1>תעריף מכס</h1>
+
+    <div class="last-update">
+      תאריך עדכון אחרון:
+      {{ lastUpdateDate ? (lastUpdateDate | date: "dd/MM/yyyy") : "-" }}
     </div>
+
+    <div class="popup-actions">
+      <button
+        type="button"
+        class="back-btn"
+        pTooltip="חזור"
+        tooltipPosition="top"
+        (click)="backToResults()"
+      >
+        →
+      </button>
+
+      <i
+        class="pi pi-thumbtack pin-icon"
+        (click)="selectItem(selectedItem)"
+        pTooltip="בחר פרט מכס"
+        tooltipPosition="top"
+      ></i>
+    </div>
+  </div>
 
     <div class="search-card" dir="rtl" *ngIf="!details">
       <div class="search-card-header" *ngIf="!details">
@@ -87,14 +106,12 @@
             </div>
 
             <div class="copy-col">
-              <img
-                src="assets/copy.png"
-                alt="copy"
-                class="copy-img"
-                pTooltip="העתק פרט מכס"
+              <i
+                class="pi pi-thumbtack pin-icon"
+                pTooltip="בחר פרט מכס"
                 tooltipPosition="top"
-                (click)="copyCustomsCode(item, $event)"
-              />
+                (click)="selectItem(item); $event.stopPropagation()"
+              ></i>
             </div>
           </div>
 
@@ -139,71 +156,7 @@
     <ng-container *ngIf="details">
       <section class="details-section" dir="rtl">
         <div class="details-top-layout">
-          <aside class="customs-side-card">
-            <div class="customs-side-card-inner">
-              <img
-                src="assets/box2.png"
-                alt="שחרור חבילה מהמכס"
-                class="customs-side-card-image"
-              />
-
-              <div class="customs-side-card-text">
-                <div>לשחרר חבילה מהמכס?</div>
-                <div>עכשיו זה פשוט</div>
-              </div>
-
-              <button
-                class="btn-orange-start"
-                type="button"
-                onclick="window.location.href = '/login'"
-              >
-                מעניין אותי!
-              </button>
-            </div>
-          </aside>
-
           <div class="details-top-content">
-            <div class="search-card details-mode" dir="rtl">
-              <div class="filters">
-                <div class="form-group type-field">
-                  <label>תעריף מכס</label>
-                  <p-dropdown
-                    [options]="bookTypes"
-                    [(ngModel)]="bookTypeId"
-                    optionLabel="name"
-                    optionValue="id"
-                    placeholder="בחר ספר מכס"
-                    styleClass="book-type-dropdown"
-                    (onChange)="onContextChanged()"
-                    appendTo="body"
-                  >
-                    <ng-template pTemplate="selectedItem" let-item>
-                      <div class="book-row" [ngClass]="item?.color">
-                        {{ item?.name }}
-                      </div>
-                    </ng-template>
-
-                    <ng-template pTemplate="item" let-item>
-                      <div class="book-row" [ngClass]="item?.color">
-                        {{ item?.name }}
-                      </div>
-                    </ng-template>
-                  </p-dropdown>
-                </div>
-
-                <div class="form-group wide search-input-field">
-                  <label>חפש פרט מכס או ביטוי</label>
-                  <input
-                    pInputText
-                    type="text"
-                    class="search-input"
-                    [(ngModel)]="term"
-                    (ngModelChange)="onTermChange($event)"
-                    placeholder="הקלד לפחות 3 תווים כדי לראות פרטים."
-                  />
-                </div>
-              </div>
-            </div>
             <div class="selected-item-card">
               <div class="selected-top-meta">
                 <div class="top-meta-row">
@@ -292,9 +245,9 @@
           <p-table
             [value]="filteredRegularities"
             [scrollable]="true"
-            scrollHeight="420px"
+            scrollHeight="auto"
             dir="rtl"
-            class="customs-table customs-table-scroll"
+            styleClass="customs-table customs-table-scroll"
           >
             <ng-template pTemplate="header">
               <tr>
@@ -334,7 +287,7 @@
           <p-table
             [value]="details.Tariffs"
             [scrollable]="true"
-            scrollHeight="420px"
+            scrollHeight="auto"
             dir="rtl"
             class="customs-table customs-table-scroll"
           >

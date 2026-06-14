@@ -58,7 +58,7 @@ import { CourierService } from '../../shared/services/courier.service';
 import { SearchVendorComponent } from '../search-vendor/search-vendor.component';
 import { DialogModule } from 'primeng/dialog';
 import { ClassificationIdFieldComponent } from '../../shared/components/classification-id-field/classification-id-field.component';
-import { CustomsBookQueryComponent } from '../customs-book-query/customs-book-query.component';
+import { CustomsBookQueryComponent } from '../customs-book-query-popup/customs-book-query-popup.component';
 @Component({
   selector: 'app-declaration-form',
   standalone: true,

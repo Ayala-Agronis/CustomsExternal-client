@@ -5,22 +5,92 @@
 }
 
 .customs-book-page {
-  min-height: calc(100vh - 7vh);
+  min-height: calc(100vh - 30vh);
   background: #f3f7fc;
-  padding: 40px 60px 80px;
+  padding: 20px 30px 40px;
 }
 
 .customs-book-hero {
   width: 100%;
-  max-width: 1160px;
+  max-width: 1360px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1px;
 }
 
 .page-logo {
-  margin-bottom: 38px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.page-logo img {
+  width: 220px;
+  height: auto;
+}
+
+.pin-icon {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: #f59a12;
+  transition: 0.2s ease;
+  
+  &:hover {
+    color: #d47f0a;
+    transform: scale(1.2);
+  }
+}
+
+.pin-icon-details {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: #f59a12;
+  transition: 0.2s ease;
+  margin-left: 8px;
+  
+  &:hover {
+    color: #d47f0a;
+    transform: scale(1.2);
+  }
+}
+
+.selected-item-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 0 0 18px 18px;
+  padding: 18px 16px 16px;
+  margin-top: 0;
+  border-top: 1px solid #e4ebf5;
+}
+
+.selected-item-card .pin-icon-details {
+  position: absolute;
+  left: 0;
+  top: -28px;
+  margin: 0;
+  z-index: 10;
+}
+
+.selected-item-card .back-icon-details {
+  position: absolute;
+  left: 24px;
+  top: -28px;
+  margin: 0;
+  z-index: 10;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  color: #f59a12;
+  transition: 0.2s ease;
+  
+  &:hover {
+    color: #d47f0a;
+    transform: scale(1.2);
+  }
 }
 
 .page-logo img {
@@ -38,18 +108,20 @@
   border-radius: 18px;
   box-shadow: 0 10px 26px rgba(13, 52, 114, 0.05);
   padding: 22px 18px 0;
-  overflow: hidden;
+  overflow: auto;
+  
 }
 
 .customs-book-hero.details-mode {
   width: 100%;
-  max-width: calc(100vw - 24px);
+  max-width: calc(100vw - 5px);
+  gap: 16px;
 }
 
 .search-card.details-mode {
   width: 100%;
   max-width: none;
-  padding: 26px 20px 0;
+  padding: 10px 20px 0;
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
   padding-bottom: 0;
@@ -57,7 +129,7 @@
 
 .search-card-header {
   text-align: center;
-  margin-bottom: 18px;
+  margin-bottom: 0px;
 }
 
 .search-card-header h1 {
@@ -191,6 +263,11 @@
   margin-right: -18px;
   margin-left: -18px;
   margin-top: 8px;
+  max-height: 320px;
+  overflow-x: hidden;
+  direction: rtl;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .result-row {
@@ -320,55 +397,35 @@
   white-space: nowrap;
 }
 
-// .details-section {
-//   width: 100%;
-//   max-width: 1500px;
-//   margin-top: 0;
-//   display: flex;
-//   flex-direction: column;
-//   gap: 22px;
-// }
+.details-section {
+  width: 100%;
+  max-width: 1500px;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
 
 .details-section > .selected-item-card {
   margin-top: 0;
 }
 
-//============
 .selected-item-card {
-  width: 100%;
-  background: #ffffff;
-  border-radius: 0 0 18px 18px;
-  padding: 30px 20px 40px;
-  margin-top: 0;
-  border-top: 1px solid #e4ebf5;
+  padding: 12px 20px 5px;
 }
+
 .selected-top-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-start;
-  gap: 6px;
-  width: 100%;
-  margin-bottom: 12px;
-  direction: rtl;
-  text-align: right;
+  gap: 1px;
+  margin-bottom: 2px;
 }
 
 .top-meta-row {
-  display: flex;
-  // align-items: center;
-  align-items: flex-start;
-  justify-content: flex-start;
-  direction: rtl;
-  text-align: right;
-  width: 100%;
-  gap: 4px;
+  gap: 2px;
 }
 
 .top-meta-label,
 .top-meta-value {
-  font-size: 15px;
-  line-height: 1.4;
+  line-height: 1.1;
 }
 
 .top-meta-label {
@@ -383,6 +440,7 @@
   // white-space: nowrap;
   white-space: normal;
   overflow-wrap: anywhere;
+  overflow: hidden;
   word-break: break-word;
   min-width: 0;
 }
@@ -390,7 +448,7 @@
 .selected-main-strip {
   background: #dfe8fb;
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 10px 12px;
   width: 100%;
   direction: rtl;
   text-align: right;
@@ -409,7 +467,7 @@
 
 .selected-main-title {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: flex-start;
   direction: rtl;
   gap: 4px;
@@ -490,24 +548,30 @@
   display: flex;
   flex-direction: column; // 👈 זה השינוי הקריטי
   align-items: flex-start; // יישור לימין
-  gap: 12px;
-  margin-bottom: 18px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .details-card {
   width: 100%;
   background: #ffffff;
   border-radius: 18px;
-  box-shadow: none; // בפיגמה זה כמעט שטוח
-  padding: 28px 18px 18px;
+  box-shadow: none;
+  padding: 6px 14px 8px;
+  margin-bottom: 0px;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 6px;
 }
 
 .section-header h3 {
   margin: 0;
-  color: #092857;
-  font-size: 18px; // במקום 24
-  font-weight: 700; // קצת פחות כבד
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .filter-tabs {
@@ -547,38 +611,44 @@
 :host ::ng-deep .customs-table .p-datatable-thead > tr > th:first-child {
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
+  background: #092857;
+  color: #ffffff;
 }
 
 :host ::ng-deep .customs-table .p-datatable-thead > tr > th:last-child {
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
+  background: #092857;
+  color: #ffffff;
 }
 
 :host ::ng-deep .customs-table .p-datatable-thead > tr > th {
-  background: #092857;
-  color: #ffffff;
+  background: #092857 !important;
+  color: #ffffff !important;
   font-size: 12px;
   font-weight: 500;
   border: none;
-  padding: 8px 10px;
+  padding: 6px 8px;
   text-align: center;
   vertical-align: middle;
 }
 
 :host ::ng-deep .customs-table .p-datatable-tbody > tr > td {
+  
   font-size: 12px;
   color: #2f3f58;
   border: none;
   border-bottom: 1px solid #edf1f6;
-  padding: 10px 10px;
+  padding: 7px 8px;
   text-align: center;
   vertical-align: middle;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 :host ::ng-deep .customs-table-scroll .p-datatable-wrapper {
   overflow-y: auto;
   overflow-x: auto;
+  max-height: 350px;
 }
 
 :host ::ng-deep .customs-table-scroll .p-datatable-table {
@@ -586,6 +656,8 @@
 }
 
 :host ::ng-deep .customs-table-scroll .p-datatable-thead > tr > th {
+  background: #092857;
+  color: #ffffff;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -604,7 +676,9 @@
   margin-top: 0;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 5px;
+  flex: 1;
+  min-height: 0;
 }
 
 .customs-book-hero.details-mode .details-page-header {
@@ -868,8 +942,11 @@
   }
 
   .details-top-layout {
-    flex-direction: column;
-  }
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-start;
+  flex: 0 0 auto;
+}
 
   .customs-side-card {
     width: 100%;
@@ -922,6 +999,7 @@
 
   .details-card {
     padding: 12px 8px 10px;
+    flex: 0 0 auto;
   }
 
   .selected-main-label,
@@ -1219,4 +1297,70 @@
 
 :host ::ng-deep .p-tooltip .p-tooltip-text {
   font-size: 10px;
+}
+
+.pin-icon {
+  cursor: pointer;
+  color: #f59a12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.pin-icon:hover {
+  color: #d47f0a;
+  transform: scale(1.15);
+}
+
+.result-row .pin-icon {
+  font-size: 10px;
+  width: 24px;
+  height: 24px;
+}
+
+.popup-actions .pin-icon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+}
+
+.back-btn {
+  font-size: 22px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: #f59a12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease;
+}
+
+.back-btn:hover {
+  transform: scale(1.15);
+  color: #d47f0a;
+}
+
+.details-page-header {
+  position: relative;
+  width: 100%;
+}
+
+.popup-actions {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+
+:host ::ng-deep .p-datatable,
+:host ::ng-deep .p-datatable-scrollable-wrapper,
+:host ::ng-deep .p-datatable-scrollable-view {
+  direction: rtl !important;
 }

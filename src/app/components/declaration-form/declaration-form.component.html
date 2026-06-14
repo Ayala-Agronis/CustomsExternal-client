@@ -906,16 +906,10 @@
     [draggable]="false"
     [resizable]="false"
   >
-    <app-customs-book-query
-      [popupMode]="true"
-      [isDialogOpen]="displayCustomsDialog"
-      (itemSelected)="
-        onCustomsItemSelected(
-          $event,
-          currentRowIndex,
-          currentSupplierInvoiceIndex
-        )
-      "
-    ></app-customs-book-query>
+    <app-customs-book-query-popup
+      *ngIf="displayCustomsDialog"
+      (close)="displayCustomsDialog = false"
+      (itemSelected)="onCustomsItemSelected($event, currentRowIndex, currentSupplierInvoiceIndex)"
+    ></app-customs-book-query-popup>
   </p-dialog>
 </form>
