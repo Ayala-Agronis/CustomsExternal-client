@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CustomsBookQueryComponent } from './customs-book-query.component';
+import { CustomsBookQuery1Component } from './customs-book-query.component';
 
-describe('CustomsBookQueryComponent', () => {
-  let component: CustomsBookQueryComponent;
-  let fixture: ComponentFixture<CustomsBookQueryComponent>;
+describe('CustomsBookQuery1Component', () => {
+  let component: CustomsBookQuery1Component;
+  let fixture: ComponentFixture<CustomsBookQuery1Component>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CustomsBookQueryComponent]
+      imports: [CustomsBookQuery1Component]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(CustomsBookQueryComponent);
+    fixture = TestBed.createComponent(CustomsBookQuery1Component);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

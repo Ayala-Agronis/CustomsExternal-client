@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Subject, of } from 'rxjs';
 import {
@@ -33,10 +33,10 @@ import {
 } from '../../shared/models/customs-book.models';
 
 @Component({
-  selector: 'app-customs-book-query',
+  selector: 'app-customs-book-query-popup',
   standalone: true,
-  templateUrl: './customs-book-query.component.html',
-  styleUrls: ['./customs-book-query.component.scss'],
+  templateUrl: './customs-book-query-popup.component.html',
+  styleUrls: ['./customs-book-query-popup.component.scss'],
   imports: [
     CommonModule,
     FormsModule,
@@ -54,7 +54,21 @@ import {
   ],
   providers: [MessageService],
 })
-export class CustomsBookQueryComponent implements OnInit {
+export class CustomsBookQueryComponent implements OnInit, OnChanges {
+  @Input() popupMode = false;
+  @Input() isDialogOpen = false;
+  @Output() itemSelected = new EventEmitter<any>();
+  @Output() close = new EventEmitter<void>();
+
+  selectItem(item: any) {
+    const dataToSend = {
+      ...item,
+      MeasurementUnitName: item.MeasurementUnitName
+    };
+    console.log('ITEM FULL:', item);
+    this.itemSelected.emit(dataToSend);
+  }
+
   loading = false;
   msgs: Message[] = [];
 
@@ -109,15 +123,38 @@ export class CustomsBookQueryComponent implements OnInit {
       .subscribe((res) => (this.suggestions = res || []));
   }
 
-  ngOnInit(): void {
-    this.api.getLastUpdateDate().subscribe({
-      next: (res) => {
-        this.lastUpdateDate = res?.CustomsBookUpdateDate ?? null;
-      },
-      error: () => {
-        this.lastUpdateDate = null;
-      },
-    });
+ngOnInit(): void {
+  this.onContextChanged(); // מאפס הכל בעת טעינה
+  
+  this.api.getLastUpdateDate().subscribe({
+    next: (res) => {
+      this.lastUpdateDate = res?.CustomsBookUpdateDate ?? null;
+    },
+    error: () => {
+      this.lastUpdateDate = null;
+    },
+  });
+}
+
+ngOnChanges(changes: SimpleChanges): void {
+  if (changes['isDialogOpen']) {
+    this.reset();
+  }
+}
+
+  reset() {
+    this.term = '';
+    this.term$.next(''); // אפס גם את ה-Subject כדי שיזכור שהערך הוא ''
+    this.suggestions = [];
+    this.selectedItem = null;
+    this.details = null;
+    this.msgs = [];
+    this.loading = false;
+  }
+
+  onClose() {
+    this.reset();
+    this.close.emit();
   }
 
   // // PrimeNG AutoComplete completeMethod
@@ -129,6 +166,7 @@ export class CustomsBookQueryComponent implements OnInit {
     this.term = value ?? '';
     this.details = null;
     this.selectedItem = null;
+    this.suggestions = []; // הוספתי את זה
     this.term$.next(value ?? '');
   }
 
@@ -136,7 +174,7 @@ export class CustomsBookQueryComponent implements OnInit {
   onPick(item: CustomsBookSearchResult) {
     this.selectedItem = item;
     this.lawFilter = 'all';
-    this.suggestions = [];
+    //this.suggestions = [];
     this.term = item.FullClassification;
     // this.term='';
     this.loadDetails();
@@ -382,5 +420,9 @@ export class CustomsBookQueryComponent implements OnInit {
         life: 2000,
       });
     });
+  }
+  
+  backToResults() {
+    this.details = null;
   }
 }
