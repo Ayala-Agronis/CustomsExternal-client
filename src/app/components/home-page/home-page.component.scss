@@ -65,9 +65,9 @@
   }
 }
 
-header {
-  height: 7vh;
-}
+// header {
+//   height: 7vh;
+// }
 
 .navbar {
   display: flex;
@@ -616,4 +616,46 @@ header {
 .button-wrapper {
   margin-top: 55px;
   text-align: center;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: auto;
+    padding: 40px 20px 80px;
+  }
+  .hero-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .hero-image {
+    order: 1;
+
+    img {
+      max-width: 250px;
+      width: 100%;
+    }
+  }
+
+  .hero-text {
+    order: 2;
+
+    h1 {
+      font-size: 36px;
+    }
+
+    p {
+      font-size: 18px;
+    }
+  }
+
+  .hero-section {
+    padding: 40px 20px;
+    min-height: auto;
+  }
+
+  .btn-cta {
+    margin: 0 auto;
+  }
 }

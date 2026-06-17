@@ -15,9 +15,14 @@ export class PricingComponent {
   private router = inject(Router);
 
   pricingData = [
+        {
+      type: 'אישי',
+      value: '$ עד 150 ',
+      price: '35 ₪',
+    },
     {
       type: 'אישי',
-      value: '$ 0-500 ',
+      value: '$ 151-500 ',
       price: '50 ₪',
     },
     {

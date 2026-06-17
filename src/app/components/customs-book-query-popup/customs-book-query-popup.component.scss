@@ -61,10 +61,9 @@
 .selected-item-card {
   width: 100%;
   background: #ffffff;
-  border-radius: 0 0 18px 18px;
+  border-radius: 18px 18px 18px 18px;
   padding: 18px 16px 16px;
   margin-top: 0;
-  border-top: 1px solid #e4ebf5;
 }
 
 .selected-item-card .pin-icon-details {
@@ -1290,8 +1289,6 @@
 
 .details-top-content .selected-item-card {
   margin-top: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
   flex: 1;
 }
 

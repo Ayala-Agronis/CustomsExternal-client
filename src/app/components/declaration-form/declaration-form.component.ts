@@ -122,6 +122,10 @@ export class DeclarationFormComponent implements OnInit {
     [invoiceIndex: number]: { [rowIndex: number]: string };
   } = {};
 
+  lastClassificationForUnitMap: {
+    [invoiceIndex: number]: { [rowIndex: number]: string };
+  } = {};
+
   isCopyMode = false;
   private pendingCopy = false;
 
@@ -1048,8 +1052,6 @@ export class DeclarationFormComponent implements OnInit {
     }
   }
   onClassificationIDBlur(index: any, suplierInvoiceIndex: any) {
-    console.log('onClassificationIDBlur called', index, suplierInvoiceIndex);
-
     const tableRowArray = this.GetSupplierInvoiceItems(suplierInvoiceIndex);
     const row = tableRowArray.at(index) as FormGroup;
 
@@ -1061,23 +1063,61 @@ export class DeclarationFormComponent implements OnInit {
     classificationID.setValidators(Validators.required);
     classificationID.updateValueAndValidity({ emitEvent: false });
 
-    const unitCode =
-        measureQualifier?.value?.code ??
-        measureQualifier?.value;
+    const existingUnitCode =
+      measureQualifier?.value?.code ?? measureQualifier?.value;
 
-      if (unitCode) {
-        if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
-          this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
-        }
+    const currentClassification = classificationID.value;
 
-        this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
-          this.measureQualifierNameMap[unitCode] || unitCode;
+    const lastClassification =
+      this.lastClassificationForUnitMap[suplierInvoiceIndex]?.[index];
 
-        measureQualifier?.setErrors(null);
-      } else {
-        measureQualifier?.setErrors({ notFound: true });
+    if (existingUnitCode && lastClassification === currentClassification) {
+      if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
+        this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
       }
+
+      this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
+        this.measureQualifierNameMap[existingUnitCode] || existingUnitCode;
+
+      measureQualifier?.setErrors(null);
+      return;
+    }
+
+    this.decService.GetClassificationID$(classificationID.value).subscribe({
+      next: (responseData: any) => {
+        const unitCode =
+          responseData?.data?.measurementUnit ??
+          responseData?.customsItemField?.[0]
+            ?.statisticMeasurementUnitExternalIDField;
+
+        if (unitCode) {
+          measureQualifier?.patchValue(unitCode);
+          measureQualifier?.setErrors(null);
+
+          if (!this.measureQualifierDisplayMap[suplierInvoiceIndex]) {
+            this.measureQualifierDisplayMap[suplierInvoiceIndex] = {};
+          }
+
+          if (!this.lastClassificationForUnitMap[suplierInvoiceIndex]) {
+            this.lastClassificationForUnitMap[suplierInvoiceIndex] = {};
+          }
+
+          this.lastClassificationForUnitMap[suplierInvoiceIndex][index] =
+            currentClassification;
+
+          this.measureQualifierDisplayMap[suplierInvoiceIndex][index] =
+            this.measureQualifierNameMap[unitCode] || unitCode;
+        } else {
+          measureQualifier?.patchValue(null);
+          measureQualifier?.setErrors({ notFound: true });
         }
+      },
+      error: (err) => {
+        console.error('Error fetching classification data:', err);
+        measureQualifier?.setErrors({ apiError: true });
+      },
+    });
+  }
 
   onClassificationSearch(rowIndex: number, supplierInvoiceIndex: number): void {
     console.log('search classification', rowIndex, supplierInvoiceIndex);
@@ -3526,6 +3566,13 @@ export class DeclarationFormComponent implements OnInit {
     row.get('GoodsDescription')?.patchValue(item.GoodsDescription);
     row.get('MeasureQualifier')?.patchValue(item.MeasurementUnitName);
 
+    if (!this.lastClassificationForUnitMap[supplierInvoiceIndex]) {
+      this.lastClassificationForUnitMap[supplierInvoiceIndex] = {};
+    }
+
+    this.lastClassificationForUnitMap[supplierInvoiceIndex][rowIndex] =
+      item.FullClassification;
+
     // איפוס מצב העיצוב של השדה (כדי שהאפור יוסר)
     const control = row.get('ClassificationID');
     if (control) {
@@ -3661,4 +3708,6 @@ export class DeclarationFormComponent implements OnInit {
       },
     });
   }
+
+
 }
