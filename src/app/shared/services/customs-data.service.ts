@@ -156,4 +156,13 @@ export class CustomsDataService {
       },
     );
   }
+
+  getOpenCustomsCheckForDeclaration$(declarationID: string) {
+    return this.http.get<any>(
+      `${apiConfig.customsdbApiUrl}CustomsCheck/OpenCheckForDeclaration`,
+      {
+        params: { declarationID },
+      },
+    );
+  }
 }

@@ -40,6 +40,14 @@
     >
       {{ isLockedBySbtEvent ? sbtLockMessage : brokerRoutingMessage }}
     </div>
+
+    <div *ngIf="openCustomsCheck" class="customs-check-alert">
+      מטען זה נדרש לבדיקה באתר:
+      {{ openCustomsCheck.CheckSiteName }}
+
+      בתאריך:
+      {{ openCustomsCheck.limitDate | date: "dd/MM/yyyy HH:mm" }}
+    </div>
   </div>
 
   <p-confirmDialog></p-confirmDialog>

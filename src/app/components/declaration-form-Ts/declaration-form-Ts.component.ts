@@ -186,6 +186,7 @@ export class DeclarationFormTsComponent implements OnInit {
     'הצהרת השטעון הועברה למשרד להשלמת התהליך. עדכונים יופיעו באתר / ישלחו למייל';
 
   isLockedBySbtEvent: boolean = false;
+  openCustomsCheck: any = null;
   sbtLockMessage: string =
     'הצהרת השטעון הועברה למשרד להשלמת התהליך. עדכונים יופיעו באתר / ישלחו למייל';
 
@@ -1037,6 +1038,14 @@ export class DeclarationFormTsComponent implements OnInit {
       },
       { emitEvent: false },
     );
+
+    if (currentDec?.DeclarationNumber) {
+      this.customsDataService
+        .getOpenCustomsCheckForDeclaration$(currentDec.DeclarationNumber)
+        .subscribe((res) => {
+          this.openCustomsCheck = res;
+        });
+    }
 
     this.onImporterIdBlur();
 

@@ -600,3 +600,12 @@ input {
   width: 100%;
   box-sizing: border-box;
 }
+
+.customs-check-alert {
+  margin-top: 8px;
+  font-weight: bold;
+  color: #b00020;
+  border: 1px solid #b00020;
+  padding: 8px 12px;
+  display: inline-block;
+}

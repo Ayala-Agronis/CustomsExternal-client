@@ -110,6 +110,8 @@ export class DeclarationFormComponent implements OnInit {
   declarationInvoiceTypeCode: any;
   declarationFacilityID: any;
 
+  openCustomsCheck: any = null;
+
   importerName = '';
   errorMessage = '';
 
@@ -1510,6 +1512,15 @@ export class DeclarationFormComponent implements OnInit {
       this.generalDeclarationForm.patchValue({
         DeclarationNumber: currentDec?.DeclarationNumber,
       });
+
+      if (currentDec?.DeclarationNumber) {
+        this.customsDataService
+          .getOpenCustomsCheckForDeclaration$(currentDec.DeclarationNumber)
+          .subscribe((res) => {
+            this.openCustomsCheck = res;
+          });
+      }
+
       this.generalDeclarationForm.patchValue({
         VersionID: currentDec?.VersionID,
       });
@@ -3708,6 +3719,4 @@ export class DeclarationFormComponent implements OnInit {
       },
     });
   }
-
-
 }

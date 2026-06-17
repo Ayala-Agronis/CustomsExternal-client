@@ -17,6 +17,7 @@
   </div>
   <div class="title-container">
     <h2 class="form-title title">תהליך הזנת הצהרה</h2>
+
     <label *ngIf="generalDeclarationForm.get('DeclarationNumber')?.value">
       מספר הצהרה :
       {{ generalDeclarationForm.get("DeclarationNumber")?.value }}</label
@@ -30,6 +31,13 @@
       *ngIf="isLockedByBrokerRouting || isLockedBySbtEvent"
     >
       {{ isLockedBySbtEvent ? sbtLockMessage : brokerRoutingMessage }}
+    </div>
+
+    <div *ngIf="openCustomsCheck" class="customs-check-alert">
+      מטען זה נדרש לבדיקה באתר:
+      {{ openCustomsCheck.CheckSiteName }}
+      בתאריך:
+      {{ openCustomsCheck.limitDate | date: "dd/MM/yyyy HH:mm" }}
     </div>
   </div>
 
@@ -902,14 +910,20 @@
     [(visible)]="displayCustomsDialog"
     [modal]="true"
     [appendTo]="'body'"
-    [style]="{ width: '850px'}"
+    [style]="{ width: '850px' }"
     [draggable]="false"
     [resizable]="false"
   >
     <app-customs-book-query-popup
       *ngIf="displayCustomsDialog"
       (close)="displayCustomsDialog = false"
-      (itemSelected)="onCustomsItemSelected($event, currentRowIndex, currentSupplierInvoiceIndex)"
+      (itemSelected)="
+        onCustomsItemSelected(
+          $event,
+          currentRowIndex,
+          currentSupplierInvoiceIndex
+        )
+      "
     ></app-customs-book-query-popup>
   </p-dialog>
 </form>
