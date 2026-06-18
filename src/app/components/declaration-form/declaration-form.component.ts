@@ -465,6 +465,10 @@ export class DeclarationFormComponent implements OnInit {
     ])
       .pipe(takeUntil(this.initDestroy$))
       .subscribe(() => {
+        if (this.mode !== 'e') {
+          this.setGovernmentProcedureByCustomerType();
+        }
+
         this.consignmentInit(() => {
           if (this.mode === 'e') {
             localStorage.setItem('maxIndex', '2');
@@ -800,6 +804,53 @@ export class DeclarationFormComponent implements OnInit {
     }
   }
 
+  private getCustomerTypeFromStorage(): string | null {
+    const userFromStorage =
+      localStorage.getItem('USER') || localStorage.getItem('user');
+
+    if (!userFromStorage) {
+      return null;
+    }
+
+    try {
+      const user = JSON.parse(userFromStorage);
+      return user?.CustomerType?.toString().toLowerCase() || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private setGovernmentProcedureByCustomerType(): void {
+    const customerType = this.getCustomerTypeFromStorage();
+
+    const procedureName =
+      customerType === 'b'
+        ? 'יבוא מסחרי'
+        : customerType === 'p'
+          ? 'יבוא אישי'
+          : null;
+
+    if (!procedureName || !this.declarationCustomsProcess?.length) {
+      return;
+    }
+
+    const selectedProcess = this.declarationCustomsProcess.find(
+      (item: any) => item.name?.trim() === procedureName,
+    );
+
+    if (!selectedProcess) {
+      return;
+    }
+
+    this.generalDeclarationForm
+      .get('Consignments.GovernmentProcedure')
+      ?.patchValue(selectedProcess, { emitEvent: false });
+
+    this.generalDeclarationForm
+      .get('Consignments.GovernmentProcedure')
+      ?.updateValueAndValidity({ emitEvent: false });
+  }
+
   initForm() {
     this.generalDeclarationForm = this.formBuilder.group({
       CustomsStatus: this.formBuilder.control(''),
@@ -820,10 +871,14 @@ export class DeclarationFormComponent implements OnInit {
           localStorage.getItem('userId') || '2',
           Validators.required,
         ),
-        GovernmentProcedure: this.formBuilder.control({
-          name: 'יבוא מסחרי',
-          code: '4000001',
-        }),
+        // GovernmentProcedure: this.formBuilder.control({
+        //   name: 'יבוא מסחרי',
+        //   code: '4000001',
+        // }),
+        GovernmentProcedure: this.formBuilder.control(
+          null,
+          Validators.required,
+        ),
 
         ExportationCountryCode: this.formBuilder.control(
           '',

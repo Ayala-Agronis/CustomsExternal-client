@@ -192,8 +192,8 @@ export class HomePageComponent implements OnInit {
     }
   }
 
-  scrollToVideoSection() {
-    this.scrollToSection('videoSection');
+  scrollToProcessSection() {
+    this.scrollToSection('processSection');
   }
 
   openCustomsBookInNewTab() {
