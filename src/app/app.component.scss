@@ -1,26 +1,29 @@
 /* סידור עמוד כולל עם Sidebar */
 .app-layout {
-  display: flex;
-  flex-direction: row-reverse; // Sidebar בצד ימין
+  position: relative;
   min-height: 100vh;
 }
 
 /* התוכן הראשי */
-// .main-content {
-//   flex-grow: 1;
-//   padding-right: 80px;
-//   direction: rtl;
-//   background-color: white;
-// }
-
 .main-content {
-  flex-grow: 1;
+  width: 100%;
   direction: rtl;
   background-color: white;
+  min-height: 100vh;
 }
 
-.main-content.with-sidebar {
-  padding-right: 80px;
+/* במובייל - הסיידבר לא יקח מקום מהתוכן */
+@media screen and (max-width: 768px) {
+  .main-content.with-sidebar {
+    padding-right: 0;
+  }
+}
+
+/* רק במסכי דסקטופ - נתן מקום לסיידבר */
+@media screen and (min-width: 769px) {
+  .main-content.with-sidebar {
+    padding-right: 80px;
+  }
 }
 
 /* כיווניות */
@@ -35,6 +38,8 @@ header {
   justify-content: space-between;
   padding: 10px;
   direction: ltr;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* לוגו */
@@ -43,6 +48,17 @@ header {
   cursor: pointer;
   margin-top: 1%;
   margin-left: 1%;
+}
+
+@media screen and (max-width: 768px) {
+  header {
+    padding: 5px 10px;
+  }
+  
+  .logo {
+    margin-top: 0.5%;
+    margin-left: 0.5%;
+  }
 }
 
 /* התאמה ללוח שנה של PrimeNG */

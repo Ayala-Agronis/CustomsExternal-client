@@ -31,7 +31,26 @@ $color-13: #002966;
 // החל פונט רק על טקסטים, לא על אייקונים וכפתורים של ספריות
 body {
   font-family: 'Ploni', Arial, sans-serif;
+  overflow-x: hidden; // מונע גלילה אופקית
   // font-family: "Rubik", sans-serif;
+}
+
+// מניעת גלילה אופקית בכל המסך
+html {
+  overflow-x: hidden;
+}
+
+// וידוא שאף אלמנט לא יחרוג מהרוחב
+* {
+  box-sizing: border-box;
+}
+
+// תיקון למובייל
+@media screen and (max-width: 768px) {
+  body, html {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 }
 
 // טקסטים בלבד

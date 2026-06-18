@@ -68,18 +68,26 @@
   justify-content: center;
 }
 
-/* רספונסיביות למובייל */
+/* רספונסיביות למובייל - הסיידבר יהיה overlay */
 @media screen and (max-width: 768px) {
   .sidebar {
-    width: 60px;
+    width: 250px;
+    right: -250px;
+    transition: right 0.3s ease-in-out;
+    z-index: 9999;
   }
-
+  
+  .sidebar.mobile-open {
+    right: 0;
+  }
+  
   .menu-item span {
-    display: none;
+    display: block;
+    font-size: 0.9rem;
   }
-
+  
   .menu-item i {
-    margin-bottom: 0;
+    margin-bottom: 0.3rem;
   }
 }
 .submenu-container {

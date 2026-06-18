@@ -88,4 +88,8 @@ buildMenuItems(): void {
       queryParams: { personalDetails: true },
     });
   }
+
+  goToHome(): void {
+    this.router.navigate(['/home-page']);
+  }
 }

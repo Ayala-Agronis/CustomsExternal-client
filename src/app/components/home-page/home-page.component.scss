@@ -72,9 +72,24 @@
 .navbar {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   background-color: white;
   margin-top: -45px;
+  width: 100%;
+  box-sizing: border-box;
+  direction: rtl;
 }
+
+@media screen and (max-width: 768px) {
+  .btn-login {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
 
 :host ::ng-deep .p-menubar {
   background: transparent;
@@ -93,11 +108,14 @@
   align-items: center;
   padding: 0 10%;
   direction: rtl;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .hero-container {
   display: flex;
   width: 100%;
+  max-width: 100%;
   justify-content: space-between;
   align-items: center;
   gap: 50px;
@@ -264,6 +282,7 @@
   background-color: $color-4;
   text-align: center;
   direction: rtl;
+  overflow-x: hidden;
 
   .benefits-main-title {
     display: flex;
@@ -333,11 +352,21 @@
   justify-content: space-between;
   gap: 30px;
   margin-bottom: 40px;
+  flex-wrap: wrap;
+  max-width: 100%;
 
   @media (max-width: 992px) {
-    flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 30px;
+
+    .benefit-item {
+      min-width: 280px;
+      max-width: 100%;
+    }
   }
 }
 
@@ -364,6 +393,8 @@
   justify-content: center;
   gap: 30px;
   flex-wrap: wrap;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .product-card {
@@ -372,12 +403,18 @@
   border-radius: 15px;
   padding: 20px 15px;
   flex: 1;
-  min-width: 300px;
+  min-width: 280px;
   max-width: 380px;
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: transform 0.3s ease;
+
+  @media (max-width: 768px) {
+    min-width: 260px;
+    max-width: 100%;
+    margin: 0 10px;
+  }
 
   &:hover {
     transform: translateY(-10px);
@@ -407,6 +444,7 @@
     font-size: 18px;
     margin-bottom: 35px;
     min-height: 50px;
+    text-align: center;
   }
 }
 
@@ -484,17 +522,24 @@
   max-width: 1400px;
   margin: 0 auto;
   gap: 40px;
+  overflow-x: hidden;
 
   @media (max-width: 992px) {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 0;
+    gap: 30px;
   }
 }
 
 .footer-column {
   flex: 1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+  }
 
   .column-title {
     color: $color-9;
@@ -524,6 +569,8 @@
         font-size: 16px;
         cursor: pointer;
         transition: opacity 0.2s;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
 
         &:hover {
           opacity: 0.7;
@@ -540,6 +587,8 @@
     font-size: 16px;
     margin-bottom: 10px;
     cursor: pointer;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 
   .contact-link:hover {
@@ -610,7 +659,26 @@
 .step-text {
   font-size: 22px;
   color: #fff;
-  white-space: nowrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+// תיקונים למובייל
+@media screen and (max-width: 768px) {
+  .process-step {
+    padding: 15px 80px 15px 20px;
+    min-height: 70px;
+  }
+
+  .step-text {
+    font-size: 18px;
+    white-space: normal;
+  }
+
+  .step-number {
+    font-size: 40px;
+    right: 15px;
+  }
 }
 
 .button-wrapper {
