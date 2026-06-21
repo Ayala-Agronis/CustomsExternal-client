@@ -12,10 +12,10 @@
   min-height: 100vh;
 }
 
-/* במובייל - הסיידבר לא יקח מקום מהתוכן */
+/* במובייל - הסיידבר יהיה צר יותר */
 @media screen and (max-width: 768px) {
   .main-content.with-sidebar {
-    padding-right: 0;
+    padding-right: 60px;
   }
 }
 

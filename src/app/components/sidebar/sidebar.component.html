@@ -1,13 +1,13 @@
 <div class="sidebar">
   <ul class="sidebar-menu">
     <li>
-      <a routerLink="/home-page" class="menu-item">
+      <a routerLink="/home-page" class="menu-item" pTooltip="ראשי" tooltipPosition="left">
         <i class="pi pi-home"></i>
         <span>ראשי</span>
       </a>
     </li>
     <li>
-      <a routerLink="/dec-query" class="menu-item">
+      <a routerLink="/dec-query" class="menu-item" pTooltip="הצהרות שלי" tooltipPosition="left">
         <i class="pi pi-user"></i>
         <span>הצהרות שלי</span>
       </a>
@@ -17,13 +17,12 @@
       (mouseenter)="showSubmenu = true"
       (mouseleave)="showSubmenu = false"
     >
-      <a class="menu-item">
+      <a class="menu-item" pTooltip="הצהרה חדשה" tooltipPosition="left">
         <i class="pi pi-cog"></i>
         <span>הצהרה חדשה</span>
       </a>
       <ul class="submenu" *ngIf="showSubmenu">
         <li (click)="navigateToNewDeclaration('import')">הצהרת יבוא</li>
-        <!-- <li (click)="navigateToNewDeclaration('export')">הצהרת יצוא</li> -->
         <li class="no-click">הצהרת יצוא</li>
         <li (click)="navigateToNewDeclaration('transshipment')">הצהרת שטעון</li>
       </ul>
@@ -34,9 +33,11 @@
         routerLink="/personal-details"
         [queryParams]="{ personalDetails: true }"
         class="menu-item"
+        pTooltip="פרטים אישיים"
+        tooltipPosition="left"
       >
         <i class="pi pi-user"></i>
-        <span>פרטים אישיים </span>
+        <span>פרטים אישיים</span>
       </a>
     </li>
     <li>
@@ -45,6 +46,8 @@
         target="_blank"
         rel="noopener noreferrer"
         class="menu-item"
+        pTooltip="יפוי כח"
+        tooltipPosition="left"
       >
         <i class="pi pi-file-edit"></i>
         <span>יפוי כח</span>
@@ -53,7 +56,7 @@
   </ul>
 
   <div class="logout">
-    <a (click)="logout()" class="menu-item">
+    <a (click)="logout()" class="menu-item" pTooltip="התנתקות" tooltipPosition="left">
       <i class="pi pi-sign-out"></i>
       <span>התנתקות</span>
     </a>
