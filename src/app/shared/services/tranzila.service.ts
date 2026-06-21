@@ -53,4 +53,17 @@ export class TranzilaService {
 
     return this.http.get<any>(url);
   }
+
+  getServiceFeeAmount$(
+    declarationId: number,
+    guid: string | null = null,
+  ): Observable<{ amount: number }> {
+    let url = `${apiConfig.customsdbApiUrl}Tranzila/GetServiceFeeAmount/${declarationId}`;
+
+    if (guid) {
+      url += `?guid=${guid}`;
+    }
+
+    return this.http.get<{ amount: number }>(url);
+  }
 }

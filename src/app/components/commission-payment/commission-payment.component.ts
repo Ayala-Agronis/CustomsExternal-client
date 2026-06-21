@@ -10,7 +10,6 @@ import { forkJoin } from 'rxjs';
 import { CustomsDataService } from '../../shared/services/customs-data.service';
 import { TranzilaService } from '../../shared/services/tranzila.service';
 import { DeclarationService } from '../../shared/services/declaration.service';
-import { UserService } from '../../shared/services/user.service';
 
 @Component({
   selector: 'app-commission-payment',
@@ -39,12 +38,12 @@ export class CommissionPaymentComponent implements OnInit {
 
   taxRows: any[] = [];
   releaseFeeRow: any = null;
+  releaseFeeAmount = 0;
 
   isAlreadyPaid = false;
 
   // 🌟 משתנים חדשים עבור מסלול הלינק במייל
   guid: string | null = null;
-  linkFees: { personalFee: number; businessFee: number } | null = null;
 
   constructor(
     private stepService: StepService,
@@ -54,20 +53,11 @@ export class CommissionPaymentComponent implements OnInit {
     private customsDataService: CustomsDataService,
     private tranzilaService: TranzilaService,
     private declarationService: DeclarationService,
-    private userService: UserService,
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.guid = params['guid'] || null;
-
-      // 🌟 טעינת עמלות קיימות מהזיכרון אם קיימות
-      if (this.guid) {
-        const savedFees = localStorage.getItem(`linkFees_${this.guid}`);
-        if (savedFees) {
-          this.linkFees = JSON.parse(savedFees);
-        }
-      }
 
       const paymentStatus = params['paymentStatus'];
 
@@ -125,32 +115,7 @@ export class CommissionPaymentComponent implements OnInit {
                             },
                           ];
 
-                          // טעינת שורות המסים (אותו קוד שהיה לך)
-                          const readyTaxes =
-                            declaration.Taxes || declaration.taxes || [];
-                          this.taxRows = readyTaxes.map((tax: any) => ({
-                            name:
-                              tax.TaxTypeName ||
-                              tax.TaxTypeCode ||
-                              tax.taxTypeCode,
-                            amount: Number(tax.Amount || tax.amount || 0),
-                            vatRequired: false,
-                          }));
-
-                          this.releaseFeeRow = {
-                            name: 'עמלת שחרור',
-                            amount:
-                              this.linkFees?.personalFee ||
-                              this.linkFees?.businessFee ||
-                              0,
-                            vatRequired: true,
-                          };
-
-                          this.paymentRows = [
-                            ...this.taxRows,
-                            this.releaseFeeRow,
-                          ];
-                          this.paymentAmount = this.getTotalWithVat();
+                          this.loadPaymentData(false);
                         }
                       },
                       error: (err) => {
@@ -188,39 +153,7 @@ export class CommissionPaymentComponent implements OnInit {
               this.decId = declaration.Id || declaration.id;
               this.typeDec = 'tr';
 
-              const customerId =
-                declaration.CustomerId || declaration.customerId;
-              if (!customerId) {
-                this.showError(
-                  'שגיאה',
-                  'לא נמצא מזהה לקוח תואם עבור קישור זה.',
-                );
-                this.loadingPaymentData = false;
-                return;
-              }
-
-              this.userService
-                .getCustomerFeesOutside(customerId, this.guid!)
-                .subscribe({
-                  next: (fees) => {
-                    this.linkFees = {
-                      personalFee: fees.PersonalFee ?? fees.personalFee ?? 0,
-                      businessFee: fees.BusinessFee ?? fees.businessFee ?? 0,
-                    };
-                    // 🌟 שמירה ייחודית לפי GUID
-                    localStorage.setItem(
-                      `linkFees_${this.guid}`,
-                      JSON.stringify(this.linkFees),
-                    );
-                    this.loadPaymentData(true);
-                    this.loadPaymentData(true);
-                  },
-                  error: (err) => {
-                    console.error('שגיאה בטעינת עמלות לקוח חיצוניות:', err);
-                    this.linkFees = { personalFee: 0, businessFee: 0 };
-                    this.loadPaymentData(true);
-                  },
-                });
+              this.loadPaymentData(true);
             },
             error: (err) => {
               this.loadingPaymentData = false;
@@ -287,7 +220,6 @@ export class CommissionPaymentComponent implements OnInit {
   goToDeclarationAfterSuccess(): void {
     if (this.guid) {
       // 🌟 ניקוי הנתונים בסיום
-      localStorage.removeItem(`linkFees_${this.guid}`);
       this.msgs1 = [
         {
           severity: 'success',
@@ -438,7 +370,7 @@ export class CommissionPaymentComponent implements OnInit {
 
       this.releaseFeeRow = {
         name: 'עמלת שחרור',
-        amount: this.getReleaseFee(),
+        amount: this.releaseFeeAmount,
         vatRequired: true,
       };
 
@@ -454,7 +386,21 @@ export class CommissionPaymentComponent implements OnInit {
 
     if (this.guid && (this.currentDec?.Taxes || this.currentDec?.taxes)) {
       const readyTaxes = this.currentDec.Taxes || this.currentDec.taxes;
-      processRows(readyTaxes, []);
+
+      this.tranzilaService
+        .getServiceFeeAmount$(Number(this.decId), this.guid)
+        .subscribe({
+          next: (serviceFee) => {
+            this.releaseFeeAmount = Number(serviceFee?.amount || 0);
+            processRows(readyTaxes, []);
+          },
+          error: () => {
+            this.loadingPaymentData = false;
+            this.isReturningFromPayment = false;
+            this.showError('שגיאה', 'טעינת עמלת השחרור נכשלה');
+          },
+        });
+
       return;
     }
 
@@ -464,8 +410,13 @@ export class CommissionPaymentComponent implements OnInit {
           agentFileReferenceId,
         ),
       taxTypes: this.customsDataService.getCustomsTableValues$('1120'),
+      serviceFee: this.tranzilaService.getServiceFeeAmount$(
+        Number(this.decId),
+        this.guid,
+      ),
     }).subscribe({
-      next: ({ taxes, taxTypes }) => {
+      next: ({ taxes, taxTypes, serviceFee }) => {
+        this.releaseFeeAmount = Number(serviceFee?.amount || 0);
         processRows(taxes, taxTypes);
       },
       error: () => {
@@ -474,36 +425,6 @@ export class CommissionPaymentComponent implements OnInit {
         this.showError('שגיאה', 'טעינת נתוני התשלום נכשלה');
       },
     });
-  }
-
-  getReleaseFee(): number {
-    const governmentProcedure =
-      this.currentDec?.GovernmentProcedure ||
-      this.currentDec?.Consignments?.[0]?.GovernmentProcedure ||
-      this.currentDec?.Consignments?.GovernmentProcedure;
-
-    const code =
-      governmentProcedure?.code ??
-      governmentProcedure?.Value1 ??
-      governmentProcedure;
-    const isPersonal = String(code) === '4000501';
-    const isBusiness = String(code) === '4000001';
-
-    if (this.guid && this.linkFees) {
-      return isPersonal
-        ? this.linkFees.personalFee
-        : isBusiness
-          ? this.linkFees.businessFee
-          : 0;
-    }
-
-    const userRaw = localStorage.getItem('user');
-    const user = userRaw ? JSON.parse(userRaw) : null;
-
-    if (isPersonal) return Number(user?.PersonalFee || 0);
-    if (isBusiness) return Number(user?.BusinessFee || 0);
-
-    return 0;
   }
 
   getVatBaseAmount(): number {
