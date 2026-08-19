@@ -504,6 +504,9 @@ export class DeclarationFormComponent implements OnInit {
         this.deferFormErrorsMessageUpdate();
       });
 
+    // subscribe auto-calc for initial invoice
+    this.subscribeInvoiceAmountAutoCalc(0);
+
     this.generalDeclarationForm
       .get('VersionID')
       ?.valueChanges.pipe(takeUntil(this.initDestroy$))
@@ -992,7 +995,22 @@ export class DeclarationFormComponent implements OnInit {
 
   addSupplierInvoice(): void {
     if (this.formDisabled) return;
-    this.supplierInvoices.push(this.createSupplierInvoice());
+    const newInvoice = this.createSupplierInvoice();
+    this.supplierInvoices.push(newInvoice);
+    this.subscribeInvoiceAmountAutoCalc(this.supplierInvoices.length - 1);
+  }
+
+  private subscribeInvoiceAmountAutoCalc(invoiceIndex: number): void {
+    const invoiceGroup = this.supplierInvoices.at(invoiceIndex) as FormGroup;
+    const itemsArray = invoiceGroup.get('SupplierInvoiceItems') as FormArray;
+
+    itemsArray.valueChanges.pipe(takeUntil(this.initDestroy$)).subscribe(() => {
+      const total = itemsArray.controls.reduce((sum, item) => {
+        return sum + (+item.get('CustomsValueAmount')?.value || 0);
+      }, 0);
+      invoiceGroup.get('InvoiceAmount')?.setValue(total, { emitEvent: false });
+      this.getFormErrors(true);
+    });
   }
 
   removeSupplierInvoice(rowData: any, index: any) {
@@ -1080,13 +1098,14 @@ export class DeclarationFormComponent implements OnInit {
     return this.formBuilder.group({
       Id: this.formBuilder.control(0),
       ClassificationID: this.formBuilder.control('', Validators.required),
+      IsClassificationUnknown: this.formBuilder.control(false),
+
       MeasureQualifier: this.formBuilder.control(null),
       StatisticalTariffQuantity: this.formBuilder.control(null),
 
       CustomsValueAmount: this.formBuilder.control(null, Validators.required),
       AmountType: this.formBuilder.control('', Validators.required),
       OriginCountryCode: this.formBuilder.control(null, Validators.required),
-      // השדה החדש
       GoodsDescription: this.formBuilder.control(''),
     });
   }
@@ -1116,6 +1135,11 @@ export class DeclarationFormComponent implements OnInit {
     const measureQualifier = row.get('MeasureQualifier');
 
     if (!classificationID?.value) return;
+
+    row.get('IsClassificationUnknown')?.setValue(false, { emitEvent: false });
+
+    classificationID.setValidators(Validators.required);
+    classificationID.updateValueAndValidity({ emitEvent: false });
 
     classificationID.setValidators(Validators.required);
     classificationID.updateValueAndValidity({ emitEvent: false });
@@ -1191,6 +1215,8 @@ export class DeclarationFormComponent implements OnInit {
     const classificationControl = row.get('ClassificationID');
     const measureQualifierControl = row.get('MeasureQualifier');
 
+    row.get('IsClassificationUnknown')?.setValue(true, { emitEvent: false });
+
     classificationControl?.clearValidators();
     classificationControl?.setValue(null);
     classificationControl?.setErrors(null);
@@ -1204,6 +1230,8 @@ export class DeclarationFormComponent implements OnInit {
     }
 
     this.measureQualifierDisplayMap[supplierInvoiceIndex][rowIndex] = 'לא ידוע';
+
+    this.deferFormErrorsMessageUpdate();
   }
 
   getValuationValue(index: any): FormArray {
@@ -1299,6 +1327,11 @@ export class DeclarationFormComponent implements OnInit {
           // element.DutyRegimeCode = element.DutyRegimeCode?.code ? element.DutyRegimeCode?.code : element.DutyRegimeCode;
           element.OriginCountryCode =
             element.OriginCountryCode?.code ?? element.OriginCountryCode;
+
+          element.MeasureQualifier =
+            element.MeasureQualifier?.code ?? element.MeasureQualifier;
+
+          delete element.IsClassificationUnknown;
         });
       }
 
@@ -1891,6 +1924,8 @@ export class DeclarationFormComponent implements OnInit {
         });
 
         supplierInvoicesFormArray.push(invoiceGroup);
+
+        this.subscribeInvoiceAmountAutoCalc(i);
 
         invoice.SupplierInvoiceItems.forEach((item: any, rowIndex: number) => {
           const unitCode = item.MeasureQualifier;
@@ -2995,6 +3030,13 @@ export class DeclarationFormComponent implements OnInit {
   // }
 
   private applyCombinedLockState(): void {
+    console.log('מצב נעילת הטופס', {
+      isLockedByBrokerRouting: this.isLockedByBrokerRouting,
+      isLockedBySbtEvent: this.isLockedBySbtEvent,
+      currentCustomsStatus:
+        this.generalDeclarationForm?.get('CustomsStatus')?.value,
+    });
+
     const currentCustomsStatus =
       this.generalDeclarationForm?.get('CustomsStatus')?.value;
 
@@ -3612,6 +3654,24 @@ export class DeclarationFormComponent implements OnInit {
       .get('ClassificationID') as FormControl;
   }
 
+  hasUnknownClassification(): boolean {
+    const invoices = this.generalDeclarationForm?.get(
+      'SupplierInvoices',
+    ) as FormArray | null;
+
+    if (!invoices) {
+      return false;
+    }
+
+    return invoices.controls.some((invoice) => {
+      const items = invoice.get('SupplierInvoiceItems') as FormArray | null;
+
+      return items?.controls.some(
+        (row) => row.get('IsClassificationUnknown')?.value === true,
+      );
+    });
+  }
+
   openCustomsSearch(rowIndex: number, supplierInvoiceIndex: number) {
     this.currentRowIndex = rowIndex;
     this.currentSupplierInvoiceIndex = supplierInvoiceIndex;
@@ -3627,29 +3687,34 @@ export class DeclarationFormComponent implements OnInit {
       rowIndex,
     ) as FormGroup;
 
-    // מילוי השדות
     row.get('ClassificationID')?.patchValue(item.FullClassification);
     row.get('GoodsDescription')?.patchValue(item.GoodsDescription);
-    row.get('MeasureQualifier')?.patchValue(item.MeasurementUnitName);
+    row.get('IsClassificationUnknown')?.setValue(false, { emitEvent: false });
 
-    if (!this.lastClassificationForUnitMap[supplierInvoiceIndex]) {
-      this.lastClassificationForUnitMap[supplierInvoiceIndex] = {};
+    // חשוב:
+    // לא מכניסים את השם ל-MeasureQualifier
+    // מאפסים כדי ש-onClassificationIDBlur יביא את הקוד האמיתי
+    row.get('MeasureQualifier')?.patchValue(null, { emitEvent: false });
+
+    if (this.lastClassificationForUnitMap[supplierInvoiceIndex]) {
+      delete this.lastClassificationForUnitMap[supplierInvoiceIndex][rowIndex];
     }
 
-    this.lastClassificationForUnitMap[supplierInvoiceIndex][rowIndex] =
-      item.FullClassification;
+    if (!this.measureQualifierDisplayMap[supplierInvoiceIndex]) {
+      this.measureQualifierDisplayMap[supplierInvoiceIndex] = {};
+    }
 
-    // איפוס מצב העיצוב של השדה (כדי שהאפור יוסר)
+    this.measureQualifierDisplayMap[supplierInvoiceIndex][rowIndex] = '-';
+
     const control = row.get('ClassificationID');
     if (control) {
-      control.markAsPristine(); // מסמן שהשדה נקי
-      control.markAsUntouched(); // מסמן שהשדה לא נגעו בו
+      control.markAsPristine();
+      control.markAsUntouched();
     }
 
-    // קריאה לפונקציה הקיימת שמטפלת אחרי שינוי ערך
+    // זה יביא את הקוד מה-API וישים אותו ב-MeasureQualifier
     this.onClassificationIDBlur(rowIndex, supplierInvoiceIndex);
 
-    // סוגר את הפופאפ
     this.displayCustomsDialog = false;
   }
 
@@ -3693,6 +3758,7 @@ export class DeclarationFormComponent implements OnInit {
 
     row.get('ClassificationID')?.setValue(item.ClassificationID);
     row.get('GoodsDescription')?.setValue(item.GoodsDescription || '');
+    row.get('IsClassificationUnknown')?.setValue(false, { emitEvent: false });
 
     this.onClassificationIDBlur(rowIndex, supplierInvoiceIndex);
   }
@@ -3700,6 +3766,7 @@ export class DeclarationFormComponent implements OnInit {
   canSendToCustoms(): boolean {
     return (
       !this.loading &&
+      !this.hasUnknownClassification() &&
       !this.generalDeclarationForm.invalid &&
       !this.suplierErrorExist &&
       !this.formDisabled &&
@@ -3712,6 +3779,10 @@ export class DeclarationFormComponent implements OnInit {
 
   getSendToCustomsTooltip(): string {
     if (this.loading) return 'המערכת עדיין טוענת נתונים';
+    if (this.hasUnknownClassification()) {
+      return this.brokerRoutingMessage;
+    }
+
     if (this.isLockedBySbtEvent) return this.sbtLockMessage;
     if (this.checkVersion())
       return `ניתן לשלוח למכס עד ${this.maxCustomsSendAttempts} טיוטות`;

@@ -28,7 +28,11 @@
     </label>
     <div
       class="broker-routing-message"
-      *ngIf="isLockedByBrokerRouting || isLockedBySbtEvent"
+      *ngIf="
+        isLockedByBrokerRouting ||
+        isLockedBySbtEvent ||
+        hasUnknownClassification()
+      "
     >
       {{ isLockedBySbtEvent ? sbtLockMessage : brokerRoutingMessage }}
     </div>
@@ -77,7 +81,7 @@
                 <label>מספר טלפון</label>
                 <input pInputText>
             </div> -->
-        <div class="form-item">
+        <!-- <div class="form-item">
           <label for="customsProcess"
             >תהליך מכס<span class="required">*</span></label
           >
@@ -92,7 +96,7 @@
             [dropdown]="true"
           >
           </p-autoComplete>
-        </div>
+        </div> -->
 
         <div class="form-item">
           <label> סוג מזהה מטען <span class="required">*</span></label>
@@ -431,27 +435,15 @@
                   >
                   </p-autoComplete>
                 </div>
-                <div class="form-item">
-                  <label>סוג חשבון <span class="required">*</span></label>
-                  <p-autoComplete
-                    [forceSelection]="true"
-                    formControlName="InvoiceTypeCode"
-                    inputId="autocomplete"
-                    [suggestions]="filteredInvoiceTypeCode"
-                    (completeMethod)="filterInvoiceTypeCode($event)"
-                    field="name"
-                    [dropdown]="true"
-                  >
-                  </p-autoComplete>
-                </div>
-                <div class="form-item">
+                <!-- <div class="form-item">
                   <label>סה"כ חשבון <span class="required">*</span></label>
                   <input
-                    (blur)="getFormErrors(true)"
                     pInputText
                     formControlName="InvoiceAmount"
+                    readonly
+                    class="readonly-field"
                   />
-                </div>
+                </div> -->
               </div>
             </div>
 
