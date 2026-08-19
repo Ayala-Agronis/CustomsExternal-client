@@ -115,20 +115,32 @@
               <label for="password" class="password-label"
                 >בחר סיסמא לאתר</label
               >
-              <!-- ההערה ישר מתחת לכותרת -->
+
+              <div class="password-container">
+                <input
+                  id="password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  pPassword
+                  [feedback]="false"
+                  formControlName="Password"
+                />
+
+                <i
+                  class="pi"
+                  [ngClass]="showPassword ? 'pi-eye' : 'pi-eye-slash'"
+                  (click)="togglePassword()"
+                ></i>
+              </div>
+
               <small
                 class="password-requirements"
-                *ngIf="!registrationForm.get('Password')?.value"
+                *ngIf="
+                  !showPersonalDetails &&
+                  !registrationForm.get('Password')?.value
+                "
               >
                 הסיסמה חייבת להכיל: 8 תווים לפחות, אות באנגלית, ספרה ותו מיוחד
               </small>
-              <input
-                id="password"
-                type="password"
-                pPassword
-                [feedback]="false"
-                formControlName="Password"
-              />
               <!-- <small
                 class="password-requirements"
                 *ngIf="!registrationForm.get('Password')?.value"
@@ -148,7 +160,7 @@
           </div>
 
           <div class="form-group">
-            <div class="form-item">
+            <div class="form-item id-item">
               <label for="id">תעודת זהות </label>
               <input id="id" type="text" pInputText formControlName="Id" />
               <small
@@ -179,14 +191,14 @@
             הרשמה
           </button>
 
-          <button
+          <!-- <button
             *ngIf="showPersonalDetails"
             [ngClass]="{ disabled: registrationForm.invalid }"
             class="button-primary"
             [disabled]="registrationForm.invalid"
           >
             שמור
-          </button>
+          </button> -->
 
           <button type="button" class="button-primary" (click)="goBack()">
             חזור
@@ -194,7 +206,7 @@
         </div>
       </div>
     </form>
-
+<!-- 
     <div *ngIf="showPersonalDetails" class="classification-section">
       <h3 class="title">סיווגי מכס</h3>
 
@@ -231,26 +243,19 @@
               />
             </td>
             <td>
-              <!-- {{ row.ClassificationBook || '-' }} -->
               <input pInputText [(ngModel)]="row.ClassificationBook" disabled />
             </td>
 
             <td>
-              <!-- {{ row.Classification || '-' }} -->
               <input pInputText [(ngModel)]="row.Classification" disabled />
             </td>
 
-            <!-- <td>
-              <button pButton icon="pi pi-trash" class="p-button-text p-button-danger"
-                (click)="deleteRow(row)"></button>
-            </td> -->
           </tr>
         </ng-template>
       </p-table>
 
       <div class="btnSubmit">
-        <!-- label="הוסף שורה" -->
-        <!-- <button pButton icon="pi pi-plus"  class="button-primary" (click)="addRow()"></button> -->
+  
         <button
           type="button"
           class="button-primary"
@@ -259,7 +264,7 @@
           שמור סיווגים
         </button>
       </div>
-    </div>
+    </div> -->
   </div>
   <div class="left-side">
     <img src="assets/box.png" alt="box" class="box" />

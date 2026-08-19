@@ -63,107 +63,110 @@ export class CommissionPaymentComponent implements OnInit {
 
       // 🌟 מסלול לינק חיצוני (GUID)
       if (this.guid) {
-        // א. טיפול במצב של הצלחה/כישלון במסלול ה-GUID לאחר חזרה מטרנזילה
-        if (paymentStatus) {
+        // א. חזרה מטרנזילה עם הצלחה
+        // במסלול GUID לא קוראים שוב לשרת אחרי הצלחה,
+        // כי ייתכן שהקישור כבר נסגר/סומן כשולם ולכן הקריאה תיכשל.
+        if (paymentStatus === 'success') {
+          const returnedDeclarationId =
+            params['declarationId'] || params['decId'] || params['id'];
+
+          this.decId = returnedDeclarationId || this.decId;
+
+          this.paymentStatus = true;
+          this.isAlreadyPaid = true;
+          this.iframeUrl = '';
+          this.paymentSuccess = true;
+
+          this.loadingPaymentData = false;
+          this.isReturningFromPayment = false;
+          this.msgs1 = [];
+
+          return;
+        }
+
+        // ב. חזרה מטרנזילה עם כישלון
+        // כאן כן מביאים מהשרת את ההצהרה כדי להציג הודעת שגיאה מסודרת
+        // וגם כדי שיהיו נתונים לפתיחת ניסיון חוזר.
+        if (paymentStatus || params['fail']) {
+          this.paymentStatus = false;
+          this.iframeUrl = '';
           this.isReturningFromPayment = true;
           this.loadingPaymentData = true;
 
-          // 1. מביאים את נתוני התיק מהשרת הפנימי המורשה ל-GUID
-          this.tranzilaService.getDeclarationByGuid$(this.guid).subscribe({
-            next: (declaration) => {
-              if (declaration) {
+          const responseCode = params['responseCode'] || '';
+
+          this.tranzilaService
+            .getDeclarationByGuid$(this.guid, responseCode)
+            .subscribe({
+              next: (declaration) => {
+                this.loadingPaymentData = false;
+                this.isReturningFromPayment = false;
+
+                if (!declaration) {
+                  this.showError(
+                    'תשלום נכשל',
+                    'חלה שגיאה בתהליך התשלום, נא לנסות שוב.',
+                  );
+                  return;
+                }
+
                 this.currentDec = declaration;
                 this.decId = declaration.Id || declaration.id;
                 this.typeDec = 'tr';
 
-                if (paymentStatus === 'success') {
-                  this.paymentStatus = true;
-                  this.isAlreadyPaid = true;
-                  this.iframeUrl = '';
-                  this.paymentSuccess = true; // מציג כרטיס הצלחה
-                  this.loadingPaymentData = false;
-                  this.isReturningFromPayment = false;
-                } else {
-                  // 🌟 התיקון המאובטח למצב כישלון - ללא פניות ל-API חסום! 🌟
-                  this.paymentStatus = false;
-                  this.iframeUrl = '';
-                  this.isReturningFromPayment = false;
-                  this.loadingPaymentData = false;
+                const errorMessage =
+                  declaration.PaymentErrorMessage ||
+                  'חלה שגיאה בתהליך התשלום, נא לנסות שוב.';
 
-                  // תרגום קוד השגיאה מקומית באנגולר כדי למנוע קריאה לשרת והפניה ללוגין
-                  const responseCode = params['responseCode'] || '';
+                this.msgs1 = [
+                  {
+                    severity: 'error',
+                    summary: 'התשלום נכשל',
+                    detail: errorMessage,
+                  },
+                ];
 
-                  // קריאה לשרת עם קוד השגיאה
-                  this.tranzilaService
-                    .getDeclarationByGuid$(this.guid!, responseCode)
-                    .subscribe({
-                      next: (declaration) => {
-                        if (declaration) {
-                          this.currentDec = declaration;
-                          this.decId = declaration.Id || declaration.id;
-
-                          // 🌟 שימוש בהודעה שהשרת החזיר לנו
-                          const errorMessage =
-                            declaration.PaymentErrorMessage ||
-                            'חלה שגיאה בתהליך התשלום, נא לנסות שוב.';
-
-                          this.msgs1 = [
-                            {
-                              severity: 'error',
-                              summary: 'התשלום נכשל',
-                              detail: errorMessage,
-                            },
-                          ];
-
-                          this.loadPaymentData(false);
-                        }
-                      },
-                      error: (err) => {
-                        this.showError('שגיאה', 'טעינת הנתונים נכשלה.');
-                      },
-                    });
-                  return;
-                }
-              } else {
-                this.showError('שגיאה', 'ההצהרה המבוקשת לא נמצאה.');
+                this.loadPaymentData(false);
+              },
+              error: () => {
                 this.loadingPaymentData = false;
                 this.isReturningFromPayment = false;
-              }
-            },
-            error: (err) => {
-              this.loadingPaymentData = false;
-              this.isReturningFromPayment = false;
-              this.showError('שגיאה', 'טעינת הנתונים נכשלה לפעולת החזרה.');
-            },
-          });
+                this.showError('שגיאה', 'טעינת הנתונים נכשלה.');
+              },
+            });
+
           return;
         }
 
-        // ב. כניסה ראשונית מהמייל (בלי סטטוס תשלום עדיין) - נשאר אותו דבר
-        if (!paymentStatus && !params['fail']) {
-          this.loadingPaymentData = true;
-          this.tranzilaService.getDeclarationByGuid$(this.guid).subscribe({
-            next: (declaration) => {
-              if (!declaration) {
-                this.showError('שגיאה', 'ההצהרה המבוקשת לא נמצאה.');
-                this.loadingPaymentData = false;
-                return;
-              }
-              this.currentDec = declaration;
-              this.decId = declaration.Id || declaration.id;
-              this.typeDec = 'tr';
+        // ג. כניסה ראשונית מהמייל - עדיין לא חזר מטרנזילה
+        this.loadingPaymentData = true;
+        this.isReturningFromPayment = false;
 
-              this.loadPaymentData(true);
-            },
-            error: (err) => {
+        this.tranzilaService.getDeclarationByGuid$(this.guid).subscribe({
+          next: (declaration) => {
+            if (!declaration) {
               this.loadingPaymentData = false;
-              const errMsg =
-                err.error?.Message || 'הקישור אינו בתוקף או שהתשלום כבר בוצע.';
-              this.showError('קישור לא בתוקף', errMsg);
-            },
-          });
-          return;
-        }
+              this.showError('שגיאה', 'ההצהרה המבוקשת לא נמצאה.');
+              return;
+            }
+
+            this.currentDec = declaration;
+            this.decId = declaration.Id || declaration.id;
+            this.typeDec = 'tr';
+
+            this.loadPaymentData(true);
+          },
+          error: (err) => {
+            this.loadingPaymentData = false;
+
+            const errMsg =
+              err.error?.Message || 'הקישור אינו בתוקף או שהתשלום כבר בוצע.';
+
+            this.showError('קישור לא בתוקף', errMsg);
+          },
+        });
+
+        return;
       }
 
       // --- המסלול הרגיל (בתוך האתר - משתמש מחובר) ---

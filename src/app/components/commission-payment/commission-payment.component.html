@@ -1,5 +1,4 @@
 <div class="payment-page" dir="rtl">
-  
   <div class="return-loader-overlay" *ngIf="isReturningFromPayment">
     <div class="return-loader-box">
       <div class="spinner"></div>
@@ -8,18 +7,21 @@
   </div>
 
   <div *ngIf="!isReturningFromPayment">
-    
     <div *ngIf="paymentSuccess && guid" class="success-screen-container">
       <div class="success-card">
         <div class="success-icon-circle">✓</div>
         <h2>התשלום נקלט בהצלחה!</h2>
-        <p>תודה רבה, תשלום עמלת השחרור והמסים עבור תיק מספר <strong>{{decId}}</strong> בוצע בהצלחה.</p>
+        <p>
+          תודה רבה, התשלום בוצע בהצלחה.
+          <span *ngIf="decId">
+            עבור תיק מספר <strong>{{ decId }}</strong>
+          </span>
+        </p>
         <div class="footer-note">ניתן לסגור חלון זה בבטחה.</div>
       </div>
     </div>
 
     <div *ngIf="!(paymentSuccess && guid)">
-      
       <div class="payment-header">
         <h2>תשלום מסים ועמלת שחרור</h2>
       </div>
@@ -35,8 +37,14 @@
         *ngIf="paymentStatus === false && !isAlreadyPaid"
         class="retry-payment-container"
       >
-        <p class="fail-notice-text" *ngIf="guid">נראה שהייתה שגיאה בעיבוד כרטיס האשראי. אל דאגה, שום חיוב לא בוצע.</p>
-        <button type="button" class="retry-payment-btn" (click)="retryPayment()">
+        <p class="fail-notice-text" *ngIf="guid">
+          נראה שהייתה שגיאה בעיבוד כרטיס האשראי. אל דאגה, שום חיוב לא בוצע.
+        </p>
+        <button
+          type="button"
+          class="retry-payment-btn"
+          (click)="retryPayment()"
+        >
           לחץ כאן כדי לנסות שוב
         </button>
       </div>
@@ -119,7 +127,6 @@
           ></iframe>
         </div>
       </div>
-
     </div>
   </div>
 </div>

@@ -51,6 +51,7 @@ export class RegistrationComponent implements OnInit {
   isLoading: boolean = false;
   msg: Message[] = [];
   showPersonalDetails: boolean = false;
+  showPassword = false;
   user: any;
   classifications: any[] = [];
 
@@ -100,13 +101,21 @@ export class RegistrationComponent implements OnInit {
             Password: this.user.Password,
             ComissionPerTranc: this.user.ComissionPerTranc,
           });
+
+          // במסך פרטים אישיים — תצוגה בלבד, בלי אפשרות עריכה
+          this.registrationForm.disable({ emitEvent: false });
         }
-        this.loadClassifications();
+
+        // לא טוענים סיווגים בכלל
+        // this.loadClassifications();
       }
     });
   }
 
   onSubmit() {
+    if (this.showPersonalDetails) {
+      return;
+    }
     if (!this.registrationForm.valid) {
       this.msg = [
         {
@@ -342,5 +351,9 @@ export class RegistrationComponent implements OnInit {
       const valid = hasNumber && hasLetter && hasSpecial && isLengthValid;
       return valid ? null : { passwordStrength: true };
     };
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 }

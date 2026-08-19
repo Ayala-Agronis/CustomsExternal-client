@@ -1,119 +1,82 @@
 .form-container {
-    display: flex;
-    justify-content: space-between;
-    height: 98vh;
-    // width: 100vw;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  direction: rtl;
+  background: #fff;
+  overflow-x: hidden;
+}
+
+.title {
+  color: rgb(0, 0, 0);
 }
 
 .right-side {
-    width: 55%;
-    // display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4.625rem;
-    margin-right: 5%;
-    margin-top: 6%;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: clamp(170px, 12vh, 135px) clamp(24px, 4vw, 70px) 40px;
+}
+
+.form-title {
+  width: min(100%, 900px);
+  margin: 0 auto 22px;
+  text-align: right;
 }
 
 .registrationForm {
-    padding-right: 5%;
-    padding-left: 5%;
+  width: min(100%, 900px);
+  margin: 0 auto;
+  padding: 0;
 }
 
 .form-group {
-    display: flex;
-    gap: 3%;
-    margin-bottom: 2%;
+  display: flex;
+  gap: 18px;
+  margin-bottom: 18px;
+  align-items: flex-start;
 }
 
 .form-item {
-    display: flex;
-    flex-direction: column;
-    width: 20%;
-    gap: 4px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-// .radioBtn {
-//     justify-content: space-between;
-// }
-
-.btnSubmit {
-    display: flex;
-    gap: 2%;
-    direction: ltr;
-    margin-top: 2%;
-    margin-bottom: 1%;
+.id-item {
+  flex: 0 0 calc((100% - 36px) / 3);
+  max-width: calc((100% - 36px) / 3);
 }
 
-.left-side {
-    width: 40%;
-    background-color: #06F;
-    flex-shrink: 0;
-    border-radius: 0rem 0rem 12.5rem 0rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 2vh;
+.email-field {
+  flex: 1.4;
 }
 
-.p-password-panel {
-    display: none !important;
+.password-item {
+  flex: 1.8;
 }
 
-.classification-section {
-    width: 65%;
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-::ng-deep .user .p-datatable .p-datatable-thead>tr>th,
-::ng-deep .user .p-datatable .p-datatable-tbody>tr>td {
-    text-align: right;
+.password-container i {
+  position: absolute;
+  left: 10px;
+  cursor: pointer;
+  font-size: 1.15rem;
+  color: #666;
+  z-index: 2;
 }
 
-::ng-deep .user .p-datatable th:nth-child(1),
-::ng-deep .user .p-datatable td:nth-child(1) {
-    width: 7%;
-}
-
-::ng-deep .user .p-datatable th:nth-child(2),
-::ng-deep .user .p-datatable td:nth-child(2) {
-    width: 30%;
-}
-
-::ng-deep .user .p-datatable th:nth-child(3),
-::ng-deep .user .p-datatable td:nth-child(3) {
-    width: 30%;
-}
-
-::ng-deep .user .p-datatable th:nth-child(3),
-::ng-deep .user .p-datatable td:nth-child(3) {
-    width: 30%;
-}
-
-::ng-deep .user .add-btn.p-button.p-button-icon-only {
-    width: 1.357rem;
-}
-
-::ng-deep .user .add-btn.button-primary {
-    background-color: #EC8305;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 5px;
-    padding: 5px 15px;
-    font-size: 17px;
-}
-
-::ng-deep .user .p-datatable .p-datatable-tbody>tr>td,
-::ng-deep .user .p-datatable .p-datatable-thead>tr>th {
-    padding: 0.3rem 0.3rem;
-}
-
-::ng-deep .classifications .p-inputtext {
-    padding: 0.3px 0.3px;
-}
-
-.password-item { 
-  width: 40%;        // תנסי 30%-40% עד שנראה לך נכון
+.password-container input {
+  padding-left: 35px !important;
 }
 
 .password-label {
@@ -126,11 +89,216 @@
   width: 100%;
   text-align: right;
   font-size: 12px;
-  line-height: 1.2;
+  line-height: 1.25;
   opacity: 0.8;
-  margin: 2px 0 6px;
+  margin: 4px 0 0;
 }
 
-.email-field {
-    width: 30%;
+.radioBtn .form-group {
+  margin-bottom: 0;
+  gap: 14px;
+  align-items: center;
+}
+
+.form-item input,
+::ng-deep .registrationForm .p-inputtext,
+::ng-deep .registrationForm .p-password,
+::ng-deep .registrationForm .p-password-input {
+  width: 100%;
+}
+
+::ng-deep .registrationForm .password-container .p-password-input {
+  padding-left: 35px !important;
+}
+
+.btnSubmit {
+  width: min(100%, 900px);
+  margin: 18px auto 0;
+  display: flex;
+  gap: 10px;
+  direction: ltr;
+}
+
+.left-side {
+  width: 40%;
+  min-width: 420px;
+  background-color: #06f;
+  flex-shrink: 0;
+  border-radius: 0 0 12.5rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 2vh;
+  padding: 40px;
+}
+
+.left-side .box {
+  width: min(45%, 260px);
+  height: auto;
+}
+
+.left-side .logo {
+  width: min(58%, 360px);
+  height: auto;
+}
+
+.progress-spinner {
+  pointer-events: none;
+  z-index: 1;
+}
+
+.p-password-panel {
+  display: none !important;
+}
+
+.classification-section {
+  width: min(100%, 900px);
+  margin: 28px auto 0;
+}
+
+::ng-deep .user .p-card {
+  width: 100%;
+}
+
+::ng-deep .user .p-datatable .p-datatable-thead > tr > th,
+::ng-deep .user .p-datatable .p-datatable-tbody > tr > td {
+  text-align: right;
+}
+
+::ng-deep .user .p-datatable th:nth-child(1),
+::ng-deep .user .p-datatable td:nth-child(1) {
+  width: 7%;
+}
+
+::ng-deep .user .p-datatable th:nth-child(2),
+::ng-deep .user .p-datatable td:nth-child(2),
+::ng-deep .user .p-datatable th:nth-child(3),
+::ng-deep .user .p-datatable td:nth-child(3),
+::ng-deep .user .p-datatable th:nth-child(4),
+::ng-deep .user .p-datatable td:nth-child(4) {
+  width: 31%;
+}
+
+::ng-deep .user .add-btn.p-button.p-button-icon-only {
+  width: 1.357rem;
+}
+
+::ng-deep .user .add-btn.button-primary {
+  background-color: #ec8305;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 15px;
+  font-size: 17px;
+}
+
+::ng-deep .user .p-datatable .p-datatable-tbody > tr > td,
+::ng-deep .user .p-datatable .p-datatable-thead > tr > th {
+  padding: 0.3rem;
+}
+
+::ng-deep .classifications .p-inputtext {
+  padding: 0.3rem;
+}
+
+/* טאבלט */
+@media (max-width: 992px) {
+  .form-container {
+    flex-direction: column-reverse;
+  }
+
+  .left-side {
+    width: 100%;
+    min-width: 0;
+    height: 230px;
+    border-radius: 0 0 4rem 4rem;
+    padding: 24px;
+  }
+
+  .left-side .box {
+    width: 130px;
+  }
+
+  .left-side .logo {
+    width: 240px;
+  }
+
+  .right-side {
+    justify-content: flex-start;
+    padding: 34px 22px;
+  }
+
+  .form-group {
+    flex-wrap: wrap;
+  }
+
+  .form-item,
+  .email-field,
+  .password-item {
+    flex: 1 1 calc(50% - 18px);
+  }
+}
+
+/* מובייל */
+@media (max-width: 576px) {
+  .left-side {
+    height: 165px;
+    border-radius: 0 0 2.5rem 2.5rem;
+  }
+
+  .left-side .box {
+    width: 90px;
+  }
+
+  .left-side .logo {
+    width: 180px;
+  }
+
+  .right-side {
+    padding: 26px 14px;
+  }
+
+  .form-title {
+    text-align: center;
+  }
+
+  .form-group {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .form-item,
+  .email-field,
+  .password-item {
+    width: 100%;
+    flex: unset;
+  }
+
+  .id-item {
+    width: 100%;
+    max-width: none;
+    flex: unset;
+  }
+
+  .radioBtn .form-group {
+    flex-direction: row;
+  }
+
+  .btnSubmit {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btnSubmit button {
+    width: 100%;
+  }
+
+  .classification-section {
+    overflow-x: auto;
+  }
+
+  ::ng-deep .classification-section .p-datatable {
+    min-width: 600px;
+  }
 }
