@@ -7,6 +7,7 @@ import { filter, Subscription } from 'rxjs';
 import { PrimeNGConfig } from 'primeng/api';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { MixpanelService } from './shared/services/mixpanel.service';
+import { ChatWidgetComponent } from './shared/components/chat-widget/chat-widget.component';
 
 
 
@@ -18,7 +19,8 @@ import { MixpanelService } from './shared/services/mixpanel.service';
     RouterOutlet,
     RouterModule,
     ButtonModule,
-    SidebarComponent   // ← הוסיפי את זה כאן!
+    SidebarComponent,
+    ChatWidgetComponent
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -27,6 +29,7 @@ import { MixpanelService } from './shared/services/mixpanel.service';
 
 export class AppComponent implements OnInit {
   routerSubscription!: Subscription;
+  currentDeclarationId: number | null = null;
 
   constructor(private router: Router, private titleService: Title, private primengConfig: PrimeNGConfig, private mixpanel: MixpanelService) { }
 
@@ -42,15 +45,22 @@ export class AppComponent implements OnInit {
         this.titleService.setTitle(route.snapshot.data['title']);
       }
 
-      // 🚨 הוספה פה:
       const currentUrl = this.router.url;
-
       this.mixpanel.track('Page View', { page: currentUrl });
 
       if (currentUrl.includes('/login')) {
         document.body.classList.add('login-page');
       } else {
         document.body.classList.remove('login-page');
+      }
+
+      // עדכון declarationId לפי ה-URL הנוכחי
+      if (currentUrl.includes('declaration-main')) {
+        const raw = localStorage.getItem('currentDecId');
+        const parsed = raw ? Number(raw) : null;
+        this.currentDeclarationId = parsed && !isNaN(parsed) ? parsed : null;
+      } else {
+        this.currentDeclarationId = null;
       }
     });
 

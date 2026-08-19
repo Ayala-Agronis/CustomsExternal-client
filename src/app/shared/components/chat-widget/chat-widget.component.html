@@ -1,0 +1,101 @@
+<div class="chat-widget">
+  <button class="chat-toggle" (click)="toggleChat()">
+    <i class="pi" [ngClass]="isOpen ? 'pi-times' : 'pi-comments'"></i>
+  </button>
+
+  <div class="chat-box" *ngIf="isOpen">
+    <div class="chat-header">
+      <span>שירות לקוחות</span>
+      <span
+        class="status-dot"
+        [class.connected]="chatService.isConnected$ | async"
+      ></span>
+    </div>
+
+    <!-- Dropdown בחירת שיחה -->
+    <div class="conversation-picker" *ngIf="conversationGroups.length > 0">
+      <select
+        [ngModel]="selectedConversationId"
+        (ngModelChange)="selectConversation($event)"
+      >
+        <option *ngIf="draftMode" [ngValue]="null">פנייה חדשה</option>
+
+        <option
+          *ngFor="let group of conversationGroups"
+          [ngValue]="+group.conversation.conversationId!"
+        >
+          {{ getConversationTitle(group.conversation) }}
+        </option>
+      </select>
+    </div>
+
+    <!-- סטטוס שיחה נבחרת -->
+    <div
+      class="conversation-status closed"
+      *ngIf="selectedConversation?.isClosed"
+    >
+      הפנייה נסגרה
+    </div>
+    <div class="conversation-status draft" *ngIf="draftMode">
+      פנייה חדשה — כתוב הודעה כדי לפתוח אותה
+    </div>
+    <div
+      class="conversation-status warning"
+      *ngIf="
+        selectedConversation &&
+        !selectedConversation.canWrite &&
+        !selectedConversation.isClosed
+      "
+    >
+      לא ניתן לכתוב לפנייה זו מתוך ההקשר הנוכחי
+    </div>
+
+    <!-- הודעות השיחה הנבחרת בלבד -->
+    <div class="chat-messages" #messagesContainer>
+      <div *ngIf="loadingHistory" class="chat-loading">טוען שיחות...</div>
+
+      <div
+        *ngIf="!loadingHistory && conversationGroups.length === 0 && !draftMode"
+        class="chat-loading"
+      >
+        אין פניות קיימות. שלחי הודעה או פתחי פנייה חדשה.
+      </div>
+
+      <div
+        *ngFor="let msg of selectedMessages"
+        class="message"
+        [ngClass]="msg.senderType === 1 ? 'sent' : 'received'"
+      >
+        <span class="bubble">{{ msg.messageText }}</span>
+        <span class="time">{{ msg.sentDate | date: "HH:mm" }}</span>
+      </div>
+    </div>
+
+    <!-- כפתור פנייה חדשה + input -->
+    <div class="chat-footer">
+      <button
+        type="button"
+        class="new-conversation-btn"
+        (click)="startNewConversation()"
+      >
+        + פתח פנייה חדשה
+      </button>
+
+      <div class="chat-input">
+        <input
+          type="text"
+          [(ngModel)]="messageText"
+          placeholder="הקלד הודעה..."
+          (keyup.enter)="send()"
+          [disabled]="inputDisabled"
+        />
+        <button
+          (click)="send()"
+          [disabled]="!messageText.trim() || inputDisabled"
+        >
+          <i class="pi pi-send"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

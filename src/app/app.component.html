@@ -13,4 +13,6 @@
 
     <router-outlet></router-outlet>
   </div>
+
+  <app-chat-widget *ngIf="isLoggedIn()" [declarationId]="currentDeclarationId"></app-chat-widget>
 </div>
