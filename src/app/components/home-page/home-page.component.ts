@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UserService } from '../../shared/services/user.service';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { UserService } from '../../shared/services/user.service';
 import { MessageService, Message, MenuItem } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { MenuModule } from 'primeng/menu';
@@ -9,6 +9,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { StepService } from '../../shared/services/step.service';
 import { AccordionModule } from 'primeng/accordion';
 import { TopNavbarComponent } from '../../shared/components/top-navbar/top-navbar.component';
+import { filter, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home-page',
@@ -25,13 +26,15 @@ import { TopNavbarComponent } from '../../shared/components/top-navbar/top-navba
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.scss',
 })
-export class HomePageComponent implements OnInit {
-  isRegister: any = false;
+export class HomePageComponent implements OnInit, OnDestroy {
+  isLoggedIn = false;
   msg: Message[] = [];
   user: any;
   menuItems: MenuItem[] = [];
   isClientAuthorized = true;
   showButtonMenu: boolean = false;
+
+  private routerSub?: Subscription;
 
   processSteps = [
     'הזנת נתוני הצהרה',
@@ -57,12 +60,14 @@ export class HomePageComponent implements OnInit {
       console.log(code);
       console.log(sectionId);
 
-      if (code)
+      if (code) {
         this.userService.getDetails(code).subscribe((res) => {
           console.log(res);
+
           this.userService.loginByGoogle(res).subscribe((res: any) => {
             console.log(res);
             console.log(res.body);
+
             this.msg = [
               {
                 severity: 'success',
@@ -70,8 +75,13 @@ export class HomePageComponent implements OnInit {
                 detail: 'hi' + res.body.FirstName,
               },
             ];
+
+            this.loadUserFromStorage();
+            this.refreshAuthStateAndMenu();
           });
         });
+      }
+
       if (sectionId) {
         setTimeout(() => {
           this.scrollToSection(sectionId);
@@ -79,17 +89,87 @@ export class HomePageComponent implements OnInit {
       }
     });
 
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      this.user = JSON.parse(userData);
-    }
+    this.loadUserFromStorage();
 
     this.isClientAuthorized =
       localStorage.getItem('isClientAuthorized') === 'true' || true;
 
-    const isRegisterValue = localStorage.getItem('isRegister');
-    this.isRegister = isRegisterValue === 'true';
+    this.refreshAuthStateAndMenu();
 
+    this.routerSub = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.refreshAuthStateAndMenu();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.routerSub?.unsubscribe();
+  }
+
+  private loadUserFromStorage(): void {
+    const userData = localStorage.getItem('user');
+
+    if (userData) {
+      this.user = JSON.parse(userData);
+    } else {
+      this.user = null;
+    }
+  }
+
+  private refreshAuthStateAndMenu(): void {
+    this.isLoggedIn = this.hasValidToken();
+    this.buildMenuItems();
+  }
+
+  private hasValidToken(): boolean {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      localStorage.removeItem('isRegister');
+      return false;
+    }
+
+    if (this.isJwtExpired(token)) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('isRegister');
+      return false;
+    }
+
+    return true;
+  }
+
+  private isJwtExpired(token: string): boolean {
+    try {
+      const parts = token.split('.');
+
+      // אם זה לא JWT רגיל, לא בודקים exp
+      if (parts.length !== 3) {
+        return false;
+      }
+
+      let payloadBase64 = parts[1]
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      while (payloadBase64.length % 4) {
+        payloadBase64 += '=';
+      }
+
+      const payload = JSON.parse(atob(payloadBase64));
+      const exp = payload.exp;
+
+      if (!exp) {
+        return false;
+      }
+
+      return Date.now() >= exp * 1000;
+    } catch {
+      return true;
+    }
+  }
+
+  private buildMenuItems(): void {
     this.menuItems = [
       {
         label: 'אודות',
@@ -105,88 +185,49 @@ export class HomePageComponent implements OnInit {
       },
       {
         label: 'תעריף מכס',
-        // command: () => this.navigate('customs-book-query'),
         command: () => this.openCustomsBookInNewTab(),
       },
       // {
       //   label: 'דברו איתנו',
       //   command: () => this.scrollToSection('footerSection'),
       // },
-      ...(this.isRegister
-        ? [
-            {
-              label: 'אזור אישי',
-              icon: 'pi pi-user',
-              items: [
-                {
-                  label: 'פרטים אישיים',
-                  icon: 'pi pi-user-edit',
-                  command: () =>
-                    this.router.navigate(['personal-details'], {
-                      queryParams: { personalDetails: true },
-                    }),
-                },
-                {
-                  label: 'התנתקות',
-                  icon: 'pi pi-power-off',
-                  command: () => this.logout(),
-                },
-              ],
-            },
-          ]
-        : []),
     ];
-    // this.menuItems = [
-    //   {
-    //     label: 'מי אנחנו',
-    //     icon: 'pi pi-info-circle',
-    //     command: () => this.navigate('about-us'),
-    //     // iconClass:'menu-item-spacing',
-    //     // styleClass :'menu-item-spacing'
-    //   },
-    //   {
-    //     label: 'שירות לעסקים',
-    //     icon: 'pi pi-briefcase',
-    //     command: () => this.navigate('business-service'),
-    //   },
-    //   {
-    //     label: 'שירות ומחירים',
-    //     icon: 'pi pi-dollar',
-    //     command: () => this.navigate('pricing'),
-    //   },
-    //   {
-    //     label: 'ספר מכס',
-    //     icon: 'pi pi-book',
-    //     command: () => this.navigate('customs-book-query'),
-    //   },
-    //   ...(this.isRegister
-    //     ? [
-    //         {
-    //           label: 'משתמש ',
-    //           icon: 'pi pi-user',
-    //           items: [
-    //             {
-    //               label: 'פרטים אישיים',
-    //               icon: 'pi pi-user',
-    //               command: () =>
-    //                 this.router.navigate(['personal-details'], {
-    //                   queryParams: { personalDetails: true },
-    //                 }),
-    //             },
-    //             {
-    //               label: 'התנתקות',
-    //               icon: 'pi pi-sign-out',
-    //               command: () => this.logout(),
-    //             },
-    //           ],
-    //         },
-    //       ]
-    //     : []),
-    // ];
+
+    if (this.isLoggedIn) {
+      this.menuItems.push({
+        label: 'אזור אישי',
+        icon: 'pi pi-user',
+        items: [
+          {
+            label: 'פרטים אישיים',
+            icon: 'pi pi-user-edit',
+            command: () => this.goToPersonalDetails(),
+          },
+          {
+            label: 'התנתקות',
+            icon: 'pi pi-power-off',
+            command: () => this.logout(),
+          },
+        ],
+      });
+    }
+  }
+
+  private goToPersonalDetails(): void {
+    if (!this.hasValidToken()) {
+      this.refreshAuthStateAndMenu();
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.router.navigate(['personal-details'], {
+      queryParams: { personalDetails: true },
+    });
   }
 
   scrollToSection(sectionId: string) {
     const element = document.getElementById(sectionId);
+
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -200,6 +241,7 @@ export class HomePageComponent implements OnInit {
     const url = this.router.serializeUrl(
       this.router.createUrlTree(['/customs-book-query']),
     );
+
     window.open(url, '_blank');
   }
 
@@ -209,7 +251,6 @@ export class HomePageComponent implements OnInit {
 
     const newWindow = window.open(gmailUrl, '_blank');
 
-    // fallback אם נחסם / לא נפתח
     if (!newWindow) {
       window.location.href = 'mailto:office@customsil.co.il';
     }
@@ -251,8 +292,8 @@ export class HomePageComponent implements OnInit {
     localStorage.setItem('maxIndex', '0');
     this.stepService.updateMaxIndex(0);
 
-    // נקה/אתחל תמיד כדי למנוע ערך ישן
     localStorage.setItem('decType', '');
+
     let path = '';
 
     switch (type) {
@@ -271,12 +312,12 @@ export class HomePageComponent implements OnInit {
         path = 'dec-form';
         localStorage.setItem('decType', 'regular');
     }
+
     console.log(path);
 
     this.router.navigate([`declaration-main/${path}`], {
       queryParams: { type },
     });
-    // this.router.navigateByUrl(`/declaration-main/${path}?type=${type}`);
   }
 
   navigate(destination: string) {
@@ -284,13 +325,15 @@ export class HomePageComponent implements OnInit {
       localStorage.setItem('currentDecId', '');
       localStorage.setItem('maxIndex', '0');
     }
+
     this.router.navigateByUrl(destination);
   }
 
   logout() {
-    // localStorage.clear();
     this.clearStorageOnLogout();
-    this.isRegister = false;
+    this.user = null;
+    this.isLoggedIn = false;
+    this.refreshAuthStateAndMenu();
     this.router.navigate(['/login']);
   }
 
@@ -319,6 +362,7 @@ export class HomePageComponent implements OnInit {
 
       if (shouldKeepByName || shouldKeepByPrefix) {
         const value = localStorage.getItem(key);
+
         if (value !== null) {
           savedValues[key] = value;
         }
