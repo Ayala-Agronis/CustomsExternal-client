@@ -23,14 +23,26 @@
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "assets": ["src/favicon.ico", "src/assets"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              {
+                "glob": "web.config",
+                "input": "src",
+                "output": "/"
+              }
+            ],
             "styles": [
               "src/styles.scss",
               "node_modules/primeicons/primeicons.css",
               "node_modules/primeng/resources/themes/saga-blue/theme.css",
               "node_modules/primeng/resources/primeng.min.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "src/jquery-isfunction-polyfill.js",
+              "node_modules/signalr/jquery.signalR.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -44,7 +56,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "800kb",
-                  "maximumError": "1mb"
+                  "maximumError": "2mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -64,6 +76,19 @@
               "sourceMap": true,
               "extractLicenses": false,
               "namedChunks": true
+            },
+            "test": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/config/api-endpoints.ts",
+                  "with": "src/app/config/api-endpoints.test.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "namedChunks": false,
+              "extractLicenses": true
             }
           },
           "defaultConfiguration": "production"
@@ -99,7 +124,11 @@
               "node_modules/primeng/resources/themes/saga-blue/theme.css",
               "node_modules/primeng/resources/primeng.min.css"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "src/jquery-isfunction-polyfill.js",
+              "node_modules/signalr/jquery.signalR.min.js"
+            ]
           }
         }
       }
